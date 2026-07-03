@@ -1,0 +1,84 @@
+plugins {
+  id 'org.springframework.boot' version '3.3.2' apply false
+  id 'io.spring.dependency-management' version '1.1.6' apply false
+  id 'com.diffplug.spotless' version '6.25.0'
+}
+
+group = 'com.hile.reports'
+version = '0.1.0-SNAPSHOT'
+
+allprojects {
+  repositories {
+    mavenCentral()
+  }
+}
+
+subprojects {
+  apply plugin: 'java-library'
+  apply plugin: 'io.spring.dependency-management'
+
+  java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+  }
+
+  dependencyManagement {
+    imports {
+      mavenBom "org.springframework.boot:spring-boot-dependencies:3.3.2"
+    }
+  }
+
+  tasks.withType(JavaCompile).configureEach {
+    options.release = 21
+  }
+
+  tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+  }
+}
+
+spotless {
+  lineEndings 'UNIX'
+  encoding 'UTF-8'
+
+  java {
+    target 'reporting-*/src/*/java/**/*.java'
+    targetExclude '**/build/**'
+    googleJavaFormat('1.35.0')
+    removeUnusedImports()
+    trimTrailingWhitespace()
+    endWithNewline()
+  }
+
+  format 'gradleScripts', {
+    target '*.gradle', '**/*.gradle'
+    targetExclude '**/build/**', '.gradle/**'
+    indentWithSpaces(2)
+    trimTrailingWhitespace()
+    endWithNewline()
+  }
+
+  format 'propertiesFiles', {
+    target '*.properties', '**/*.properties'
+    targetExclude '**/build/**', '.gradle/**', 'gradle/wrapper/**'
+    indentWithSpaces(2)
+    trimTrailingWhitespace()
+    endWithNewline()
+  }
+
+  format 'yamlFiles', {
+    target '**/*.yml', '**/*.yaml'
+    targetExclude '**/build/**', '.gradle/**'
+    indentWithSpaces(2)
+    trimTrailingWhitespace()
+    endWithNewline()
+  }
+
+  format 'tomlFiles', {
+    target '**/*.toml'
+    targetExclude '**/build/**', '.gradle/**'
+    indentWithSpaces(2)
+    trimTrailingWhitespace()
+    endWithNewline()
+  }
+}
