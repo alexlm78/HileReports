@@ -1,27 +1,30 @@
 # Hile Reports
 
-Base inicial del proyecto para el reporteador universal multi-DB.
+Initial project baseline for the universal multi-DB reporting platform.
 
 ## Build
 
-- `Gradle` multi-modulo
-- `settings.gradle` define los modulos del workspace
-- `build.gradle` centraliza convenciones y versiones comunes
+- Multi-module `Gradle` build.
+- `settings.gradle` defines the workspace modules.
+- `build.gradle` centralizes shared conventions and common versions.
 
-## Modulos
+## Modules
 
-- `reporting-domain`: entidades y reglas puras.
-- `reporting-application`: casos de uso y puertos.
-- `reporting-infrastructure`: persistencia y adaptadores tecnicos.
-- `reporting-connectors`: conectores Oracle, MySQL y PostgreSQL.
-- `reporting-security`: autenticacion local y evolucion futura a `AD`.
-- `reporting-jobs`: jobs de exportacion y mantenimiento.
-- `reporting-bootstrap`: aplicacion Spring Boot y API REST.
+- `reporting-domain`: pure entities and business rules.
+- `reporting-application`: use cases and ports.
+- `reporting-infrastructure`: persistence and technical adapters.
+- `reporting-connectors`: Oracle, MySQL, and PostgreSQL connectors.
+- `reporting-security`: local authentication with a future path to `AD`.
+- `reporting-jobs`: export and maintenance jobs.
+- `reporting-bootstrap`: Spring Boot application and REST API.
 
-## Documentacion
+## Documentation
 
-La documentacion de arquitectura y planificacion vive en `docs/architecture/reporteador-universal`.
+Architecture and planning documentation lives under `docs/architecture/reporteador-universal`.
 
-## Objetivo del skeleton
+- English canonical files keep the original paths for compatibility.
+- Spanish source versions are preserved alongside them with the `_es.md` suffix.
 
-Esta base no implementa el producto completo; establece los limites entre modulos y los contratos principales para acelerar el arranque del equipo.
+## Skeleton Goal
+
+This baseline does not implement the full product yet; it defines module boundaries and the main contracts so the team can start implementation faster.
