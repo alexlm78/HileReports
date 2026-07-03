@@ -1,0 +1,14 @@
+/.gradle/
+/build/
+/target/
+/.idea/
+/.vscode/
+/.mvn/
+*.iml
+*.log
+*.class
+*.jar
+*.war
+/.settings/
+/.project
+/.classpath
