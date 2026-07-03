@@ -1,0 +1,9 @@
+rootProject.name = 'hile-reports'
+
+include 'reporting-domain'
+include 'reporting-application'
+include 'reporting-infrastructure'
+include 'reporting-connectors'
+include 'reporting-security'
+include 'reporting-jobs'
+include 'reporting-bootstrap'

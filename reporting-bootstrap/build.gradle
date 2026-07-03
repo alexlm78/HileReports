@@ -1,0 +1,18 @@
+plugins {
+  id 'org.springframework.boot'
+}
+
+description = 'reporting-bootstrap'
+
+dependencies {
+  implementation project(':reporting-application')
+  implementation project(':reporting-domain')
+  implementation project(':reporting-infrastructure')
+  implementation project(':reporting-connectors')
+  implementation project(':reporting-security')
+  implementation project(':reporting-jobs')
+
+  implementation 'org.springframework.boot:spring-boot-starter-web'
+  implementation 'org.springframework.boot:spring-boot-starter-actuator'
+  implementation 'org.springframework.boot:spring-boot-starter-validation'
+}

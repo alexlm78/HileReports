@@ -1,0 +1,6 @@
+description = 'reporting-security'
+
+dependencies {
+  implementation project(':reporting-application')
+  implementation 'org.springframework.security:spring-security-crypto'
+}

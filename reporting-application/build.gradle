@@ -1,0 +1,5 @@
+description = 'reporting-application'
+
+dependencies {
+  api project(':reporting-domain')
+}

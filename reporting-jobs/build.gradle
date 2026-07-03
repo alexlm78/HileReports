@@ -1,0 +1,6 @@
+description = 'reporting-jobs'
+
+dependencies {
+  implementation project(':reporting-application')
+  implementation project(':reporting-domain')
+}
