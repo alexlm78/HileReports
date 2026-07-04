@@ -4,8 +4,8 @@ plugins {
   id 'com.diffplug.spotless' version '6.25.0'
 }
 
-group = 'com.hile.reports'
-version = '0.1.0-SNAPSHOT'
+group = 'dev.kreaker.hile'
+version = '0.0.3'
 
 allprojects {
   repositories {
@@ -38,8 +38,8 @@ subprojects {
 }
 
 spotless {
-  lineEndings 'UNIX'
-  encoding 'UTF-8'
+  lineEndings = 'UNIX'
+  encoding = 'UTF-8'
 
   java {
     target 'reporting-*/src/*/java/**/*.java'

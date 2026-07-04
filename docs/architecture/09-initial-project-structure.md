@@ -93,7 +93,7 @@ flowchart LR
 ### `reporting-domain`
 
 ```text
-com.hile.reports.domain
+dev.kreaker.hile.domain
 ├── datasource
 ├── report
 ├── execution
@@ -104,7 +104,7 @@ com.hile.reports.domain
 ### `reporting-application`
 
 ```text
-com.hile.reports.application
+dev.kreaker.hile.application
 ├── port
 │   ├── in
 │   └── out
@@ -116,7 +116,7 @@ com.hile.reports.application
 ### `reporting-bootstrap`
 
 ```text
-com.hile.reports.bootstrap
+dev.kreaker.hile.bootstrap
 ├── api
 │   ├── datasource
 │   ├── report
