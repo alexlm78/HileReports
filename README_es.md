@@ -22,6 +22,8 @@ Base inicial del proyecto para el reporteador universal multi-DB.
 
 La documentacion de arquitectura y planificacion vive en `docs/architecture/reporteador-universal`.
 
+Para continuidad de IA o de desarrollo, comienza por `AGENT_HANDOFF.md` y luego `docs/architecture/10-implementation-memory_es.md`.
+
 ## Objetivo del skeleton
 
 Esta base no implementa el producto completo; establece los limites entre modulos y los contratos principales para acelerar el arranque del equipo.

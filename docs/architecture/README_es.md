@@ -16,6 +16,7 @@ Permitir que usuarios administradores creen reportes a partir de una consulta SQ
 - `05-seguridad-operacion-y-nfr.md`: seguridad, rendimiento, observabilidad y operacion.
 - `06-plan-implementacion.md`: roadmap sugerido por fases.
 - `07-plan-minucioso-implementacion.md`: backlog detallado por epicas, tareas, dependencias y entregables.
+- `10-implementation-memory.md`: fotografia verificada de implementacion, avance y pendientes.
 - `adr/ADR-001-monolito-modular.md`: decision de arquitectura base.
 - `adr/ADR-002-ejecucion-sql-segura.md`: decision sobre validacion y ejecucion de SQL.
 - `adr/ADR-003-conectividad-multidb.md`: decision sobre conectores y abstraccion de motores.

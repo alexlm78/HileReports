@@ -22,6 +22,8 @@ Initial project baseline for the universal multi-DB reporting platform.
 
 Architecture and planning documentation lives under `docs/architecture/reporteador-universal`.
 
+For AI or developer continuity, start with `AGENT_HANDOFF.md` and then `docs/architecture/10-implementation-memory.md`.
+
 - English canonical files keep the original paths for compatibility.
 - Spanish source versions are preserved alongside them with the `_es.md` suffix.
 

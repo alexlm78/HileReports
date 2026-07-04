@@ -16,6 +16,7 @@ Enable administrator users to create reports from SQL queries, preview columns a
 - `05-seguridad-operacion-y-nfr.md`: security, performance, observability, and operations.
 - `06-plan-implementacion.md`: suggested phased roadmap.
 - `07-plan-minucioso-implementacion.md`: detailed backlog by epics, tasks, dependencies, and deliverables.
+- `10-implementation-memory.md`: verified implementation snapshot, progress, and pending work.
 - `adr/ADR-001-monolito-modular.md`: baseline architecture decision.
 - `adr/ADR-002-ejecucion-sql-segura.md`: decision on SQL validation and execution.
 - `adr/ADR-003-conectividad-multidb.md`: decision on connectors and engine abstraction.
