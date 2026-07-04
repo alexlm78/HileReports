@@ -7,7 +7,7 @@ This document gives an AI agent or a new developer a verified snapshot of the cu
 ## Last Verified Snapshot
 
 - Date: `2026-07-03`
-- Repository status: clean working tree at verification time
+- Repository status: working tree contains documentation updates and the current Epic 1 foundation slice
 - Build status: `./gradlew test` passes
 - Scope of verification: source tree, Gradle modules, Spring Boot bootstrap, tests, and backlog alignment
 
@@ -20,6 +20,10 @@ What is already in place:
 - Multi-module `Gradle` structure aligned with the modular monolith design.
 - Shared build conventions for `Java 21`, `Spring Boot 3.3.2`, and formatting via `Spotless`.
 - Minimal domain, application, infrastructure, connectors, security, jobs, and bootstrap modules.
+- Environment-aware Spring Boot configuration with `local`, `dev`, `qa`, and `prod` profiles.
+- Externalized operational database settings through environment variables.
+- `Flyway` integration plus an initial PostgreSQL operational metadata migration.
+- A local `compose.yaml` for the operational PostgreSQL database used by the application itself.
 - A simple read-only SQL validator with a small test suite.
 - Connector abstractions and engine-specific stub adapters for PostgreSQL, MySQL, and Oracle.
 - A decoupled authentication port with a local adapter and an `AD` stub.
@@ -28,7 +32,7 @@ What is not in place yet:
 
 - No real authentication flow over HTTP.
 - No `Spring Security` web configuration.
-- No persistence with `JPA` or `Flyway`.
+- No application repositories backed by PostgreSQL or `JPA` entities yet.
 - No datasource CRUD.
 - No real preview against databases.
 - No report publication, catalog, execution, auditing, or exports.
@@ -77,13 +81,15 @@ Implemented:
 
 - `SimpleReadOnlyQueryValidator`
 - `InMemoryReportDefinitionRepository`
+- Initial `Flyway` migration for operational metadata
 - Validator tests
 
 Current assessment:
 
 - The validator is intentionally simple. It allows `SELECT` and `WITH`, blocks several DDL/DML tokens and semicolons, and extracts named parameters with regex.
-- Persistence is in-memory only.
-- There are no migrations, no database configuration, no `JPA` entities, no repositories backed by PostgreSQL, and no auditing infrastructure.
+- The implemented repository is still in-memory only.
+- `Flyway` now provides an initial PostgreSQL schema for categories, datasources, report metadata, executions, exports, and audit events.
+- There are still no `JPA` entities, no repositories backed by PostgreSQL, and no auditing infrastructure beyond the migration baseline.
 
 ### `reporting-connectors`
 
@@ -134,12 +140,15 @@ Implemented:
 - `HileReportsApplication`
 - `ArchitectureController`
 - Base `application.yml`
+- Profile-specific configuration for `local`, `dev`, `qa`, and `prod`
+- JDBC and `Flyway` runtime configuration for the operational PostgreSQL database
+- Local Docker Compose definition for the operational PostgreSQL instance
 
 Current assessment:
 
 - The only exposed HTTP endpoint is `GET /api/v1/architecture/modules`.
-- `application.yml` defines the app name, server port, actuator exposure, preview row limit, and execution timeout defaults.
-- There are no environment-specific profiles (`local`, `dev`, `qa`, `prod`).
+- Configuration is externalized through environment variables, with sensible defaults for the local profile.
+- The application is prepared to bootstrap against a PostgreSQL operational database and run `Flyway` migrations on startup.
 - There are no beans wiring application services, adapters, or connector factory into usable APIs.
 
 ## Backlog Alignment
@@ -155,8 +164,8 @@ Status legend:
 | `TASK-01.1.1-a` Create root build and modules | Done | Multi-module `Gradle` structure exists |
 | `TASK-01.1.1-b` Java version and Spring Boot BOM | Done | `Java 21` and Boot BOM configured |
 | `TASK-01.1.1-c` Build and test plugins | Done | Shared Gradle conventions and tests configured |
-| `TASK-01.2.1-a` Base config and profiles | Partial | Base `application.yml` exists, profiles do not |
-| `TASK-01.2.1-b` Externalize sensitive variables | Not started | No evidence in repo |
+| `TASK-01.2.1-a` Base config and profiles | Done | Base config plus `local`, `dev`, `qa`, and `prod` profiles exist |
+| `TASK-01.2.1-b` Externalize sensitive variables | Done | Operational datasource settings are externalized through environment variables |
 | `TASK-01.3.1-a` CI pipeline | Not started | No pipeline files found |
 | `TASK-01.3.1-b` Publish executable artifact | Partial | Boot app can build locally, no pipeline/release flow |
 | `TASK-02.1.1-a` User, role, permission entities | Not started | Only `AuthenticatedUser` record exists |
@@ -166,7 +175,7 @@ Status legend:
 | `TASK-02.2.1-b` Authorization by endpoint | Not started | No secured endpoints |
 | `TASK-02.2.1-c` Permissions by report and datasource | Not started | No ACL implementation |
 | `TASK-02.3.1-a` Decoupled authentication port | Done | Port and local/AD adapters exist |
-| `TASK-03.1.1-a` Flyway migrations | Not started | No migration files or Flyway setup |
+| `TASK-03.1.1-a` Flyway migrations | Done | `Flyway` is configured and an initial operational metadata migration exists |
 | `TASK-03.1.1-b` Repositories and base services | Partial | Only in-memory report repository plus one app service |
 | `TASK-03.1.1-c` Entity auditing | Not started | No auditing model or infrastructure |
 | `TASK-03.2.1-a` Category CRUD | Not started | No category module or endpoint |

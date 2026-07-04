@@ -1,21 +1,44 @@
 spring:
   application:
     name: hile-reports
+  profiles:
+    default: local
+  datasource:
+    hikari:
+      pool-name: hile-reports-pool
+      auto-commit: false
+      maximum-pool-size: ${APP_DB_POOL_MAX_SIZE:10}
+      minimum-idle: ${APP_DB_POOL_MIN_IDLE:2}
+      connection-timeout: ${APP_DB_CONNECTION_TIMEOUT_MS:30000}
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    default-schema: ${APP_DB_SCHEMA:hile_reports}
+    schemas:
+      - ${APP_DB_SCHEMA:hile_reports}
 
 server:
-  port: 8080
+  port: ${APP_SERVER_PORT:8080}
 
 management:
+  endpoint:
+    health:
+      show-details: when_authorized
   endpoints:
     web:
       exposure:
         include: health,info,metrics
 
+logging:
+  level:
+    root: ${APP_LOG_LEVEL_ROOT:INFO}
+    dev.kreaker.hile: ${APP_LOG_LEVEL_HILE:INFO}
+
 hile:
   reports:
     security:
-      mode: local
+      mode: ${APP_SECURITY_MODE:local}
     preview:
-      max-rows: 100
+      max-rows: ${APP_PREVIEW_MAX_ROWS:100}
     execution:
-      default-timeout-seconds: 30
+      default-timeout-seconds: ${APP_EXECUTION_TIMEOUT_SECONDS:30}

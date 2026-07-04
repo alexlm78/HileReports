@@ -1,0 +1,9 @@
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    url: ${APP_DB_URL:jdbc:postgresql://localhost:5432/hile_reports}
+    username: ${APP_DB_USERNAME:postgres}
+    password: ${APP_DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
