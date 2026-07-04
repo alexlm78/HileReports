@@ -6,8 +6,8 @@ This document gives an AI agent or a new developer a verified snapshot of the cu
 
 ## Last Verified Snapshot
 
-- Date: `2026-07-03`
-- Repository status: working tree contains documentation updates and the current Epic 1 foundation slice
+- Date: `2026-07-04`
+- Repository status: working tree contains a minimal local HTTP authentication slice on top of the existing technical foundation
 - Build status: `./gradlew test` passes
 - Scope of verification: source tree, Gradle modules, Spring Boot bootstrap, tests, and backlog alignment
 
@@ -27,11 +27,10 @@ What is already in place:
 - A simple read-only SQL validator with a small test suite.
 - Connector abstractions and engine-specific stub adapters for PostgreSQL, MySQL, and Oracle.
 - A decoupled authentication port with a local adapter and an `AD` stub.
+- An authentication use case wired to `POST /api/v1/auth/login` with basic validation and tests.
 
 What is not in place yet:
 
-- No real authentication flow over HTTP.
-- No `Spring Security` web configuration.
 - No application repositories backed by PostgreSQL or `JPA` entities yet.
 - No datasource CRUD.
 - No real preview against databases.
@@ -115,12 +114,14 @@ Implemented:
 
 - `LocalAuthenticationProviderAdapter`
 - `AdAuthenticationProviderStub`
+- `BCrypt` password hashing
 
 Current assessment:
 
 - Authentication is decoupled behind a port, which is good groundwork for later `AD` support.
 - Local auth is currently a hardcoded in-memory credential map with `BCrypt`.
-- There is no user repository, no role or permission model, no token/session handling, and no HTTP security integration.
+- A minimal HTTP login flow now exists on top of the local provider.
+- There is still no user repository, no role or permission model, and no token/session handling.
 
 ### `reporting-jobs`
 
@@ -139,17 +140,21 @@ Implemented:
 
 - `HileReportsApplication`
 - `ArchitectureController`
+- `AuthController`
 - Base `application.yml`
 - Profile-specific configuration for `local`, `dev`, `qa`, and `prod`
 - JDBC and `Flyway` runtime configuration for the operational PostgreSQL database
 - Local Docker Compose definition for the operational PostgreSQL instance
+- Minimal `Spring Security` configuration
+- Bean wiring for local authentication
 
 Current assessment:
 
-- The only exposed HTTP endpoint is `GET /api/v1/architecture/modules`.
+- `POST /api/v1/auth/login` and `GET /api/v1/architecture/modules` now exist.
 - Configuration is externalized through environment variables, with sensible defaults for the local profile.
 - The application is prepared to bootstrap against a PostgreSQL operational database and run `Flyway` migrations on startup.
-- There are no beans wiring application services, adapters, or connector factory into usable APIs.
+- Login is exposed without a persistent session or reusable token, so it is a technical slice rather than final production authentication.
+- There are still no beans wiring preview, datasource CRUD, or real connectors into usable APIs.
 
 ## Backlog Alignment
 
@@ -169,10 +174,10 @@ Status legend:
 | `TASK-01.3.1-a` CI pipeline | Not started | No pipeline files found |
 | `TASK-01.3.1-b` Publish executable artifact | Partial | Boot app can build locally, no pipeline/release flow |
 | `TASK-02.1.1-a` User, role, permission entities | Not started | Only `AuthenticatedUser` record exists |
-| `TASK-02.1.1-b` Spring Security and hashing | Partial | `BCrypt` used, but no `Spring Security` web config |
-| `TASK-02.1.1-c` Authentication endpoint | Not started | No auth controller |
+| `TASK-02.1.1-b` Spring Security and hashing | Partial | `BCrypt` plus minimal `Spring Security` web config exist, but no sessions, JWT, or real user repository |
+| `TASK-02.1.1-c` Authentication endpoint | Partial | `POST /api/v1/auth/login` exists, but it only validates local in-memory credentials |
 | `TASK-02.2.1-a` Initial permission matrix | Not started | No permission model |
-| `TASK-02.2.1-b` Authorization by endpoint | Not started | No secured endpoints |
+| `TASK-02.2.1-b` Authorization by endpoint | Partial | Basic API protection exists; only login and selected actuator endpoints are public |
 | `TASK-02.2.1-c` Permissions by report and datasource | Not started | No ACL implementation |
 | `TASK-02.3.1-a` Decoupled authentication port | Done | Port and local/AD adapters exist |
 | `TASK-03.1.1-a` Flyway migrations | Done | `Flyway` is configured and an initial operational metadata migration exists |
@@ -214,10 +219,12 @@ The current repository already supports this narrow internal flow at code level:
 1. Create a `CreateReportDefinitionCommand`.
 2. Validate SQL as read-only through `SimpleReadOnlyQueryValidator`.
 3. Persist a `ReportDefinition` draft into `InMemoryReportDefinitionRepository`.
+4. Authenticate local credentials through `POST /api/v1/auth/login`.
 
 Important limitation:
 
-- This flow is not exposed as a REST API and is not wired through Spring beans by default.
+- The report draft flow is still not exposed as a REST API.
+- The HTTP login flow does not create a persistent session or return a reusable token.
 
 ## Major Gaps Before the MVP Path Works End to End
 
@@ -229,27 +236,23 @@ Today the main blockers are:
 
 1. No real datasource registration and no secret handling.
 2. No real connector execution against databases.
-3. No auth endpoint or HTTP security.
-4. No metadata persistence database.
+3. No persistent user, role, or permission model.
+4. No application metadata persistence wired into real repositories yet.
 5. No preview API.
 6. No report publication or catalog.
 
 ## Recommended Next Implementation Slice
 
-The most pragmatic next slice is:
+The next pragmatic slice is:
 
-1. Add real environment configuration and persistence base:
-   - `local/dev/qa/prod` profiles
-   - `Flyway`
-   - PostgreSQL metadata database
-2. Implement local auth over HTTP:
-   - user/role/permission model
-   - security configuration
-   - login endpoint
-3. Implement datasource CRUD plus encrypted secret storage.
-4. Replace stub PostgreSQL/MySQL connectors with real JDBC-based adapters.
-5. Expose validation, column discovery, and preview endpoints.
-6. Only then expand builder versioning and publication.
+1. Complete local auth beyond the technical slice:
+   - `user/role/permission` model
+   - user persistence
+   - controlled session or JWT
+2. Implement datasource CRUD with encrypted secret storage.
+3. Replace the PostgreSQL/MySQL stubs with real JDBC adapters.
+4. Expose validation, column discovery, and preview endpoints.
+5. Then expand builder versioning and publication.
 
 ## Commands Used to Verify the Snapshot
 

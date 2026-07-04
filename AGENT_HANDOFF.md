@@ -35,16 +35,16 @@ Implemented baseline:
 - Stub DB connectors for PostgreSQL, MySQL, and Oracle
 - Decoupled auth port with local adapter and `AD` stub
 - Spring Boot bootstrap with one architecture endpoint
+- Minimal local HTTP auth slice with `Spring Security` and `POST /api/v1/auth/login`
 
 Not implemented yet:
 
-- Real HTTP authentication flow
-- `Spring Security` web configuration
+- Persistent auth model with users, roles, and permissions
+- Session or token-based authentication
 - `Flyway` migrations
 - `JPA` persistence
 - Datasource CRUD
 - Real connector execution
-- Preview API
 - Report publication/versioning workflow
 - Catalog, execution, auditing, exports
 
@@ -60,13 +60,14 @@ Not implemented yet:
 
 ## Verified Working Flow
 
-Only this narrow internal flow is implemented:
+These narrow flows are implemented:
 
 1. Build a `CreateReportDefinitionCommand`
 2. Validate SQL with `SimpleReadOnlyQueryValidator`
 3. Save a draft `ReportDefinition` through `InMemoryReportDefinitionRepository`
+4. Authenticate local credentials through `POST /api/v1/auth/login`
 
-This flow is not exposed as a complete REST feature.
+The report draft flow is still not exposed as a complete REST feature, and the auth slice still has no reusable session or token.
 
 ## Recommended Next Slice
 
@@ -76,10 +77,10 @@ Follow this order unless the user explicitly redirects:
    - profiles `local/dev/qa/prod`
    - PostgreSQL operational database
    - `Flyway`
-2. Implement local auth over HTTP
+2. Complete local auth beyond the initial HTTP slice
    - user/role/permission model
-   - security config
-   - login endpoint
+   - persistent users
+   - session or JWT
 3. Implement datasource CRUD with encrypted secret storage
 4. Replace PostgreSQL/MySQL connector stubs with real JDBC adapters
 5. Expose validation, discovery, and preview endpoints

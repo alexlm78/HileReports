@@ -1,6 +1,7 @@
 package dev.kreaker.hile.security;
 
 import dev.kreaker.hile.application.port.out.AuthenticationProviderPort;
+import dev.kreaker.hile.application.exception.InvalidCredentialsException;
 import dev.kreaker.hile.domain.security.AuthenticatedUser;
 import java.util.Map;
 import java.util.Set;
@@ -17,7 +18,7 @@ public class LocalAuthenticationProviderAdapter implements AuthenticationProvide
   public AuthenticatedUser authenticate(String username, String rawPassword) {
     String storedPassword = localUsers.get(username);
     if (storedPassword == null || !passwordEncoder.matches(rawPassword, storedPassword)) {
-      throw new IllegalArgumentException("Credenciales invalidas.");
+      throw new InvalidCredentialsException("Credenciales invalidas.");
     }
     return new AuthenticatedUser(username, Set.of("platform_admin"));
   }
