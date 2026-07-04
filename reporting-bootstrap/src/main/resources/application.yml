@@ -38,6 +38,9 @@ hile:
   reports:
     security:
       mode: ${APP_SECURITY_MODE:local}
+      jwt:
+        secret: ${APP_JWT_SECRET:hile-reports-dev-jwt-secret-key-change-in-prod-min-64-chars!!}
+        expiration-ms: ${APP_JWT_EXPIRATION_MS:86400000}
     preview:
       max-rows: ${APP_PREVIEW_MAX_ROWS:100}
     execution:

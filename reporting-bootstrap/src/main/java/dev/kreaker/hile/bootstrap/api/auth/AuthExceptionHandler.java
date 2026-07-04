@@ -13,6 +13,8 @@ public class AuthExceptionHandler {
   ResponseEntity<ApiErrorResponse> handleInvalidCredentials(
       InvalidCredentialsException invalidCredentialsException) {
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-        .body(new ApiErrorResponse("AUTH_INVALID_CREDENTIALS", invalidCredentialsException.getMessage()));
+        .body(
+            new ApiErrorResponse(
+                "AUTH_INVALID_CREDENTIALS", invalidCredentialsException.getMessage()));
   }
 }

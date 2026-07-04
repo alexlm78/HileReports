@@ -7,13 +7,13 @@ This document gives an AI agent or a new developer a verified snapshot of the cu
 ## Last Verified Snapshot
 
 - Date: `2026-07-04`
-- Repository status: working tree contains a minimal local HTTP authentication slice on top of the existing technical foundation
+- Repository status: JWT-based authentication slice with persistent users, roles, and permissions
 - Build status: `./gradlew test` passes
 - Scope of verification: source tree, Gradle modules, Spring Boot bootstrap, tests, and backlog alignment
 
 ## Executive Summary
 
-The repository is currently a **compilable baseline** for the product, not an MVP implementation yet.
+The repository is currently an **active R1 MVP baseline** — local security slice is now substantially complete.
 
 What is already in place:
 
@@ -22,12 +22,15 @@ What is already in place:
 - Minimal domain, application, infrastructure, connectors, security, jobs, and bootstrap modules.
 - Environment-aware Spring Boot configuration with `local`, `dev`, `qa`, and `prod` profiles.
 - Externalized operational database settings through environment variables.
-- `Flyway` integration plus an initial PostgreSQL operational metadata migration.
+- `Flyway` integration with two migrations: operational metadata schema (V1) and security schema (V2).
 - A local `compose.yaml` for the operational PostgreSQL database used by the application itself.
 - A simple read-only SQL validator with a small test suite.
 - Connector abstractions and engine-specific stub adapters for PostgreSQL, MySQL, and Oracle.
-- A decoupled authentication port with a local adapter and an `AD` stub.
-- An authentication use case wired to `POST /api/v1/auth/login` with basic validation and tests.
+- A decoupled authentication port backed by persistent users loaded from PostgreSQL via JPA.
+- JWT-based stateless authentication: `POST /api/v1/auth/login` returns a signed JWT token.
+- `JwtAuthenticationFilter` protects all non-public endpoints via `Authorization: Bearer <token>`.
+- `SecurityDataInitializer` creates the default admin user on first boot.
+- `app_role`, `app_permission`, `user_role`, `role_permission` tables seeded with permissions and three initial roles.
 
 What is not in place yet:
 
@@ -80,15 +83,19 @@ Implemented:
 
 - `SimpleReadOnlyQueryValidator`
 - `InMemoryReportDefinitionRepository`
-- Initial `Flyway` migration for operational metadata
+- `Flyway` V1 migration for operational metadata schema
+- `Flyway` V2 migration for security schema (`app_user`, `app_role`, `app_permission`, `user_role`, `role_permission`) with seeded permissions and roles
+- `AppUserEntity`, `AppRoleEntity` JPA entities
+- `AppUserJpaRepository`, `AppRoleJpaRepository` Spring Data repositories
+- `UserRepositoryAdapter` implementing `UserRepositoryPort`
 - Validator tests
 
 Current assessment:
 
 - The validator is intentionally simple. It allows `SELECT` and `WITH`, blocks several DDL/DML tokens and semicolons, and extracts named parameters with regex.
-- The implemented repository is still in-memory only.
-- `Flyway` now provides an initial PostgreSQL schema for categories, datasources, report metadata, executions, exports, and audit events.
-- There are still no `JPA` entities, no repositories backed by PostgreSQL, and no auditing infrastructure beyond the migration baseline.
+- The report repository is still in-memory only.
+- User persistence is now fully backed by PostgreSQL and JPA.
+- No `JPA` entities for report definitions, datasources, or categories yet.
 
 ### `reporting-connectors`
 
@@ -112,16 +119,18 @@ Current assessment:
 
 Implemented:
 
-- `LocalAuthenticationProviderAdapter`
+- `LocalAuthenticationProviderAdapter` — loads users from DB via `UserRepositoryPort`
 - `AdAuthenticationProviderStub`
 - `BCrypt` password hashing
+- `JwtTokenProvider` / `TokenProviderPort` — generates and validates HS256 JWTs
+- JWT secret and expiration externalized through `APP_JWT_SECRET` and `APP_JWT_EXPIRATION_MS`
 
 Current assessment:
 
 - Authentication is decoupled behind a port, which is good groundwork for later `AD` support.
-- Local auth is currently a hardcoded in-memory credential map with `BCrypt`.
-- A minimal HTTP login flow now exists on top of the local provider.
-- There is still no user repository, no role or permission model, and no token/session handling.
+- Local auth reads users from PostgreSQL via JPA. In-memory hardcoded credentials are removed.
+- JWT tokens carry username and roles. Expiration defaults to 24 hours.
+- No role-based endpoint protection yet (RBAC wiring is the next step).
 
 ### `reporting-jobs`
 
@@ -140,20 +149,23 @@ Implemented:
 
 - `HileReportsApplication`
 - `ArchitectureController`
-- `AuthController`
+- `AuthController` — returns JWT token on successful login
 - Base `application.yml`
 - Profile-specific configuration for `local`, `dev`, `qa`, and `prod`
-- JDBC and `Flyway` runtime configuration for the operational PostgreSQL database
+- JPA, `Flyway`, and JDBC runtime configuration for the operational PostgreSQL database
 - Local Docker Compose definition for the operational PostgreSQL instance
-- Minimal `Spring Security` configuration
-- Bean wiring for local authentication
+- `SecurityConfig` with JWT filter and stateless session
+- `JwtAuthenticationFilter` — validates `Authorization: Bearer <token>` on every request
+- `SecurityDataInitializer` — creates default admin user on first boot
+- `JpaConfig` — registers JPA repository scan for `dev.kreaker.hile` package tree
+- Bean wiring for local authentication with `UserRepositoryPort`
 
 Current assessment:
 
-- `POST /api/v1/auth/login` and `GET /api/v1/architecture/modules` now exist.
-- Configuration is externalized through environment variables, with sensible defaults for the local profile.
-- The application is prepared to bootstrap against a PostgreSQL operational database and run `Flyway` migrations on startup.
-- Login is exposed without a persistent session or reusable token, so it is a technical slice rather than final production authentication.
+- `POST /api/v1/auth/login` returns `{ username, roles, token, expiresInMs, authenticationMode }`.
+- All non-public endpoints require a valid JWT.
+- Default admin credentials: `admin` / `admin123` — change immediately in any non-local environment.
+- JWT secret must be overridden via `APP_JWT_SECRET` (min 32 bytes) in non-local environments.
 - There are still no beans wiring preview, datasource CRUD, or real connectors into usable APIs.
 
 ## Backlog Alignment
@@ -173,14 +185,14 @@ Status legend:
 | `TASK-01.2.1-b` Externalize sensitive variables | Done | Operational datasource settings are externalized through environment variables |
 | `TASK-01.3.1-a` CI pipeline | Not started | No pipeline files found |
 | `TASK-01.3.1-b` Publish executable artifact | Partial | Boot app can build locally, no pipeline/release flow |
-| `TASK-02.1.1-a` User, role, permission entities | Not started | Only `AuthenticatedUser` record exists |
-| `TASK-02.1.1-b` Spring Security and hashing | Partial | `BCrypt` plus minimal `Spring Security` web config exist, but no sessions, JWT, or real user repository |
-| `TASK-02.1.1-c` Authentication endpoint | Partial | `POST /api/v1/auth/login` exists, but it only validates local in-memory credentials |
-| `TASK-02.2.1-a` Initial permission matrix | Not started | No permission model |
-| `TASK-02.2.1-b` Authorization by endpoint | Partial | Basic API protection exists; only login and selected actuator endpoints are public |
+| `TASK-02.1.1-a` User, role, permission entities | Done | `AppUserEntity`, `AppRoleEntity`, `AppPermissionEntity` (SQL) + V2 migration with seeded roles and permissions |
+| `TASK-02.1.1-b` Spring Security and hashing | Done | `BCrypt`, `Spring Security` stateless config, JWT filter, persistent user repository |
+| `TASK-02.1.1-c` Authentication endpoint | Done | `POST /api/v1/auth/login` returns signed JWT with roles |
+| `TASK-02.2.1-a` Initial permission matrix | Partial | Permission rows seeded in DB; no endpoint-level enforcement wired yet |
+| `TASK-02.2.1-b` Authorization by endpoint | Partial | All endpoints protected by JWT; role-based rules per endpoint not yet implemented |
 | `TASK-02.2.1-c` Permissions by report and datasource | Not started | No ACL implementation |
 | `TASK-02.3.1-a` Decoupled authentication port | Done | Port and local/AD adapters exist |
-| `TASK-03.1.1-a` Flyway migrations | Done | `Flyway` is configured and an initial operational metadata migration exists |
+| `TASK-03.1.1-a` Flyway migrations | Done | V1 operational metadata + V2 security schema both configured and applied |
 | `TASK-03.1.1-b` Repositories and base services | Partial | Only in-memory report repository plus one app service |
 | `TASK-03.1.1-c` Entity auditing | Not started | No auditing model or infrastructure |
 | `TASK-03.2.1-a` Category CRUD | Not started | No category module or endpoint |
@@ -243,16 +255,11 @@ Today the main blockers are:
 
 ## Recommended Next Implementation Slice
 
-The next pragmatic slice is:
-
-1. Complete local auth beyond the technical slice:
-   - `user/role/permission` model
-   - user persistence
-   - controlled session or JWT
-2. Implement datasource CRUD with encrypted secret storage.
-3. Replace the PostgreSQL/MySQL stubs with real JDBC adapters.
-4. Expose validation, column discovery, and preview endpoints.
-5. Then expand builder versioning and publication.
+1. **RBAC endpoint authorization** (`TASK-02.2.1-b`): wire role-based `@PreAuthorize` rules to endpoints using the permissions already seeded in DB.
+2. **Datasource CRUD** (`TASK-04.1.1-a`, `TASK-04.1.1-b`, `TASK-04.1.1-c`): JPA entity for `data_source`, service, REST endpoint, AES-256 secret encryption, `testConnection` wired.
+3. **Real PostgreSQL/MySQL connectors** (`TASK-04.2.1-a`, `TASK-04.2.1-b`): replace stubs with actual JDBC execution.
+4. **Expose validation and preview endpoints** (`TASK-06.2.1-b`).
+5. Then expand report builder versioning and publication.
 
 ## Commands Used to Verify the Snapshot
 

@@ -4,6 +4,8 @@ dependencies {
   implementation project(':reporting-application')
   implementation project(':reporting-domain')
 
+  implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
   testImplementation 'org.springframework.boot:spring-boot-starter-test'
   testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }

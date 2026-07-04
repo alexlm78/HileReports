@@ -1,6 +1,8 @@
 package dev.kreaker.hile.bootstrap.api.auth;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -12,6 +14,7 @@ import dev.kreaker.hile.application.exception.InvalidCredentialsException;
 import dev.kreaker.hile.application.port.in.AuthenticateUserUseCase;
 import dev.kreaker.hile.bootstrap.api.ArchitectureController;
 import dev.kreaker.hile.bootstrap.config.SecurityConfig;
+import dev.kreaker.hile.security.TokenProviderPort;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,11 +31,14 @@ class AuthControllerTest {
   @Autowired private MockMvc mockMvc;
 
   @MockBean private AuthenticateUserUseCase authenticateUserUseCase;
+  @MockBean private TokenProviderPort jwtTokenProvider;
 
   @Test
   void shouldAuthenticateWithValidCredentials() throws Exception {
     given(authenticateUserUseCase.authenticate(any()))
         .willReturn(new AuthenticationResult("admin", Set.of("platform_admin")));
+    given(jwtTokenProvider.generateToken(anyString(), anySet())).willReturn("test.jwt.token");
+    given(jwtTokenProvider.expirationMs()).willReturn(86400000L);
 
     mockMvc
         .perform(
@@ -48,6 +54,8 @@ class AuthControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.username").value("admin"))
         .andExpect(jsonPath("$.roles[0]").value("platform_admin"))
+        .andExpect(jsonPath("$.token").value("test.jwt.token"))
+        .andExpect(jsonPath("$.expiresInMs").value(86400000))
         .andExpect(jsonPath("$.authenticationMode").value("local"));
   }
 
