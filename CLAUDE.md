@@ -71,12 +71,25 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 
 ## Active Endpoints
 
-- `POST /api/v1/auth/login` — local credential validation (no session/token yet)
-- `GET /api/v1/architecture/modules` — architecture info
+| Method | Path | Role required |
+|---|---|---|
+| `POST` | `/api/v1/auth/login` | public |
+| `GET` | `/api/v1/architecture/modules` | authenticated |
+| `POST` | `/api/v1/datasources` | `PLATFORM_ADMIN` |
+| `GET` | `/api/v1/datasources` | `PLATFORM_ADMIN` |
+| `GET` | `/api/v1/datasources/{id}` | `PLATFORM_ADMIN` |
+| `DELETE` | `/api/v1/datasources/{id}` | `PLATFORM_ADMIN` |
+| `POST` | `/api/v1/datasources/{id}/test` | `PLATFORM_ADMIN` |
+
+## Security Notes
+
+- Default admin: `admin` / `admin123` — override immediately in non-local environments
+- `APP_JWT_SECRET`: min 32 bytes (default dev key insecure)
+- `APP_ENCRYPTION_SECRET`: AES-256-GCM key source (default dev key insecure)
+- `APP_DB_SCHEMA`: defaults to `hile_reports` (used by Flyway and Hibernate)
 
 ## Next Implementation Slice (in order)
 
-1. Complete local auth: user/role/permission model, persistent users, session or JWT
-2. Datasource CRUD with encrypted secret storage
-3. Replace PostgreSQL/MySQL connector stubs with real JDBC adapters
-4. Expose validation, column discovery, and preview endpoints
+1. Real PostgreSQL/MySQL JDBC connectors (`TASK-04.2.1-a`, `TASK-04.2.1-b`)
+2. Column discovery + preview REST endpoints (`TASK-06.1.1-a`, `TASK-06.2.1-b`)
+3. Report builder REST API backed by JPA (`TASK-07.1.1-a`, `TASK-07.1.1-b`)

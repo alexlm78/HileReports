@@ -7,7 +7,7 @@ This document gives an AI agent or a new developer a verified snapshot of the cu
 ## Last Verified Snapshot
 
 - Date: `2026-07-04`
-- Repository status: JWT-based authentication slice with persistent users, roles, and permissions
+- Repository status: RBAC URL rules + Datasource CRUD with AES-256-GCM secret encryption
 - Build status: `./gradlew test` passes
 - Scope of verification: source tree, Gradle modules, Spring Boot bootstrap, tests, and backlog alignment
 
@@ -31,6 +31,11 @@ What is already in place:
 - `JwtAuthenticationFilter` protects all non-public endpoints via `Authorization: Bearer <token>`.
 - `SecurityDataInitializer` creates the default admin user on first boot.
 - `app_role`, `app_permission`, `user_role`, `role_permission` tables seeded with permissions and three initial roles.
+- RBAC URL rules: `/api/v1/datasources/**` requires `ROLE_PLATFORM_ADMIN`.
+- Datasource CRUD: create, list, get, delete, test-connection endpoints under `/api/v1/datasources`.
+- AES-256-GCM password encryption; encrypted values stored as `enc:v1:<iv>:<ciphertext>` in `secret_ref`.
+- `ConnectorFactory` wired to stub adapters for PostgreSQL, MySQL, and Oracle.
+- `DataSourceApplicationService` builds JDBC URL, decrypts secret, calls connector on test.
 
 What is not in place yet:
 
@@ -188,8 +193,8 @@ Status legend:
 | `TASK-02.1.1-a` User, role, permission entities | Done | `AppUserEntity`, `AppRoleEntity`, `AppPermissionEntity` (SQL) + V2 migration with seeded roles and permissions |
 | `TASK-02.1.1-b` Spring Security and hashing | Done | `BCrypt`, `Spring Security` stateless config, JWT filter, persistent user repository |
 | `TASK-02.1.1-c` Authentication endpoint | Done | `POST /api/v1/auth/login` returns signed JWT with roles |
-| `TASK-02.2.1-a` Initial permission matrix | Partial | Permission rows seeded in DB; no endpoint-level enforcement wired yet |
-| `TASK-02.2.1-b` Authorization by endpoint | Partial | All endpoints protected by JWT; role-based rules per endpoint not yet implemented |
+| `TASK-02.2.1-a` Initial permission matrix | Done | Permission rows seeded in DB; role↔permission matrix in `role_permission` table |
+| `TASK-02.2.1-b` Authorization by endpoint | Done | URL-based RBAC in `SecurityConfig`; datasource endpoints require `PLATFORM_ADMIN` |
 | `TASK-02.2.1-c` Permissions by report and datasource | Not started | No ACL implementation |
 | `TASK-02.3.1-a` Decoupled authentication port | Done | Port and local/AD adapters exist |
 | `TASK-03.1.1-a` Flyway migrations | Done | V1 operational metadata + V2 security schema both configured and applied |
@@ -197,9 +202,9 @@ Status legend:
 | `TASK-03.1.1-c` Entity auditing | Not started | No auditing model or infrastructure |
 | `TASK-03.2.1-a` Category CRUD | Not started | No category module or endpoint |
 | `TASK-03.2.1-b` Tag and ownership model | Not started | No implementation |
-| `TASK-04.1.1-a` `data_source` CRUD | Not started | No datasource service or API |
-| `TASK-04.1.1-b` Secret encryption | Not started | No secret storage or encryption logic |
-| `TASK-04.1.1-c` `testConnection` | Partial | Present as stub on connector contract |
+| `TASK-04.1.1-a` `data_source` CRUD | Done | `DataSourceController` with create/list/get/delete endpoints wired to `DataSourceApplicationService` |
+| `TASK-04.1.1-b` Secret encryption | Done | `AesGcmEncryptor` (AES-256-GCM); encrypted in `secret_ref`; decrypted only for connection test |
+| `TASK-04.1.1-c` `testConnection` | Done | `POST /api/v1/datasources/{id}/test` decrypts secret and delegates to connector stub |
 | `TASK-04.2.1-a` `PostgreSqlConnector` | Partial | Stub only |
 | `TASK-04.2.1-b` `MySqlConnector` | Partial | Stub only |
 | `TASK-04.2.1-c` `OracleConnector` | Partial | Stub only |
@@ -255,11 +260,10 @@ Today the main blockers are:
 
 ## Recommended Next Implementation Slice
 
-1. **RBAC endpoint authorization** (`TASK-02.2.1-b`): wire role-based `@PreAuthorize` rules to endpoints using the permissions already seeded in DB.
-2. **Datasource CRUD** (`TASK-04.1.1-a`, `TASK-04.1.1-b`, `TASK-04.1.1-c`): JPA entity for `data_source`, service, REST endpoint, AES-256 secret encryption, `testConnection` wired.
-3. **Real PostgreSQL/MySQL connectors** (`TASK-04.2.1-a`, `TASK-04.2.1-b`): replace stubs with actual JDBC execution.
-4. **Expose validation and preview endpoints** (`TASK-06.2.1-b`).
-5. Then expand report builder versioning and publication.
+1. **Real PostgreSQL/MySQL connectors** (`TASK-04.2.1-a`, `TASK-04.2.1-b`): replace stub `testConnection` with actual JDBC pool + connection validation.
+2. **Column discovery and preview** (`TASK-06.1.1-a`, `TASK-06.2.1-a`, `TASK-06.2.1-b`): real `discoverColumns` + `executePreview` via connector, expose REST endpoints.
+3. **Report builder REST API** (`TASK-07.1.1-a`, `TASK-07.1.1-b`): expose `POST /api/v1/reports` backed by JPA repository (replace in-memory).
+4. **Permission-based ACL** (`TASK-02.2.1-c`): per-report and per-datasource access control.
 
 ## Commands Used to Verify the Snapshot
 

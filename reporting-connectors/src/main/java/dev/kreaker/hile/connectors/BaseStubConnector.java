@@ -9,7 +9,7 @@ import java.util.List;
 abstract class BaseStubConnector implements DbConnectorPort {
 
   @Override
-  public ValidationResult testConnection(String jdbcUrl, String username, String encryptedSecret) {
+  public ValidationResult testConnection(String jdbcUrl, String username, String rawPassword) {
     if (jdbcUrl == null || jdbcUrl.isBlank()) {
       return ValidationResult.failure("El jdbcUrl es obligatorio.");
     }
