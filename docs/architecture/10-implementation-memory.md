@@ -7,7 +7,7 @@ This document gives an AI agent or a new developer a verified snapshot of the cu
 ## Last Verified Snapshot
 
 - Date: `2026-07-05`
-- Repository status: EP-08 done; EP-09 done; TASK-10.1.1-a/c done; CI pipeline added (TASK-01.3.1-a)
+- Repository status: EP-08 done; EP-09 done; TASK-10.1.1-a/c done; CI pipeline added (TASK-01.3.1-a); TASK-03.2.1-b (Tag model) done
 - Build status: `./gradlew test` passes
 - Scope of verification: source tree, Gradle modules, Spring Boot bootstrap, tests, and backlog alignment
 
@@ -104,7 +104,7 @@ Current assessment:
 - `ExportJobUseCase` / `ExportJobApplicationService`: create export job, poll status, get file path.
 - `CategoryUseCase` / `CategoryApplicationService`: category CRUD with name uniqueness.
 - `NamedParamBinder`: package-private utility shared by execute and export services.
-- No use cases for auditing or tag/ownership model yet.
+- `TagUseCase` / `TagApplicationService`: tag CRUD (create with slug derivation + uniqueness, findAll, delete) and report-tag association (`setReportTags` with tag existence validation, `getReportTags`).
 
 ### `reporting-infrastructure`
 
@@ -122,10 +122,10 @@ Implemented:
 Current assessment:
 
 - The validator is intentionally simple. It allows `SELECT` and `WITH`, blocks several DDL/DML tokens and semicolons, and extracts named parameters with regex.
-- JPA adapters exist for datasource, report definition+version, report columns, report parameters, and report executions.
+- JPA adapters exist for datasource, report definition+version, report columns, report parameters, report executions, and tags.
 - User persistence fully backed by PostgreSQL and JPA.
-- JPA entities for categories (`CategoryEntity`) and exports (`ReportExportEntity`).
-- Flyway migrations include V3 (category, report_execution, report_execution_parameter, report_export tables).
+- JPA entities for categories (`CategoryEntity`), exports (`ReportExportEntity`), and tags (`TagEntity`, `ReportTagEntity`).
+- Flyway migrations: V3 (category, report_execution, report_execution_parameter, report_export); V4 (`tag` + `report_tag` with composite PK and cascade-delete FKs).
 
 ### `reporting-connectors`
 
@@ -224,7 +224,7 @@ Status legend:
 | `TASK-03.1.1-b` Repositories and base services | Done | Full JPA adapters for all entities; InMemoryReportDefinitionRepository removed |
 | `TASK-03.1.1-c` Entity auditing | Done | `AuditableEntity` @MappedSuperclass (@LastModifiedDate updatedAt, @LastModifiedBy updatedBy); `ReportDefinitionEntity` + `ReportVersionEntity` extend it; `@EnableJpaAuditing` + `AuditorAware` from SecurityContextHolder in `JpaConfig`; V3 migration adds nullable `updated_at`/`updated_by` columns |
 | `TASK-03.2.1-a` Category CRUD | Done | `CategoryEntity`, `CategoryRepositoryAdapter`, `CategoryApplicationService`, `CategoryController`; name uniqueness; `categoryId` FK on report |
-| `TASK-03.2.1-b` Tag and ownership model | Not started | No implementation |
+| `TASK-03.2.1-b` Tag and ownership model | Done | `Tag` domain record; `TagUseCase`/`TagApplicationService`; `TagEntity`+`ReportTagEntity` (composite PK, cascade delete); `TagController` (`POST/GET/DELETE /api/v1/tags`); `PUT /api/v1/reports/{id}/tags` + `GET /api/v1/reports/{id}/tags` in `ReportController`; V4 Flyway migration; slug auto-derived from name |
 | `TASK-04.1.1-a` `data_source` CRUD | Done | `DataSourceController` with create/list/get/delete endpoints wired to `DataSourceApplicationService` |
 | `TASK-04.1.1-b` Secret encryption | Done | `AesGcmEncryptor` (AES-256-GCM); encrypted in `secret_ref`; decrypted only for connection test |
 | `TASK-04.1.1-c` `testConnection` | Done | `POST /api/v1/datasources/{id}/test` decrypts secret and delegates to connector stub |
@@ -294,7 +294,8 @@ Today the main blockers are:
 
 ## Recommended Next Implementation Slice
 
-1. **Tag and ownership model** (`TASK-03.2.1-b`): many-to-many tags on reports; team ownership beyond `owner_team` string.
+1. **Tests by dialect** (`TASK-05.2.1-b`): dialect-specific `QueryValidator` tests for PostgreSQL and MySQL SQL surface.
+2. **Observability** (`TASK-10.2.1-a/b/c`): load tests, connection pool tuning, capacity baseline.
 
 ## Commands Used to Verify the Snapshot
 

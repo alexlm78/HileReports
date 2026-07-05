@@ -5,7 +5,10 @@ import dev.kreaker.hile.application.dto.PreviewResult;
 import dev.kreaker.hile.application.dto.ReportColumnView;
 import dev.kreaker.hile.application.dto.ReportDefinitionView;
 import dev.kreaker.hile.application.dto.ReportParameterView;
+import dev.kreaker.hile.application.dto.TagView;
 import dev.kreaker.hile.application.port.in.CreateReportDefinitionUseCase;
+import dev.kreaker.hile.application.port.in.TagUseCase;
+import dev.kreaker.hile.bootstrap.api.tag.SetReportTagsRequest;
 import dev.kreaker.hile.domain.report.ReportColumn;
 import dev.kreaker.hile.domain.report.ReportParameter;
 import jakarta.validation.Valid;
@@ -28,9 +31,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReportController {
 
   private final CreateReportDefinitionUseCase reportUseCase;
+  private final TagUseCase tagUseCase;
 
-  public ReportController(CreateReportDefinitionUseCase reportUseCase) {
+  public ReportController(CreateReportDefinitionUseCase reportUseCase, TagUseCase tagUseCase) {
     this.reportUseCase = reportUseCase;
+    this.tagUseCase = tagUseCase;
   }
 
   @PostMapping
@@ -136,5 +141,18 @@ public class ReportController {
   @GetMapping("/{id}/parameters")
   public ResponseEntity<List<ReportParameterView>> getParameters(@PathVariable UUID id) {
     return ResponseEntity.ok(reportUseCase.getParameters(id));
+  }
+
+  @PutMapping("/{id}/tags")
+  @PreAuthorize("@reportSecurity.isOwnerOrAdmin(#id, authentication)")
+  public ResponseEntity<List<TagView>> setTags(
+      @PathVariable UUID id, @Valid @RequestBody SetReportTagsRequest request) {
+    tagUseCase.setReportTags(id, request.tagIds());
+    return ResponseEntity.ok(tagUseCase.getReportTags(id));
+  }
+
+  @GetMapping("/{id}/tags")
+  public ResponseEntity<List<TagView>> getTags(@PathVariable UUID id) {
+    return ResponseEntity.ok(tagUseCase.getReportTags(id));
   }
 }

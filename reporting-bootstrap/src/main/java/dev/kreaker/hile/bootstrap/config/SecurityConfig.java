@@ -1,6 +1,7 @@
 package dev.kreaker.hile.bootstrap.config;
 
 import static org.springframework.http.HttpMethod.DELETE;
+import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
@@ -66,6 +67,13 @@ public class SecurityConfig {
                     // Catalog and exports — REPORT_EXECUTE permission
                     .requestMatchers("/api/v1/catalog/**", "/api/v1/exports/**")
                     .hasAnyRole("PLATFORM_ADMIN", "REPORT_DESIGNER", "REPORT_VIEWER")
+                    // Tag management — mutations are PLATFORM_ADMIN; reads authenticated
+                    .requestMatchers(POST, "/api/v1/tags")
+                    .hasRole("PLATFORM_ADMIN")
+                    .requestMatchers(DELETE, "/api/v1/tags/**")
+                    .hasRole("PLATFORM_ADMIN")
+                    .requestMatchers(GET, "/api/v1/tags")
+                    .authenticated()
                     .anyRequest()
                     .authenticated())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

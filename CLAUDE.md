@@ -101,6 +101,11 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 | `POST` | `/api/v1/reports/{id}/export` | authenticated |
 | `GET` | `/api/v1/exports/{id}` | authenticated |
 | `GET` | `/api/v1/exports/{id}/download` | authenticated |
+| `POST` | `/api/v1/tags` | `PLATFORM_ADMIN` |
+| `GET` | `/api/v1/tags` | authenticated |
+| `DELETE` | `/api/v1/tags/{id}` | `PLATFORM_ADMIN` |
+| `PUT` | `/api/v1/reports/{id}/tags` | owner or `PLATFORM_ADMIN` |
+| `GET` | `/api/v1/reports/{id}/tags` | authenticated |
 
 ## Security Notes
 
@@ -111,4 +116,4 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 
 ## Next Implementation Slice (in order)
 
-1. Tag and ownership model (`TASK-03.2.1-b`)
+1. Tests by dialect: dialect-specific `QueryValidator` cases for PostgreSQL and MySQL (`TASK-05.2.1-b`)
