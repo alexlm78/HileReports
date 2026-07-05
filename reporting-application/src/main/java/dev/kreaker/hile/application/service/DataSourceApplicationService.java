@@ -131,6 +131,23 @@ public class DataSourceApplicationService implements DataSourceUseCase {
     return new PreviewResult(columns, rows);
   }
 
+  @Override
+  public PreviewResult executeWithParams(
+      UUID dataSourceId, String sqlText, List<Object> paramValues, int pageSize, int offset) {
+    DataSource ds =
+        repository
+            .findById(dataSourceId)
+            .orElseThrow(() -> new DataSourceNotFoundException(dataSourceId));
+    String rawPassword = encryption.decrypt(ds.secretRef());
+    String jdbcUrl = buildJdbcUrl(ds.dbType(), ds.host(), ds.port(), ds.databaseOrService());
+    DbConnectorPort connector = connectors.get(ds.dbType());
+    if (connector == null) {
+      throw new IllegalStateException("No connector available for type: " + ds.dbType());
+    }
+    return connector.executeWithParams(
+        jdbcUrl, ds.username(), rawPassword, sqlText, paramValues, pageSize, offset);
+  }
+
   private DataSourceView toView(DataSource ds) {
     return new DataSourceView(
         ds.id(),

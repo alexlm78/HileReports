@@ -64,6 +64,7 @@ public class ReportDefinitionApplicationService implements CreateReportDefinitio
             ReportStatus.DRAFT,
             command.sqlText(),
             "PENDING",
+            null,
             command.createdBy(),
             OffsetDateTime.now());
     return toView(repository.save(draft, defaultMaxRows, defaultTimeoutSeconds));

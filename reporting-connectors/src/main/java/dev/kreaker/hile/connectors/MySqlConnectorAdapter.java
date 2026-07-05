@@ -1,6 +1,7 @@
 package dev.kreaker.hile.connectors;
 
 import dev.kreaker.hile.application.dto.ColumnMetadata;
+import dev.kreaker.hile.application.dto.PreviewResult;
 import dev.kreaker.hile.application.dto.ValidationResult;
 import dev.kreaker.hile.application.port.out.DbConnectorPort;
 import dev.kreaker.hile.domain.datasource.DataSourceType;
@@ -64,6 +65,42 @@ public class MySqlConnectorAdapter implements DbConnectorPort {
       }
     } catch (SQLException e) {
       throw new RuntimeException("Preview execution failed: " + e.getMessage(), e);
+    }
+  }
+
+  @Override
+  public PreviewResult executeWithParams(
+      String jdbcUrl,
+      String username,
+      String rawPassword,
+      String sqlText,
+      List<Object> paramValues,
+      int pageSize,
+      int offset) {
+    String pagedSql = sqlText + " LIMIT ? OFFSET ?";
+    try (Connection conn = DriverManager.getConnection(jdbcUrl, username, rawPassword);
+        PreparedStatement ps = conn.prepareStatement(pagedSql)) {
+      int idx = 1;
+      for (Object val : paramValues) {
+        ps.setObject(idx++, val);
+      }
+      ps.setInt(idx++, pageSize);
+      ps.setInt(idx, offset);
+      try (ResultSet rs = ps.executeQuery()) {
+        List<ColumnMetadata> columns = extractColumnMetadata(rs.getMetaData());
+        int cols = columns.size();
+        List<List<Object>> rows = new ArrayList<>();
+        while (rs.next()) {
+          List<Object> row = new ArrayList<>(cols);
+          for (int i = 1; i <= cols; i++) {
+            row.add(rs.getObject(i));
+          }
+          rows.add(row);
+        }
+        return new PreviewResult(columns, rows);
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException("Query execution failed: " + e.getMessage(), e);
     }
   }
 

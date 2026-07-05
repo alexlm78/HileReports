@@ -1,6 +1,7 @@
 package dev.kreaker.hile.connectors;
 
 import dev.kreaker.hile.application.dto.ColumnMetadata;
+import dev.kreaker.hile.application.dto.PreviewResult;
 import dev.kreaker.hile.application.dto.ValidationResult;
 import dev.kreaker.hile.application.port.out.DbConnectorPort;
 import dev.kreaker.hile.domain.datasource.DataSourceType;
@@ -26,6 +27,20 @@ abstract class BaseStubConnector implements DbConnectorPort {
   public List<List<Object>> executePreview(
       String jdbcUrl, String username, String rawPassword, String sqlText, int limit) {
     return List.of(List.of(supportsTypeName(), "preview"));
+  }
+
+  @Override
+  public PreviewResult executeWithParams(
+      String jdbcUrl,
+      String username,
+      String rawPassword,
+      String sqlText,
+      List<Object> paramValues,
+      int pageSize,
+      int offset) {
+    return new PreviewResult(
+        List.of(new ColumnMetadata("sample_column", "sample_column", "string")),
+        List.of(List.of(supportsTypeName(), "result")));
   }
 
   protected abstract String supportsTypeName();

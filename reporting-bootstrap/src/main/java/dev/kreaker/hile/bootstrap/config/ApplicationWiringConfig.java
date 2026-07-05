@@ -3,6 +3,7 @@ package dev.kreaker.hile.bootstrap.config;
 import dev.kreaker.hile.application.port.in.AuthenticateUserUseCase;
 import dev.kreaker.hile.application.port.in.CreateReportDefinitionUseCase;
 import dev.kreaker.hile.application.port.in.DataSourceUseCase;
+import dev.kreaker.hile.application.port.in.ExecuteReportUseCase;
 import dev.kreaker.hile.application.port.out.AuthenticationProviderPort;
 import dev.kreaker.hile.application.port.out.DataSourceRepositoryPort;
 import dev.kreaker.hile.application.port.out.DbConnectorPort;
@@ -10,10 +11,12 @@ import dev.kreaker.hile.application.port.out.PasswordEncryptionPort;
 import dev.kreaker.hile.application.port.out.QueryValidatorPort;
 import dev.kreaker.hile.application.port.out.ReportColumnRepositoryPort;
 import dev.kreaker.hile.application.port.out.ReportDefinitionRepository;
+import dev.kreaker.hile.application.port.out.ReportExecutionRepository;
 import dev.kreaker.hile.application.port.out.ReportParameterRepositoryPort;
 import dev.kreaker.hile.application.port.out.UserRepositoryPort;
 import dev.kreaker.hile.application.service.AuthenticationApplicationService;
 import dev.kreaker.hile.application.service.DataSourceApplicationService;
+import dev.kreaker.hile.application.service.ExecuteReportApplicationService;
 import dev.kreaker.hile.application.service.ReportDefinitionApplicationService;
 import dev.kreaker.hile.security.AdAuthenticationProviderStub;
 import dev.kreaker.hile.security.LocalAuthenticationProviderAdapter;
@@ -74,5 +77,18 @@ public class ApplicationWiringConfig {
         reportParameterRepositoryPort,
         maxRows,
         timeoutSeconds);
+  }
+
+  @Bean
+  ExecuteReportUseCase executeReportUseCase(
+      ReportDefinitionRepository reportDefinitionRepository,
+      ReportParameterRepositoryPort reportParameterRepositoryPort,
+      DataSourceUseCase dataSourceUseCase,
+      ReportExecutionRepository reportExecutionRepository) {
+    return new ExecuteReportApplicationService(
+        reportDefinitionRepository,
+        reportParameterRepositoryPort,
+        dataSourceUseCase,
+        reportExecutionRepository);
   }
 }

@@ -6,8 +6,8 @@ This document gives an AI agent or a new developer a verified snapshot of the cu
 
 ## Last Verified Snapshot
 
-- Date: `2026-07-04`
-- Repository status: Catalog endpoint + report ownership ACL via @PreAuthorize; R1 builder path complete
+- Date: `2026-07-05`
+- Repository status: Parameterized execution + execution history persisted; R2 FEAT-08.2 complete
 - Build status: `./gradlew test` passes
 - Scope of verification: source tree, Gradle modules, Spring Boot bootstrap, tests, and backlog alignment
 
@@ -50,14 +50,16 @@ What is already in place:
 - `InMemoryReportDefinitionRepository` removed; replaced by `ReportDefinitionRepositoryAdapter` (JPA).
 - `GET /api/v1/catalog` — returns PUBLISHED reports only; optional `?name=` case-insensitive substring filter; ordered by `created_at DESC`.
 - `ReportSecurityGuard` — `@Component("reportSecurity")` that checks report ownership or `ROLE_PLATFORM_ADMIN`. Used via `@PreAuthorize("@reportSecurity.isOwnerOrAdmin(#id, authentication)")` on publish/unpublish/preview/columns/parameters endpoints.
+- `POST /api/v1/reports/{id}/execute` — executes a PUBLISHED report with optional parameter map and pagination (`page`, `pageSize`). Named params (`:paramName`) in SQL text substituted with typed values from `report_parameter` metadata. Appends `LIMIT ? OFFSET ?` for pagination (PostgreSQL/MySQL). Persists `report_execution` + `report_execution_parameter` rows with COMPLETED or FAILED status, duration, and row count. Returns `ExecutionResultView` with `executionId`, `correlationId`, `columns`, `rows`, `rowCount`, `durationMs`, `page`, `pageSize`.
+- `ReportDefinition` domain record gained `currentVersionId UUID` field (used internally by execution layer).
 
 What is not in place yet:
 
-- No report publication, catalog, execution, auditing, or exports.
 - No frontend module.
-- No per-report or per-datasource ACL.
-- No column/parameter configuration for report versions.
+- No per-datasource ACL.
 - Oracle connector still a stub (no freely distributable JDBC driver on Maven Central).
+- No category CRUD or assignment to reports.
+- No async CSV/XLSX export.
 
 ## Verified Implementation by Module
 
@@ -92,9 +94,9 @@ Implemented:
 
 Current assessment:
 
-- The only implemented use case is `createDraft`.
-- `createDraft` validates SQL through the validator port and persists a draft report through the repository port.
-- There are no use cases for login, datasource management, preview orchestration, publish/unpublish, catalog, execution, auditing, or exports.
+- Full report lifecycle use cases: createDraft, findById, findAll, runPreview, publish, unpublish, upsertColumns, getColumns, upsertParameters, getParameters, getCatalog.
+- `ExecuteReportUseCase` with named-param binding, pagination, and execution history persistence.
+- No use cases for auditing, exports, or category management yet.
 
 ### `reporting-infrastructure`
 
@@ -112,9 +114,9 @@ Implemented:
 Current assessment:
 
 - The validator is intentionally simple. It allows `SELECT` and `WITH`, blocks several DDL/DML tokens and semicolons, and extracts named parameters with regex.
-- The report repository is still in-memory only.
-- User persistence is now fully backed by PostgreSQL and JPA.
-- No `JPA` entities for report definitions, datasources, or categories yet.
+- JPA adapters exist for datasource, report definition+version, report columns, report parameters, and report executions.
+- User persistence fully backed by PostgreSQL and JPA.
+- No JPA entities for categories yet.
 
 ### `reporting-connectors`
 
@@ -237,7 +239,10 @@ Status legend:
 | `TASK-07.2.1-a` Configure columns | Done | `PUT /api/v1/reports/{id}/columns` — replaces all columns for current version in `report_column` |
 | `TASK-07.2.1-b` Configure parameters | Done | `PUT /api/v1/reports/{id}/parameters` — replaces all params in `report_parameter` |
 | `TASK-07.2.1-c` Publish only after successful preview | Done | `POST /{id}/preview` updates `report_version.preview_status=VALID`; publish rejects if not VALID |
-| `EP-08` Catalog and execution | Partial | Catalog listing + ownership ACL done; execution not started |
+| `TASK-08.2.1-a` Resolve dynamic filters | Done | Named param substitution `:name`→`?` with type coercion from `report_parameter.parameter_type` |
+| `TASK-08.2.1-b` Execute paginated query | Done | `LIMIT ? OFFSET ?` appended; `DbConnectorPort.executeWithParams` in PG/MySQL adapters |
+| `TASK-08.2.1-c` Persist execution history | Done | `report_execution` + `report_execution_parameter` via JPA; COMPLETED/FAILED status + duration |
+| `EP-08` Catalog and execution | Done | Catalog listing, ownership ACL, and parameterized execution all done |
 | `EP-09` Exports | Not started | Placeholder job only |
 | `EP-10` Observability and hardening | Partial | Actuator exposure exists, rest missing |
 
@@ -272,9 +277,8 @@ Today the main blockers are:
 
 ## Recommended Next Implementation Slice
 
-1. **Parameterized execution** (`TASK-08.2.1-a`, `TASK-08.2.1-b`, `TASK-08.2.1-c`): resolve `report_parameter` bindings, execute paginated query, persist `report_execution` + `report_execution_parameter`.
-2. **Category CRUD** (`TASK-03.2.1-a`): `POST/GET/DELETE /api/v1/categories`, assign `category_id` when creating reports.
-3. **CSV/XLSX async export** (`TASK-09.1.1-a`, `TASK-09.2.1-a`, `TASK-09.2.1-b`): POST export job, poll status, stream file.
+1. **Category CRUD** (`TASK-03.2.1-a`): `POST/GET/DELETE /api/v1/categories`, assign `category_id` when creating reports.
+2. **CSV/XLSX async export** (`TASK-09.1.1-a`, `TASK-09.2.1-a`, `TASK-09.2.1-b`): POST export job, poll status, stream file.
 
 ## Commands Used to Verify the Snapshot
 

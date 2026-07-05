@@ -23,4 +23,7 @@ public interface DataSourceUseCase {
   List<ColumnMetadata> discoverColumns(UUID dataSourceId, String sqlText);
 
   PreviewResult executePreview(UUID dataSourceId, String sqlText, int maxRows);
+
+  PreviewResult executeWithParams(
+      UUID dataSourceId, String sqlText, List<Object> paramValues, int pageSize, int offset);
 }

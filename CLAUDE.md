@@ -93,6 +93,7 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 | `PUT` | `/api/v1/reports/{id}/parameters` | authenticated |
 | `GET` | `/api/v1/reports/{id}/parameters` | authenticated |
 | `GET` | `/api/v1/catalog` | authenticated |
+| `POST` | `/api/v1/reports/{id}/execute` | authenticated |
 
 ## Security Notes
 
@@ -103,6 +104,5 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 
 ## Next Implementation Slice (in order)
 
-1. Parameterized report execution + execution history (`TASK-08.2.1-a`, `TASK-08.2.1-b`, `TASK-08.2.1-c`)
-2. Category CRUD + assign reports to categories (`TASK-03.2.1-a`)
-3. CSV/XLSX export async jobs (`TASK-09.1.1-a`, `TASK-09.2.1-a`, `TASK-09.2.1-b`)
+1. Category CRUD + assign reports to categories (`TASK-03.2.1-a`)
+2. CSV/XLSX export async jobs (`TASK-09.1.1-a`, `TASK-09.2.1-a`, `TASK-09.2.1-b`)

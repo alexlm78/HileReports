@@ -145,6 +145,7 @@ public class ReportDefinitionRepositoryAdapter implements ReportDefinitionReposi
         ReportStatus.valueOf(e.getStatus()),
         sqlText,
         previewStatus,
+        e.getCurrentVersionId(),
         e.getCreatedBy(),
         e.getCreatedAt());
   }
