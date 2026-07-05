@@ -111,4 +111,4 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 
 ## Next Implementation Slice (in order)
 
-1. Per-report / per-datasource ACL (`TASK-02.2.1-c`): ownership-based access control beyond current `ReportSecurityGuard`
+1. Publish executable artifact via CI: Docker image or fat JAR upload (`TASK-01.3.1-b`)

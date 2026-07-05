@@ -1,5 +1,7 @@
 package dev.kreaker.hile.bootstrap.config;
 
+import static org.springframework.http.HttpMethod.DELETE;
+import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 import dev.kreaker.hile.bootstrap.security.JwtAuthenticationFilter;
@@ -34,29 +36,36 @@ public class SecurityConfig {
         .authorizeHttpRequests(
             authorize ->
                 authorize
+                    // Public
                     .requestMatchers(
                         "/api/v1/auth/login",
                         "/actuator/health",
                         "/actuator/info",
                         "/actuator/prometheus")
                     .permitAll()
+                    // Datasource management — PLATFORM_ADMIN only
                     .requestMatchers("/api/v1/datasources/**")
                     .hasRole("PLATFORM_ADMIN")
-                    .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/categories")
+                    // Category management — PLATFORM_ADMIN only for mutations
+                    .requestMatchers(POST, "/api/v1/categories")
                     .hasRole("PLATFORM_ADMIN")
-                    .requestMatchers(
-                        org.springframework.http.HttpMethod.DELETE, "/api/v1/categories/**")
+                    .requestMatchers(DELETE, "/api/v1/categories/**")
                     .hasRole("PLATFORM_ADMIN")
                     .requestMatchers("/api/v1/categories/**")
                     .authenticated()
-                    .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/reports")
+                    // Report creation — PLATFORM_ADMIN or REPORT_DESIGNER
+                    .requestMatchers(POST, "/api/v1/reports")
                     .hasAnyRole("PLATFORM_ADMIN", "REPORT_DESIGNER")
+                    // Report execution and export — REPORT_EXECUTE permission
+                    // (PLATFORM_ADMIN, REPORT_DESIGNER, REPORT_VIEWER)
+                    .requestMatchers(POST, "/api/v1/reports/*/execute", "/api/v1/reports/*/export")
+                    .hasAnyRole("PLATFORM_ADMIN", "REPORT_DESIGNER", "REPORT_VIEWER")
+                    // All other report operations (design) — PLATFORM_ADMIN or REPORT_DESIGNER
                     .requestMatchers("/api/v1/reports/**")
-                    .authenticated()
-                    .requestMatchers("/api/v1/catalog/**")
-                    .authenticated()
-                    .requestMatchers("/api/v1/exports/**")
-                    .authenticated()
+                    .hasAnyRole("PLATFORM_ADMIN", "REPORT_DESIGNER")
+                    // Catalog and exports — REPORT_EXECUTE permission
+                    .requestMatchers("/api/v1/catalog/**", "/api/v1/exports/**")
+                    .hasAnyRole("PLATFORM_ADMIN", "REPORT_DESIGNER", "REPORT_VIEWER")
                     .anyRequest()
                     .authenticated())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

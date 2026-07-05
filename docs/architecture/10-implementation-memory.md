@@ -218,7 +218,7 @@ Status legend:
 | `TASK-02.1.1-c` Authentication endpoint | Done | `POST /api/v1/auth/login` returns signed JWT with roles |
 | `TASK-02.2.1-a` Initial permission matrix | Done | Permission rows seeded in DB; role↔permission matrix in `role_permission` table |
 | `TASK-02.2.1-b` Authorization by endpoint | Done | URL-based RBAC in `SecurityConfig`; datasource endpoints require `PLATFORM_ADMIN` |
-| `TASK-02.2.1-c` Permissions by report and datasource | Not started | No ACL implementation |
+| `TASK-02.2.1-c` Permissions by report and datasource | Done | Execute/export gated to REPORT_EXECUTE roles (PLATFORM_ADMIN, REPORT_DESIGNER, REPORT_VIEWER); design ops (/reports/**) restricted to REPORT_DESIGNER+; catalog + exports same gate; `canExecute(auth)` on `ReportSecurityGuard` |
 | `TASK-02.3.1-a` Decoupled authentication port | Done | Port and local/AD adapters exist |
 | `TASK-03.1.1-a` Flyway migrations | Done | V1 operational metadata + V2 security schema both configured and applied |
 | `TASK-03.1.1-b` Repositories and base services | Partial | Only in-memory report repository plus one app service |
@@ -291,7 +291,7 @@ Today the main blockers are:
 
 ## Recommended Next Implementation Slice
 
-1. **Per-resource ACL** (`TASK-02.2.1-c`): ownership-based access control for reports and datasources; extend `ReportSecurityGuard` or add `@PreAuthorize` guards on datasource endpoints.
+1. **Publish executable artifact** (`TASK-01.3.1-b`): extend CI to build and publish Docker image or fat JAR.
 
 ## Commands Used to Verify the Snapshot
 
