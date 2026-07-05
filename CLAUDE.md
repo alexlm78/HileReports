@@ -123,5 +123,4 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 
 ## Next Implementation Slice (in order)
 
-1. OpenAPI/Swagger documentation — add `springdoc-openapi-starter-webmvc-ui`; annotate controllers
-2. AD authentication (`TASK-02.3.1-b`) — deferred until live LDAP/AD is available for testing
+1. AD authentication (`TASK-02.3.1-b`) — deferred until live LDAP/AD is available for testing

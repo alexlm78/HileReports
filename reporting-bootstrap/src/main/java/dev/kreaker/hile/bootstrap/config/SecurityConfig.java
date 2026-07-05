@@ -42,7 +42,10 @@ public class SecurityConfig {
                         "/api/v1/auth/login",
                         "/actuator/health",
                         "/actuator/info",
-                        "/actuator/prometheus")
+                        "/actuator/prometheus",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/v3/api-docs/**")
                     .permitAll()
                     // Datasource management — PLATFORM_ADMIN only
                     .requestMatchers("/api/v1/datasources/**")

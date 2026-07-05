@@ -298,7 +298,10 @@ Today the main blockers are:
 ## Recommended Next Implementation Slice
 
 1. **AD authentication** (`TASK-02.3.1-b`): deferred — requires live AD/LDAP environment for testing.
-2. **Scheduled export cleanup job** (`reporting-jobs`): currently a placeholder; implement actual file deletion for expired exports.
+
+## OpenAPI / Swagger UI — Done
+
+`springdoc-openapi-starter-webmvc-ui:2.6.0` added to `reporting-bootstrap`. `OpenApiConfig` bean configures API info (title, version, contact) and a global `bearerAuth` JWT security scheme so every endpoint shows the Authorize button. `SecurityConfig` whitelists `/swagger-ui/**`, `/swagger-ui.html`, `/v3/api-docs/**` as public. `springdoc.*` config in `application.yml` sets paths, alpha sorting, and request duration display. Swagger UI available at `http://localhost:8080/swagger-ui.html`; JSON spec at `http://localhost:8080/v3/api-docs`.
 
 ## Report Update Endpoint — Done
 

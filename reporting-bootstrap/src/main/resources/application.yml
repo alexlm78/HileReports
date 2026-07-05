@@ -79,3 +79,13 @@ hile:
     rate-limit:
       execute-rpm: ${APP_RATE_LIMIT_EXECUTE_RPM:30}
       enabled: ${APP_RATE_LIMIT_ENABLED:true}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: alpha
+    tags-sorter: alpha
+    display-request-duration: true
