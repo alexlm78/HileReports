@@ -234,7 +234,7 @@ Status legend:
 | `TASK-04.2.1-d` `ConnectorFactory` | Done | Factory wired to real adapters; discover/preview exposed via REST |
 | `TASK-05.1.1-a` `QueryValidator` | Partial | Simple implementation exists |
 | `TASK-05.1.1-b` Block DDL, DML, multiple statements | Partial | Basic token blocking exists |
-| `TASK-05.1.1-c` Detect dangerous patterns and comments | Not started | No comment/pattern analysis found |
+| `TASK-05.1.1-c` Detect dangerous patterns and comments | Done | Comment stripping (`--` + `/* */`) before validation; 15 dangerous patterns blocked (sleep, benchmark, waitfor, load_file, into outfile/dumpfile, information_schema, pg_catalog, pg_read_file, pg_ls_dir, xp_cmdshell, exec, execute); 26 tests |
 | `TASK-05.1.1-d` Extract named parameters | Done | Regex-based extraction implemented |
 | `TASK-05.2.1-a` Matrix of valid and invalid cases | Partial | Only a few tests exist |
 | `TASK-05.2.1-b` Tests by dialect | Not started | No dialect-specific tests |
@@ -291,7 +291,7 @@ Today the main blockers are:
 
 ## Recommended Next Implementation Slice
 
-1. **Query validator hardening** (`TASK-05.1.1-c`): strip SQL comments before validation, block dangerous patterns (stacked queries, system functions, information_schema access).
+1. **Entity auditing** (`TASK-03.1.1-c`): JPA `@EntityListeners` / Spring Data `AuditorAware` to auto-populate `created_at`, `updated_at`, `created_by` on key entities.
 
 ## Commands Used to Verify the Snapshot
 

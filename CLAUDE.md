@@ -111,4 +111,4 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 
 ## Next Implementation Slice (in order)
 
-1. Query validator hardening: dangerous pattern detection, SQL comment stripping (`TASK-05.1.1-c`)
+1. Entity auditing: `created_at`, `updated_at`, `created_by` on JPA entities (`TASK-03.1.1-c`)
