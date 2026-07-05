@@ -7,7 +7,7 @@ This document gives an AI agent or a new developer a verified snapshot of the cu
 ## Last Verified Snapshot
 
 - Date: `2026-07-04`
-- Repository status: RBAC URL rules + Datasource CRUD with AES-256-GCM secret encryption
+- Repository status: Real JDBC connectors (PostgreSQL/MySQL) + discover/preview endpoints + report builder REST API backed by JPA
 - Build status: `./gradlew test` passes
 - Scope of verification: source tree, Gradle modules, Spring Boot bootstrap, tests, and backlog alignment
 
@@ -35,15 +35,21 @@ What is already in place:
 - Datasource CRUD: create, list, get, delete, test-connection endpoints under `/api/v1/datasources`.
 - AES-256-GCM password encryption; encrypted values stored as `enc:v1:<iv>:<ciphertext>` in `secret_ref`.
 - `ConnectorFactory` wired to stub adapters for PostgreSQL, MySQL, and Oracle.
-- `DataSourceApplicationService` builds JDBC URL, decrypts secret, calls connector on test.
+- `DataSourceApplicationService` builds JDBC URL, decrypts secret, calls connector for test/discover/preview.
+- `POST /api/v1/datasources/{id}/discover` — discovers columns from SQL text against real DB.
+- `POST /api/v1/datasources/{id}/preview` — executes SQL against real DB, returns columns + rows (capped by `hile.reports.preview.max-rows`).
+- Report builder: `POST /api/v1/reports` (PLATFORM_ADMIN or REPORT_DESIGNER), `GET /api/v1/reports`, `GET /api/v1/reports/{id}`.
+- Report creation persists `report_definition` + `report_version` atomically in one `@Transactional` call via `ReportDefinitionRepositoryAdapter`.
+- `ReportVersionEntity` stores SQL text, SHA-256 hash, validation/preview status, max_rows, timeout_seconds, execution_mode.
+- `InMemoryReportDefinitionRepository` removed; replaced by `ReportDefinitionRepositoryAdapter` (JPA).
 
 What is not in place yet:
 
-- No application repositories backed by PostgreSQL or `JPA` entities yet.
-- No datasource CRUD.
-- No real preview against databases.
 - No report publication, catalog, execution, auditing, or exports.
 - No frontend module.
+- No per-report or per-datasource ACL.
+- No column/parameter configuration for report versions.
+- Oracle connector still a stub (no freely distributable JDBC driver on Maven Central).
 
 ## Verified Implementation by Module
 
@@ -107,18 +113,16 @@ Current assessment:
 Implemented:
 
 - `ConnectorFactory`
-- `PostgreSqlConnectorAdapter`
-- `MySqlConnectorAdapter`
-- `OracleConnectorAdapter`
-- Shared `BaseStubConnector`
+- `PostgreSqlConnectorAdapter` — real JDBC via `DriverManager`
+- `MySqlConnectorAdapter` — real JDBC via `DriverManager`
+- `OracleConnectorAdapter` — still a stub (no Oracle JDBC driver added)
+- Shared `BaseStubConnector` (used by Oracle only now)
 
 Current assessment:
 
-- All connector adapters are stubs.
-- `testConnection` only validates that `jdbcUrl` is not blank.
-- `discoverColumns` returns sample metadata.
-- `executePreview` returns a fake sample row.
-- No real JDBC connectivity, pooling, dialect handling, limits, or error mapping is implemented.
+- PostgreSQL and MySQL connectors use `DriverManager.getConnection` for `testConnection`, `discoverColumns` (executes with `maxRows=1`, reads `ResultSetMetaData`), and `executePreview` (executes with `setMaxRows(limit)`).
+- `DbConnectorPort.discoverColumns` and `executePreview` now take JDBC connection params (URL, username, rawPassword).
+- JDBC drivers added as `runtimeOnly` in `reporting-connectors/build.gradle`: `org.postgresql:postgresql`, `com.mysql:mysql-connector-j`.
 
 ### `reporting-security`
 
@@ -205,22 +209,22 @@ Status legend:
 | `TASK-04.1.1-a` `data_source` CRUD | Done | `DataSourceController` with create/list/get/delete endpoints wired to `DataSourceApplicationService` |
 | `TASK-04.1.1-b` Secret encryption | Done | `AesGcmEncryptor` (AES-256-GCM); encrypted in `secret_ref`; decrypted only for connection test |
 | `TASK-04.1.1-c` `testConnection` | Done | `POST /api/v1/datasources/{id}/test` decrypts secret and delegates to connector stub |
-| `TASK-04.2.1-a` `PostgreSqlConnector` | Partial | Stub only |
-| `TASK-04.2.1-b` `MySqlConnector` | Partial | Stub only |
-| `TASK-04.2.1-c` `OracleConnector` | Partial | Stub only |
-| `TASK-04.2.1-d` `ConnectorFactory` | Partial | Factory exists, but not wired to real adapters or API |
+| `TASK-04.2.1-a` `PostgreSqlConnector` | Done | Real JDBC testConnection, discoverColumns, executePreview |
+| `TASK-04.2.1-b` `MySqlConnector` | Done | Real JDBC testConnection, discoverColumns, executePreview |
+| `TASK-04.2.1-c` `OracleConnector` | Partial | Stub only — no Oracle JDBC driver on Maven Central |
+| `TASK-04.2.1-d` `ConnectorFactory` | Done | Factory wired to real adapters; discover/preview exposed via REST |
 | `TASK-05.1.1-a` `QueryValidator` | Partial | Simple implementation exists |
 | `TASK-05.1.1-b` Block DDL, DML, multiple statements | Partial | Basic token blocking exists |
 | `TASK-05.1.1-c` Detect dangerous patterns and comments | Not started | No comment/pattern analysis found |
 | `TASK-05.1.1-d` Extract named parameters | Done | Regex-based extraction implemented |
 | `TASK-05.2.1-a` Matrix of valid and invalid cases | Partial | Only a few tests exist |
 | `TASK-05.2.1-b` Tests by dialect | Not started | No dialect-specific tests |
-| `TASK-06.1.1-a` `discoverColumns` | Partial | Stub implementation only |
-| `TASK-06.1.1-b` Standardize output types | Partial | `ColumnMetadata` exists, types are sample strings |
-| `TASK-06.2.1-a` `executePreview` with limits | Partial | Stub implementation only |
-| `TASK-06.2.1-b` Preview endpoint | Not started | No preview controller |
-| `TASK-07.1.1-a` `ReportDefinitionService` | Partial | Draft creation only |
-| `TASK-07.1.1-b` Save draft and create new version | Partial | Draft save exists, versioning does not |
+| `TASK-06.1.1-a` `discoverColumns` | Done | Real JDBC via `ResultSetMetaData` for PG/MySQL |
+| `TASK-06.1.1-b` Standardize output types | Done | `ColumnMetadata(sourceName, label, dataType)` with driver-native type name |
+| `TASK-06.2.1-a` `executePreview` with limits | Done | Real JDBC with `setMaxRows(limit)` for PG/MySQL |
+| `TASK-06.2.1-b` Preview endpoint | Done | `POST /api/v1/datasources/{id}/preview` + discover endpoint |
+| `TASK-07.1.1-a` `ReportDefinitionService` | Done | Create, findById, findAll wired to JPA |
+| `TASK-07.1.1-b` Save draft and create new version | Done | Adapter saves report_definition + report_version atomically |
 | `TASK-07.1.1-c` Publish and unpublish reports | Not started | No publish flow |
 | `TASK-07.2.1-a` Configure columns | Not started | No column config persisted |
 | `TASK-07.2.1-b` Configure parameters | Not started | No parameter config persisted |
@@ -260,10 +264,10 @@ Today the main blockers are:
 
 ## Recommended Next Implementation Slice
 
-1. **Real PostgreSQL/MySQL connectors** (`TASK-04.2.1-a`, `TASK-04.2.1-b`): replace stub `testConnection` with actual JDBC pool + connection validation.
-2. **Column discovery and preview** (`TASK-06.1.1-a`, `TASK-06.2.1-a`, `TASK-06.2.1-b`): real `discoverColumns` + `executePreview` via connector, expose REST endpoints.
-3. **Report builder REST API** (`TASK-07.1.1-a`, `TASK-07.1.1-b`): expose `POST /api/v1/reports` backed by JPA repository (replace in-memory).
-4. **Permission-based ACL** (`TASK-02.2.1-c`): per-report and per-datasource access control.
+1. **Permission-based ACL** (`TASK-02.2.1-c`): per-report and per-datasource ownership/access control — currently any authenticated user can read all reports.
+2. **Report column + parameter configuration** (`TASK-07.2.1-a`, `TASK-07.2.1-b`): persist column visibility/order and named parameter definitions from `report_column` and `report_parameter` tables.
+3. **Publish/unpublish flow** (`TASK-07.1.1-c`): `PATCH /api/v1/reports/{id}/publish` — transitions DRAFT → PUBLISHED, validates preview status.
+4. **Category CRUD** (`TASK-03.2.1-a`): `POST /api/v1/categories`, assign reports to categories.
 
 ## Commands Used to Verify the Snapshot
 

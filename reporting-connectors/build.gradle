@@ -3,4 +3,6 @@ description = 'reporting-connectors'
 dependencies {
   implementation project(':reporting-application')
   implementation project(':reporting-domain')
+  runtimeOnly 'org.postgresql:postgresql'
+  runtimeOnly 'com.mysql:mysql-connector-j'
 }

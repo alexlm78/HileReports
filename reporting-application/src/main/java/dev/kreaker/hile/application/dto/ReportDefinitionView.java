@@ -1,9 +1,10 @@
-package dev.kreaker.hile.domain.report;
+package dev.kreaker.hile.application.dto;
 
+import dev.kreaker.hile.domain.report.ReportStatus;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-public record ReportDefinition(
+public record ReportDefinitionView(
     UUID id,
     String name,
     String description,

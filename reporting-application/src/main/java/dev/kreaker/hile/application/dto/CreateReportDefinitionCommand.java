@@ -1,6 +1,11 @@
 package dev.kreaker.hile.application.dto;
 
-import dev.kreaker.hile.domain.datasource.DataSourceType;
+import java.util.UUID;
 
 public record CreateReportDefinitionCommand(
-    String name, String description, DataSourceType dataSourceType, String sqlText) {}
+    String name,
+    String description,
+    UUID dataSourceId,
+    String ownerTeam,
+    String sqlText,
+    String createdBy) {}

@@ -1,7 +1,9 @@
 package dev.kreaker.hile.application.service;
 
+import dev.kreaker.hile.application.dto.ColumnMetadata;
 import dev.kreaker.hile.application.dto.CreateDataSourceCommand;
 import dev.kreaker.hile.application.dto.DataSourceView;
+import dev.kreaker.hile.application.dto.PreviewResult;
 import dev.kreaker.hile.application.dto.ValidationResult;
 import dev.kreaker.hile.application.exception.DataSourceNotFoundException;
 import dev.kreaker.hile.application.port.in.DataSourceUseCase;
@@ -93,6 +95,40 @@ public class DataSourceApplicationService implements DataSourceUseCase {
       return ValidationResult.failure("No connector available for type: " + ds.dbType());
     }
     return connector.testConnection(jdbcUrl, ds.username(), rawPassword);
+  }
+
+  @Override
+  public List<ColumnMetadata> discoverColumns(UUID dataSourceId, String sqlText) {
+    DataSource ds =
+        repository
+            .findById(dataSourceId)
+            .orElseThrow(() -> new DataSourceNotFoundException(dataSourceId));
+    String rawPassword = encryption.decrypt(ds.secretRef());
+    String jdbcUrl = buildJdbcUrl(ds.dbType(), ds.host(), ds.port(), ds.databaseOrService());
+    DbConnectorPort connector = connectors.get(ds.dbType());
+    if (connector == null) {
+      throw new IllegalStateException("No connector available for type: " + ds.dbType());
+    }
+    return connector.discoverColumns(jdbcUrl, ds.username(), rawPassword, sqlText);
+  }
+
+  @Override
+  public PreviewResult executePreview(UUID dataSourceId, String sqlText, int maxRows) {
+    DataSource ds =
+        repository
+            .findById(dataSourceId)
+            .orElseThrow(() -> new DataSourceNotFoundException(dataSourceId));
+    String rawPassword = encryption.decrypt(ds.secretRef());
+    String jdbcUrl = buildJdbcUrl(ds.dbType(), ds.host(), ds.port(), ds.databaseOrService());
+    DbConnectorPort connector = connectors.get(ds.dbType());
+    if (connector == null) {
+      throw new IllegalStateException("No connector available for type: " + ds.dbType());
+    }
+    List<ColumnMetadata> columns =
+        connector.discoverColumns(jdbcUrl, ds.username(), rawPassword, sqlText);
+    List<List<Object>> rows =
+        connector.executePreview(jdbcUrl, ds.username(), rawPassword, sqlText, maxRows);
+    return new PreviewResult(columns, rows);
   }
 
   private DataSourceView toView(DataSource ds) {

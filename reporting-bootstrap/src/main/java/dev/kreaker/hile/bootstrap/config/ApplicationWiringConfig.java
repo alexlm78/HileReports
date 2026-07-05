@@ -1,14 +1,18 @@
 package dev.kreaker.hile.bootstrap.config;
 
 import dev.kreaker.hile.application.port.in.AuthenticateUserUseCase;
+import dev.kreaker.hile.application.port.in.CreateReportDefinitionUseCase;
 import dev.kreaker.hile.application.port.in.DataSourceUseCase;
 import dev.kreaker.hile.application.port.out.AuthenticationProviderPort;
 import dev.kreaker.hile.application.port.out.DataSourceRepositoryPort;
 import dev.kreaker.hile.application.port.out.DbConnectorPort;
 import dev.kreaker.hile.application.port.out.PasswordEncryptionPort;
+import dev.kreaker.hile.application.port.out.QueryValidatorPort;
+import dev.kreaker.hile.application.port.out.ReportDefinitionRepository;
 import dev.kreaker.hile.application.port.out.UserRepositoryPort;
 import dev.kreaker.hile.application.service.AuthenticationApplicationService;
 import dev.kreaker.hile.application.service.DataSourceApplicationService;
+import dev.kreaker.hile.application.service.ReportDefinitionApplicationService;
 import dev.kreaker.hile.security.AdAuthenticationProviderStub;
 import dev.kreaker.hile.security.LocalAuthenticationProviderAdapter;
 import java.util.List;
@@ -49,5 +53,15 @@ public class ApplicationWiringConfig {
       List<DbConnectorPort> connectors) {
     return new DataSourceApplicationService(
         dataSourceRepositoryPort, passwordEncryptionPort, connectors);
+  }
+
+  @Bean
+  CreateReportDefinitionUseCase createReportDefinitionUseCase(
+      ReportDefinitionRepository reportDefinitionRepository,
+      QueryValidatorPort queryValidatorPort,
+      @Value("${hile.reports.preview.max-rows:100}") int maxRows,
+      @Value("${hile.reports.execution.default-timeout-seconds:30}") int timeoutSeconds) {
+    return new ReportDefinitionApplicationService(
+        reportDefinitionRepository, queryValidatorPort, maxRows, timeoutSeconds);
   }
 }

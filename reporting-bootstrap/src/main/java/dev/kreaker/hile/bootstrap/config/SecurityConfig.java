@@ -38,6 +38,10 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers("/api/v1/datasources/**")
                     .hasRole("PLATFORM_ADMIN")
+                    .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/reports")
+                    .hasAnyRole("PLATFORM_ADMIN", "REPORT_DESIGNER")
+                    .requestMatchers("/api/v1/reports/**")
+                    .authenticated()
                     .anyRequest()
                     .authenticated())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
