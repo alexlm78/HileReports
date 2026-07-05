@@ -63,7 +63,7 @@ What is not in place yet:
 
 - No frontend module.
 - No per-datasource ACL.
-- Oracle connector still a stub (no freely distributable JDBC driver on Maven Central).
+- Oracle connector fully implemented via `ojdbc11:21.11.0.0` from Maven Central.
 - No structured observability (correlation ID propagation, Micrometer metrics beyond Actuator exposure).
 
 ## Verified Implementation by Module
@@ -230,7 +230,7 @@ Status legend:
 | `TASK-04.1.1-c` `testConnection` | Done | `POST /api/v1/datasources/{id}/test` decrypts secret and delegates to connector stub |
 | `TASK-04.2.1-a` `PostgreSqlConnector` | Done | Real JDBC testConnection, discoverColumns, executePreview |
 | `TASK-04.2.1-b` `MySqlConnector` | Done | Real JDBC testConnection, discoverColumns, executePreview |
-| `TASK-04.2.1-c` `OracleConnector` | Partial | Stub only — no Oracle JDBC driver on Maven Central |
+| `TASK-04.2.1-c` `OracleConnector` | Done | Real JDBC via `ojdbc11:21.11.0.0` (Maven Central); `testConnection`, `discoverColumns` (setMaxRows(1)), `executePreview` (setMaxRows(limit)), `executeWithParams` (Oracle 12c+ `OFFSET ? ROWS FETCH NEXT ? ROWS ONLY`); added `runtimeOnly` to `reporting-connectors/build.gradle` |
 | `TASK-04.2.1-d` `ConnectorFactory` | Done | Factory wired to real adapters; discover/preview exposed via REST |
 | `TASK-05.1.1-a` `QueryValidator` | Done | `SimpleReadOnlyQueryValidator` with comment stripping + dangerous pattern blocking |
 | `TASK-05.1.1-b` Block DDL, DML, multiple statements | Done | Blocks insert/update/delete/drop/alter/truncate/semicolon after comment stripping |
@@ -297,7 +297,8 @@ Today the main blockers are:
 
 ## Recommended Next Implementation Slice
 
-1. **Oracle connector** (`TASK-04.2.1-c`): replace stub with real JDBC using the Oracle JDBC driver (ojdbc11) — must be added as a local or Maven-compatible dependency since it's not on Maven Central.
+1. **Audit event logging**: write to existing `audit_event` table on key actions (login, report published, executed, datasource created); add `GET /api/v1/audit-events` endpoint (PLATFORM_ADMIN).
+2. **AD authentication** (`TASK-02.3.1-b`): deferred — requires live AD/LDAP environment for testing.
 
 ## Commands Used to Verify the Snapshot
 

@@ -5,4 +5,5 @@ dependencies {
   implementation project(':reporting-domain')
   runtimeOnly 'org.postgresql:postgresql'
   runtimeOnly 'com.mysql:mysql-connector-j'
+  runtimeOnly 'com.oracle.database.jdbc:ojdbc11:21.11.0.0'
 }

@@ -7,12 +7,14 @@ import dev.kreaker.hile.application.port.in.DataSourceUseCase;
 import dev.kreaker.hile.application.port.in.ExecuteReportUseCase;
 import dev.kreaker.hile.application.port.in.ExportJobUseCase;
 import dev.kreaker.hile.application.port.in.TagUseCase;
+import dev.kreaker.hile.application.port.in.UserManagementUseCase;
 import dev.kreaker.hile.application.port.out.AuthenticationProviderPort;
 import dev.kreaker.hile.application.port.out.CategoryRepositoryPort;
 import dev.kreaker.hile.application.port.out.DataSourceRepositoryPort;
 import dev.kreaker.hile.application.port.out.DbConnectorPort;
 import dev.kreaker.hile.application.port.out.MetricsPort;
 import dev.kreaker.hile.application.port.out.PasswordEncryptionPort;
+import dev.kreaker.hile.application.port.out.PasswordHasherPort;
 import dev.kreaker.hile.application.port.out.QueryValidatorPort;
 import dev.kreaker.hile.application.port.out.ReportColumnRepositoryPort;
 import dev.kreaker.hile.application.port.out.ReportDefinitionRepository;
@@ -28,6 +30,7 @@ import dev.kreaker.hile.application.service.ExecuteReportApplicationService;
 import dev.kreaker.hile.application.service.ExportJobApplicationService;
 import dev.kreaker.hile.application.service.ReportDefinitionApplicationService;
 import dev.kreaker.hile.application.service.TagApplicationService;
+import dev.kreaker.hile.application.service.UserManagementApplicationService;
 import dev.kreaker.hile.security.AdAuthenticationProviderStub;
 import dev.kreaker.hile.security.LocalAuthenticationProviderAdapter;
 import java.util.List;
@@ -43,6 +46,17 @@ public class ApplicationWiringConfig {
   @Bean
   PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
+  }
+
+  @Bean
+  PasswordHasherPort passwordHasherPort(PasswordEncoder passwordEncoder) {
+    return passwordEncoder::encode;
+  }
+
+  @Bean
+  UserManagementUseCase userManagementUseCase(
+      UserRepositoryPort userRepositoryPort, PasswordHasherPort passwordHasherPort) {
+    return new UserManagementApplicationService(userRepositoryPort, passwordHasherPort);
   }
 
   @Bean

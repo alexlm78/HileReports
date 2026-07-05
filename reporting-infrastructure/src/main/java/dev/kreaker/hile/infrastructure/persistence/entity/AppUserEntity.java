@@ -82,7 +82,25 @@ public class AppUserEntity {
     return enabled;
   }
 
+  public OffsetDateTime getCreatedAt() {
+    return createdAt;
+  }
+
+  public OffsetDateTime getUpdatedAt() {
+    return updatedAt;
+  }
+
   public Set<AppRoleEntity> getRoles() {
     return roles;
+  }
+
+  public void disable() {
+    this.enabled = false;
+    this.updatedAt = OffsetDateTime.now();
+  }
+
+  public void changePasswordHash(String newHash) {
+    this.passwordHash = newHash;
+    this.updatedAt = OffsetDateTime.now();
   }
 }

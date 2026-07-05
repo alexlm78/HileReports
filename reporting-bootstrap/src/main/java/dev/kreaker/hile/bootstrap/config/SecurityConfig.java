@@ -74,6 +74,9 @@ public class SecurityConfig {
                     .hasRole("PLATFORM_ADMIN")
                     .requestMatchers(GET, "/api/v1/tags")
                     .authenticated()
+                    // User management — PLATFORM_ADMIN only
+                    .requestMatchers("/api/v1/users/**")
+                    .hasRole("PLATFORM_ADMIN")
                     .anyRequest()
                     .authenticated())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

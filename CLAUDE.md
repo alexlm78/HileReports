@@ -106,6 +106,11 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 | `DELETE` | `/api/v1/tags/{id}` | `PLATFORM_ADMIN` |
 | `PUT` | `/api/v1/reports/{id}/tags` | owner or `PLATFORM_ADMIN` |
 | `GET` | `/api/v1/reports/{id}/tags` | authenticated |
+| `POST` | `/api/v1/users` | `PLATFORM_ADMIN` |
+| `GET` | `/api/v1/users` | `PLATFORM_ADMIN` |
+| `GET` | `/api/v1/users/{id}` | `PLATFORM_ADMIN` |
+| `DELETE` | `/api/v1/users/{id}` | `PLATFORM_ADMIN` (soft-disable) |
+| `PUT` | `/api/v1/users/{id}/password` | `PLATFORM_ADMIN` |
 
 ## Security Notes
 
@@ -116,4 +121,4 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 
 ## Next Implementation Slice (in order)
 
-1. Oracle connector (`TASK-04.2.1-c`) — currently a stub; requires ojdbc11 which is not on Maven Central
+1. Audit event logging — write to existing `audit_event` table; add `GET /api/v1/audit-events`
