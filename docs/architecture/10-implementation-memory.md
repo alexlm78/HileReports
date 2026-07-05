@@ -7,7 +7,7 @@ This document gives an AI agent or a new developer a verified snapshot of the cu
 ## Last Verified Snapshot
 
 - Date: `2026-07-05`
-- Repository status: Category CRUD + `categoryId` on reports; EP-08 fully done
+- Repository status: EP-08 done; EP-09 done (async CSV/XLSX export + cleanup scheduler)
 - Build status: `./gradlew test` passes
 - Scope of verification: source tree, Gradle modules, Spring Boot bootstrap, tests, and backlog alignment
 
@@ -53,14 +53,18 @@ What is already in place:
 - `POST /api/v1/reports/{id}/execute` — executes a PUBLISHED report with optional parameter map and pagination (`page`, `pageSize`). Named params (`:paramName`) in SQL text substituted with typed values from `report_parameter` metadata. Appends `LIMIT ? OFFSET ?` for pagination (PostgreSQL/MySQL). Persists `report_execution` + `report_execution_parameter` rows with COMPLETED or FAILED status, duration, and row count. Returns `ExecutionResultView` with `executionId`, `correlationId`, `columns`, `rows`, `rowCount`, `durationMs`, `page`, `pageSize`.
 - `ReportDefinition` domain record gained `currentVersionId UUID` field (used internally by execution layer).
 - Category CRUD: `POST /api/v1/categories` (`PLATFORM_ADMIN`), `GET /api/v1/categories`, `GET /api/v1/categories/{id}`, `DELETE /api/v1/categories/{id}` (`PLATFORM_ADMIN`). Name uniqueness enforced. `category_id` optional FK on `report_definition` — passed in `POST /api/v1/reports` body.
+- Async CSV/XLSX export: `POST /api/v1/reports/{id}/export` (202 Accepted, format CSV|XLSX, optional params + pageSize). Creates `report_execution` (RUNNING/ASYNC) + `report_export` (PENDING) synchronously; hands off to `@Async("exportTaskExecutor")`. `GET /api/v1/exports/{id}` polls status. `GET /api/v1/exports/{id}/download` streams file when COMPLETED, 409 if running, 404 if missing.
+- `ExportCleanupScheduler` (`@Scheduled`, default 1h): deletes expired export files and DB records.
+- `AsyncConfig`: `@EnableAsync @EnableScheduling`; `exportTaskExecutor` pool (core=2, max=5, queue=50).
+- CSV via `commons-csv:1.11.0`; XLSX via `poi-ooxml:5.3.0`.
+- Export storage path, expiry hours, and cleanup intervals configurable via env vars.
 
 What is not in place yet:
 
 - No frontend module.
 - No per-datasource ACL.
 - Oracle connector still a stub (no freely distributable JDBC driver on Maven Central).
-- No category CRUD or assignment to reports.
-- No async CSV/XLSX export.
+- No structured observability (correlation ID propagation, Micrometer metrics beyond Actuator exposure).
 
 ## Verified Implementation by Module
 
@@ -97,7 +101,10 @@ Current assessment:
 
 - Full report lifecycle use cases: createDraft, findById, findAll, runPreview, publish, unpublish, upsertColumns, getColumns, upsertParameters, getParameters, getCatalog.
 - `ExecuteReportUseCase` with named-param binding, pagination, and execution history persistence.
-- No use cases for auditing, exports, or category management yet.
+- `ExportJobUseCase` / `ExportJobApplicationService`: create export job, poll status, get file path.
+- `CategoryUseCase` / `CategoryApplicationService`: category CRUD with name uniqueness.
+- `NamedParamBinder`: package-private utility shared by execute and export services.
+- No use cases for auditing or tag/ownership model yet.
 
 ### `reporting-infrastructure`
 
@@ -117,7 +124,8 @@ Current assessment:
 - The validator is intentionally simple. It allows `SELECT` and `WITH`, blocks several DDL/DML tokens and semicolons, and extracts named parameters with regex.
 - JPA adapters exist for datasource, report definition+version, report columns, report parameters, and report executions.
 - User persistence fully backed by PostgreSQL and JPA.
-- No JPA entities for categories yet.
+- JPA entities for categories (`CategoryEntity`) and exports (`ReportExportEntity`).
+- Flyway migrations include V3 (category, report_execution, report_execution_parameter, report_export tables).
 
 ### `reporting-connectors`
 
@@ -131,8 +139,8 @@ Implemented:
 
 Current assessment:
 
-- PostgreSQL and MySQL connectors use `DriverManager.getConnection` for `testConnection`, `discoverColumns` (executes with `maxRows=1`, reads `ResultSetMetaData`), and `executePreview` (executes with `setMaxRows(limit)`).
-- `DbConnectorPort.discoverColumns` and `executePreview` now take JDBC connection params (URL, username, rawPassword).
+- PostgreSQL and MySQL connectors use `DriverManager.getConnection` for `testConnection`, `discoverColumns` (executes with `maxRows=1`, reads `ResultSetMetaData`), `executePreview` (executes with `setMaxRows(limit)`), and `executeWithParams` (named-param SQL + LIMIT/OFFSET appended for pagination).
+- `DbConnectorPort` now includes `executeWithParams(jdbcUrl, username, rawPassword, sql, paramValues, pageSize, offset) → PreviewResult`.
 - JDBC drivers added as `runtimeOnly` in `reporting-connectors/build.gradle`: `org.postgresql:postgresql`, `com.mysql:mysql-connector-j`.
 
 ### `reporting-security`
@@ -215,7 +223,7 @@ Status legend:
 | `TASK-03.1.1-a` Flyway migrations | Done | V1 operational metadata + V2 security schema both configured and applied |
 | `TASK-03.1.1-b` Repositories and base services | Partial | Only in-memory report repository plus one app service |
 | `TASK-03.1.1-c` Entity auditing | Not started | No auditing model or infrastructure |
-| `TASK-03.2.1-a` Category CRUD | Not started | No category module or endpoint |
+| `TASK-03.2.1-a` Category CRUD | Done | `CategoryEntity`, `CategoryRepositoryAdapter`, `CategoryApplicationService`, `CategoryController`; name uniqueness; `categoryId` FK on report |
 | `TASK-03.2.1-b` Tag and ownership model | Not started | No implementation |
 | `TASK-04.1.1-a` `data_source` CRUD | Done | `DataSourceController` with create/list/get/delete endpoints wired to `DataSourceApplicationService` |
 | `TASK-04.1.1-b` Secret encryption | Done | `AesGcmEncryptor` (AES-256-GCM); encrypted in `secret_ref`; decrypted only for connection test |
@@ -245,7 +253,11 @@ Status legend:
 | `TASK-08.2.1-b` Execute paginated query | Done | `LIMIT ? OFFSET ?` appended; `DbConnectorPort.executeWithParams` in PG/MySQL adapters |
 | `TASK-08.2.1-c` Persist execution history | Done | `report_execution` + `report_execution_parameter` via JPA; COMPLETED/FAILED status + duration |
 | `EP-08` Catalog and execution | Done | Catalog listing, ownership ACL, and parameterized execution all done |
-| `EP-09` Exports | Not started | Placeholder job only |
+| `TASK-09.1.1-a` Request export job | Done | `POST /api/v1/reports/{id}/export` → 202; persists execution+export; fires async |
+| `TASK-09.2.1-a` CSV generation | Done | `AsyncExportService` uses `commons-csv:1.11.0` |
+| `TASK-09.2.1-b` XLSX generation | Done | `AsyncExportService` uses `poi-ooxml:5.3.0` |
+| `TASK-09.2.1-c` Export cleanup job | Done | `ExportCleanupScheduler` `@Scheduled` deletes expired files + DB records |
+| `EP-09` Exports | Done | Full async export pipeline + cleanup |
 | `EP-10` Observability and hardening | Partial | Actuator exposure exists, rest missing |
 
 ## Working Vertical Slice Already Available
@@ -279,7 +291,7 @@ Today the main blockers are:
 
 ## Recommended Next Implementation Slice
 
-1. **CSV/XLSX async export** (`TASK-09.1.1-a`, `TASK-09.2.1-a`, `TASK-09.2.1-b`): POST export job, poll status, stream file (CSV via `commons-csv`, XLSX via `apache-poi`).
+1. **Observability**: structured logging with correlation ID propagation, Micrometer metrics for execution count/duration/export volume (`TASK-10.1.1-a`, `TASK-10.1.1-c`).
 
 ## Commands Used to Verify the Snapshot
 

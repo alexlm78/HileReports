@@ -98,6 +98,9 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 | `GET` | `/api/v1/reports/{id}/parameters` | authenticated |
 | `GET` | `/api/v1/catalog` | authenticated |
 | `POST` | `/api/v1/reports/{id}/execute` | authenticated |
+| `POST` | `/api/v1/reports/{id}/export` | authenticated |
+| `GET` | `/api/v1/exports/{id}` | authenticated |
+| `GET` | `/api/v1/exports/{id}/download` | authenticated |
 
 ## Security Notes
 
@@ -108,4 +111,4 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 
 ## Next Implementation Slice (in order)
 
-1. CSV/XLSX export async jobs (`TASK-09.1.1-a`, `TASK-09.2.1-a`, `TASK-09.2.1-b`)
+1. Observability: structured logging, correlation ID propagation, Micrometer metrics (`TASK-10.1.1-a`, `TASK-10.1.1-c`)

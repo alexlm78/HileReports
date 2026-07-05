@@ -59,6 +59,11 @@ public class ReportExecutionRepositoryAdapter implements ReportExecutionReposito
     return executionRepo.findById(id).map(this::toDomain);
   }
 
+  @Override
+  public void updateStatus(UUID executionId, String status, Long rowCount, Long durationMs) {
+    executionRepo.updateStatus(executionId, status, rowCount, durationMs);
+  }
+
   private ReportExecution toDomain(ReportExecutionEntity e) {
     return new ReportExecution(
         e.getId(),

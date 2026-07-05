@@ -51,6 +51,8 @@ public class SecurityConfig {
                     .authenticated()
                     .requestMatchers("/api/v1/catalog/**")
                     .authenticated()
+                    .requestMatchers("/api/v1/exports/**")
+                    .authenticated()
                     .anyRequest()
                     .authenticated())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

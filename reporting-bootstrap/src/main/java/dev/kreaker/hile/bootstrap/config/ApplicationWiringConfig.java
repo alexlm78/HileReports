@@ -5,6 +5,7 @@ import dev.kreaker.hile.application.port.in.CategoryUseCase;
 import dev.kreaker.hile.application.port.in.CreateReportDefinitionUseCase;
 import dev.kreaker.hile.application.port.in.DataSourceUseCase;
 import dev.kreaker.hile.application.port.in.ExecuteReportUseCase;
+import dev.kreaker.hile.application.port.in.ExportJobUseCase;
 import dev.kreaker.hile.application.port.out.AuthenticationProviderPort;
 import dev.kreaker.hile.application.port.out.CategoryRepositoryPort;
 import dev.kreaker.hile.application.port.out.DataSourceRepositoryPort;
@@ -14,12 +15,14 @@ import dev.kreaker.hile.application.port.out.QueryValidatorPort;
 import dev.kreaker.hile.application.port.out.ReportColumnRepositoryPort;
 import dev.kreaker.hile.application.port.out.ReportDefinitionRepository;
 import dev.kreaker.hile.application.port.out.ReportExecutionRepository;
+import dev.kreaker.hile.application.port.out.ReportExportRepository;
 import dev.kreaker.hile.application.port.out.ReportParameterRepositoryPort;
 import dev.kreaker.hile.application.port.out.UserRepositoryPort;
 import dev.kreaker.hile.application.service.AuthenticationApplicationService;
 import dev.kreaker.hile.application.service.CategoryApplicationService;
 import dev.kreaker.hile.application.service.DataSourceApplicationService;
 import dev.kreaker.hile.application.service.ExecuteReportApplicationService;
+import dev.kreaker.hile.application.service.ExportJobApplicationService;
 import dev.kreaker.hile.application.service.ReportDefinitionApplicationService;
 import dev.kreaker.hile.security.AdAuthenticationProviderStub;
 import dev.kreaker.hile.security.LocalAuthenticationProviderAdapter;
@@ -85,6 +88,23 @@ public class ApplicationWiringConfig {
   @Bean
   CategoryUseCase categoryUseCase(CategoryRepositoryPort categoryRepositoryPort) {
     return new CategoryApplicationService(categoryRepositoryPort);
+  }
+
+  @Bean
+  ExportJobUseCase exportJobUseCase(
+      ReportDefinitionRepository reportDefinitionRepository,
+      ReportParameterRepositoryPort reportParameterRepositoryPort,
+      ReportExecutionRepository reportExecutionRepository,
+      ReportExportRepository reportExportRepository,
+      @Value("${hile.reports.export.storage-path:/tmp/hile-exports}") String storageBasePath,
+      @Value("${hile.reports.export.expiry-hours:24}") int expiryHours) {
+    return new ExportJobApplicationService(
+        reportDefinitionRepository,
+        reportParameterRepositoryPort,
+        reportExecutionRepository,
+        reportExportRepository,
+        storageBasePath,
+        expiryHours);
   }
 
   @Bean

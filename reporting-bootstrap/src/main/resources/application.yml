@@ -53,3 +53,8 @@ hile:
       max-rows: ${APP_PREVIEW_MAX_ROWS:100}
     execution:
       default-timeout-seconds: ${APP_EXECUTION_TIMEOUT_SECONDS:30}
+    export:
+      storage-path: ${APP_EXPORT_STORAGE_PATH:/tmp/hile-exports}
+      expiry-hours: ${APP_EXPORT_EXPIRY_HOURS:24}
+      cleanup-interval-ms: ${APP_EXPORT_CLEANUP_INTERVAL_MS:3600000}
+      cleanup-initial-delay-ms: ${APP_EXPORT_CLEANUP_INITIAL_DELAY_MS:60000}
