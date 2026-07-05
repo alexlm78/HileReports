@@ -10,6 +10,7 @@ import dev.kreaker.hile.application.dto.UpdateReportCommand;
 import dev.kreaker.hile.application.port.in.CreateReportDefinitionUseCase;
 import dev.kreaker.hile.application.port.in.TagUseCase;
 import dev.kreaker.hile.application.port.out.AuditEventPort;
+import dev.kreaker.hile.bootstrap.api.PageResponse;
 import dev.kreaker.hile.bootstrap.api.tag.SetReportTagsRequest;
 import dev.kreaker.hile.domain.report.ReportColumn;
 import dev.kreaker.hile.domain.report.ReportParameter;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -64,8 +66,14 @@ public class ReportController {
   }
 
   @GetMapping
-  public ResponseEntity<List<ReportDefinitionView>> findAll() {
-    return ResponseEntity.ok(reportUseCase.findAll());
+  public ResponseEntity<PageResponse<ReportDefinitionView>> findAll(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size,
+      @RequestParam(required = false) String name,
+      @RequestParam(required = false) String status,
+      @RequestParam(required = false) UUID categoryId) {
+    return ResponseEntity.ok(
+        PageResponse.from(reportUseCase.findAllPaged(page, size, name, status, categoryId)));
   }
 
   @GetMapping("/{id}")

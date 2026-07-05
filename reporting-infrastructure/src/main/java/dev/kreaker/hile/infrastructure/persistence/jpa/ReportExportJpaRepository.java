@@ -4,6 +4,8 @@ import dev.kreaker.hile.infrastructure.persistence.entity.ReportExportEntity;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -13,6 +15,13 @@ import org.springframework.transaction.annotation.Transactional;
 public interface ReportExportJpaRepository extends JpaRepository<ReportExportEntity, UUID> {
 
   List<ReportExportEntity> findByExpiresAtBefore(OffsetDateTime cutoff);
+
+  @Query(
+      "SELECT e FROM ReportExportEntity e WHERE e.executionId IN "
+          + "(SELECT ex.id FROM ReportExecutionEntity ex WHERE ex.requestedBy = :requestedBy) "
+          + "ORDER BY e.id DESC")
+  Page<ReportExportEntity> findByRequestedBy(
+      @Param("requestedBy") String requestedBy, Pageable pageable);
 
   @Modifying
   @Transactional

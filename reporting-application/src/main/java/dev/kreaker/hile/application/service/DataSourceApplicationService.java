@@ -3,7 +3,9 @@ package dev.kreaker.hile.application.service;
 import dev.kreaker.hile.application.dto.ColumnMetadata;
 import dev.kreaker.hile.application.dto.CreateDataSourceCommand;
 import dev.kreaker.hile.application.dto.DataSourceView;
+import dev.kreaker.hile.application.dto.PageResult;
 import dev.kreaker.hile.application.dto.PreviewResult;
+import dev.kreaker.hile.application.dto.UpdateDataSourceCommand;
 import dev.kreaker.hile.application.dto.ValidationResult;
 import dev.kreaker.hile.application.exception.DataSourceNotFoundException;
 import dev.kreaker.hile.application.port.in.DataSourceUseCase;
@@ -75,6 +77,33 @@ public class DataSourceApplicationService implements DataSourceUseCase {
   @Override
   public List<DataSourceView> findAll() {
     return repository.findAll().stream().map(this::toView).toList();
+  }
+
+  @Override
+  public PageResult<DataSourceView> findAllPaged(int page, int size) {
+    PageResult<DataSource> result = repository.findAllPaged(page, size);
+    List<DataSourceView> content = result.content().stream().map(this::toView).toList();
+    return new PageResult<>(content, page, size, result.total());
+  }
+
+  @Override
+  public DataSourceView update(UpdateDataSourceCommand command) {
+    if (!repository.existsById(command.id())) {
+      throw new DataSourceNotFoundException(command.id());
+    }
+    String encryptedSecret =
+        command.password() != null ? encryption.encrypt(command.password()) : null;
+    UpdateDataSourceCommand cmd =
+        new UpdateDataSourceCommand(
+            command.id(),
+            command.name(),
+            command.host(),
+            command.port(),
+            command.databaseOrService(),
+            command.username(),
+            encryptedSecret,
+            command.sslMode());
+    return toView(repository.update(cmd));
   }
 
   @Override

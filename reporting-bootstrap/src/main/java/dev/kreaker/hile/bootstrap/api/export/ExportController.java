@@ -4,6 +4,7 @@ import dev.kreaker.hile.application.dto.ExportJobCreationResult;
 import dev.kreaker.hile.application.dto.ExportJobView;
 import dev.kreaker.hile.application.dto.RequestExportCommand;
 import dev.kreaker.hile.application.port.in.ExportJobUseCase;
+import dev.kreaker.hile.bootstrap.api.PageResponse;
 import dev.kreaker.hile.bootstrap.export.AsyncExportService;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -46,6 +48,15 @@ public class ExportController {
     return ResponseEntity.accepted()
         .location(URI.create("/api/v1/exports/" + result.view().id()))
         .body(result.view());
+  }
+
+  @GetMapping("/api/v1/exports")
+  public ResponseEntity<PageResponse<ExportJobView>> listExports(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size,
+      Principal principal) {
+    return ResponseEntity.ok(
+        PageResponse.from(exportUseCase.listExports(principal.getName(), page, size)));
   }
 
   @GetMapping("/api/v1/exports/{exportId}")

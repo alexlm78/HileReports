@@ -3,6 +3,7 @@ package dev.kreaker.hile.application.service;
 import dev.kreaker.hile.application.dto.AsyncExportTask;
 import dev.kreaker.hile.application.dto.ExportJobCreationResult;
 import dev.kreaker.hile.application.dto.ExportJobView;
+import dev.kreaker.hile.application.dto.PageResult;
 import dev.kreaker.hile.application.dto.RequestExportCommand;
 import dev.kreaker.hile.application.port.in.ExportJobUseCase;
 import dev.kreaker.hile.application.port.out.ReportDefinitionRepository;
@@ -131,6 +132,13 @@ public class ExportJobApplicationService implements ExportJobUseCase {
       throw new IllegalStateException("Export not completed. Status: " + export.status());
     }
     return export.storagePath();
+  }
+
+  @Override
+  public PageResult<ExportJobView> listExports(String requestedBy, int page, int size) {
+    PageResult<ReportExport> result = exportRepository.findByRequestedBy(requestedBy, page, size);
+    List<ExportJobView> content = result.content().stream().map(this::toView).toList();
+    return new PageResult<>(content, page, size, result.total());
   }
 
   private ExportJobView toView(ReportExport e) {

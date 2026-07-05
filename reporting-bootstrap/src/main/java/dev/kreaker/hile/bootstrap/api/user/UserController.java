@@ -5,10 +5,10 @@ import dev.kreaker.hile.application.dto.CreateUserCommand;
 import dev.kreaker.hile.application.dto.UserView;
 import dev.kreaker.hile.application.port.in.UserManagementUseCase;
 import dev.kreaker.hile.application.port.out.AuditEventPort;
+import dev.kreaker.hile.bootstrap.api.PageResponse;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.security.Principal;
-import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -44,8 +45,9 @@ public class UserController {
   }
 
   @GetMapping
-  public ResponseEntity<List<UserView>> findAll() {
-    return ResponseEntity.ok(userManagement.findAll());
+  public ResponseEntity<PageResponse<UserView>> findAll(
+      @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
+    return ResponseEntity.ok(PageResponse.from(userManagement.findAllPaged(page, size)));
   }
 
   @GetMapping("/{id}")

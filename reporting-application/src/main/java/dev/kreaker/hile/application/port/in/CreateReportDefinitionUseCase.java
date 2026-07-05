@@ -2,6 +2,7 @@ package dev.kreaker.hile.application.port.in;
 
 import dev.kreaker.hile.application.dto.CatalogReportView;
 import dev.kreaker.hile.application.dto.CreateReportDefinitionCommand;
+import dev.kreaker.hile.application.dto.PageResult;
 import dev.kreaker.hile.application.dto.PreviewResult;
 import dev.kreaker.hile.application.dto.ReportColumnView;
 import dev.kreaker.hile.application.dto.ReportDefinitionView;
@@ -38,6 +39,9 @@ public interface CreateReportDefinitionUseCase {
   List<ReportParameterView> getParameters(UUID reportId);
 
   List<CatalogReportView> getCatalog(String nameFilter);
+
+  PageResult<ReportDefinitionView> findAllPaged(
+      int page, int size, String name, String status, UUID categoryId);
 
   void deleteDraft(UUID id);
 }

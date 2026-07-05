@@ -76,18 +76,20 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 | `POST` | `/api/v1/auth/login` | public |
 | `GET` | `/api/v1/architecture/modules` | authenticated |
 | `POST` | `/api/v1/categories` | `PLATFORM_ADMIN` |
-| `GET` | `/api/v1/categories` | authenticated |
+| `GET` | `/api/v1/categories?page=0&size=20` | authenticated |
 | `GET` | `/api/v1/categories/{id}` | authenticated |
+| `PUT` | `/api/v1/categories/{id}` | `PLATFORM_ADMIN` |
 | `DELETE` | `/api/v1/categories/{id}` | `PLATFORM_ADMIN` |
 | `POST` | `/api/v1/datasources` | `PLATFORM_ADMIN` |
-| `GET` | `/api/v1/datasources` | `PLATFORM_ADMIN` |
+| `GET` | `/api/v1/datasources?page=0&size=20` | `PLATFORM_ADMIN` |
 | `GET` | `/api/v1/datasources/{id}` | `PLATFORM_ADMIN` |
+| `PUT` | `/api/v1/datasources/{id}` | `PLATFORM_ADMIN` |
 | `DELETE` | `/api/v1/datasources/{id}` | `PLATFORM_ADMIN` |
 | `POST` | `/api/v1/datasources/{id}/test` | `PLATFORM_ADMIN` |
 | `POST` | `/api/v1/datasources/{id}/discover` | `PLATFORM_ADMIN` |
 | `POST` | `/api/v1/datasources/{id}/preview` | `PLATFORM_ADMIN` |
 | `POST` | `/api/v1/reports` | `PLATFORM_ADMIN` or `REPORT_DESIGNER` |
-| `GET` | `/api/v1/reports` | authenticated |
+| `GET` | `/api/v1/reports?page=0&size=20&name=&status=&categoryId=` | authenticated |
 | `GET` | `/api/v1/reports/{id}` | authenticated |
 | `PUT` | `/api/v1/reports/{id}` | owner or `PLATFORM_ADMIN` |
 | `DELETE` | `/api/v1/reports/{id}` | owner or `PLATFORM_ADMIN` (DRAFT only, no execution history) |
@@ -101,6 +103,7 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 | `GET` | `/api/v1/catalog` | authenticated |
 | `POST` | `/api/v1/reports/{id}/execute` | authenticated |
 | `POST` | `/api/v1/reports/{id}/export` | authenticated |
+| `GET` | `/api/v1/exports?page=0&size=20` | authenticated |
 | `GET` | `/api/v1/exports/{id}` | authenticated |
 | `GET` | `/api/v1/exports/{id}/download` | authenticated |
 | `POST` | `/api/v1/tags` | `PLATFORM_ADMIN` |
@@ -109,13 +112,13 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 | `PUT` | `/api/v1/reports/{id}/tags` | owner or `PLATFORM_ADMIN` |
 | `GET` | `/api/v1/reports/{id}/tags` | authenticated |
 | `POST` | `/api/v1/users` | `PLATFORM_ADMIN` |
-| `GET` | `/api/v1/users` | `PLATFORM_ADMIN` |
+| `GET` | `/api/v1/users?page=0&size=20` | `PLATFORM_ADMIN` |
 | `GET` | `/api/v1/users/{id}` | `PLATFORM_ADMIN` |
 | `DELETE` | `/api/v1/users/{id}` | `PLATFORM_ADMIN` (soft-disable) |
 | `PUT` | `/api/v1/users/{id}/password` | `PLATFORM_ADMIN` |
 | `GET` | `/api/v1/users/me` | authenticated |
 | `PUT` | `/api/v1/users/me/password` | authenticated |
-| `GET` | `/api/v1/audit-events` | `PLATFORM_ADMIN` |
+| `GET` | `/api/v1/audit-events?actor=&action=&page=0&limit=100` | `PLATFORM_ADMIN` |
 
 ## Security Notes
 
@@ -127,3 +130,6 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 ## Next Implementation Slice (in order)
 
 1. AD authentication (`TASK-02.3.1-b`) — deferred until live LDAP/AD is available for testing
+2. Frontend / API client integration
+3. Per-datasource ACL
+4. Structured observability: correlation ID propagation to export async threads

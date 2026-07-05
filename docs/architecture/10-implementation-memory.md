@@ -7,7 +7,7 @@ This document gives an AI agent or a new developer a verified snapshot of the cu
 ## Last Verified Snapshot
 
 - Date: `2026-07-05`
-- Repository status: EP-08 done; EP-09 done; TASK-10.1.1-a/c done; CI pipeline added (TASK-01.3.1-a); TASK-03.2.1-b (Tag model) done
+- Repository status: EP-08 done; EP-09 done; TASK-10.1.1-a/c done; CI pipeline added (TASK-01.3.1-a); TASK-03.2.1-b (Tag model) done; pagination on all list endpoints done; PUT datasource + PUT category done; GET /api/v1/exports done; report list filters done
 - Build status: `./gradlew test` passes
 - Scope of verification: source tree, Gradle modules, Spring Boot bootstrap, tests, and backlog alignment
 
@@ -312,6 +312,18 @@ Today the main blockers are:
 ## Report Update Endpoint — Done
 
 `PUT /api/v1/reports/{id}` (owner or PLATFORM_ADMIN). Accepts partial update: any of name, description, categoryId, dataSourceId, ownerTeam, sqlText — null fields are ignored (patch semantics). SQL change resets `report_version.preview_status` to PENDING. Only DRAFT reports can be updated; PUBLISHED reports rejected with 500. Validates new SQL through `QueryValidatorPort`. Emits `REPORT_UPDATED` audit event. `UpdateReportCommand` DTO in application; `updateDraft()` added to `CreateReportDefinitionUseCase`, `ReportDefinitionRepository`, `ReportDefinitionApplicationService`, `ReportDefinitionRepositoryAdapter`. Entity setters added to `ReportDefinitionEntity` and `ReportVersionEntity`.
+
+## Pagination, Update Endpoints, Export List, Report Filters — Done
+
+All list endpoints now return `PageResponse<T>` (`content`, `page`, `size`, `total`, `totalPages`) with `?page=0&size=20` query params (default 20 items/page). `PageResult<T>` is the framework-free application-layer record; Spring `Page<>` + `Pageable` only at JPA layer. Existing `findAll()` kept for backward-compat in tests; `findAllPaged()` added as parallel methods.
+
+`PUT /api/v1/categories/{id}` (`PLATFORM_ADMIN`): partial update (null = no-op); name uniqueness enforced via `existsByNameAndIdNot`. `PUT /api/v1/datasources/{id}` (`PLATFORM_ADMIN`): partial update; raw password encrypted before storing. Both new ports methods: `CategoryRepositoryPort.update(UUID, String, String)` and `DataSourceRepositoryPort.update(UpdateDataSourceCommand)`. Application service encrypts password before passing encrypted value via command's `password` field to adapter.
+
+`GET /api/v1/exports?page=0&size=20` (authenticated): lists caller's exports via JPQL subquery join on `report_execution.requested_by` (no `requestedBy` column on `report_export` table). Paged. New port method `ReportExportRepository.findByRequestedBy(String, int, int)`.
+
+`GET /api/v1/reports?page=0&size=20&name=&status=&categoryId=` (authenticated): optional filters; JPQL with `:param IS NULL OR ...` pattern handles null = "no filter" at DB level. `ReportDefinitionJpaRepository.findAllFiltered` with `Page` return.
+
+`GET /api/v1/audit-events` fixed: added `page` param (was broken after `AuditEventPort.findEvents` signature changed to include `page`).
 
 ## Audit Event Logging — Done
 

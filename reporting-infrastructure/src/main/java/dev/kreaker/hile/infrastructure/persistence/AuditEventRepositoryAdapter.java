@@ -42,19 +42,23 @@ public class AuditEventRepositoryAdapter implements AuditEventPort {
   }
 
   @Override
-  public List<AuditEventView> findEvents(String actor, String action, int limit) {
-    PageRequest page = PageRequest.of(0, limit);
-    List<AuditEventEntity> entities;
+  public List<AuditEventView> findEvents(String actor, String action, int page, int limit) {
+    PageRequest pageable = PageRequest.of(page, limit);
     if (actor != null && action != null) {
-      entities = jpa.findByActorAndActionOrderByCreatedAtDesc(actor, action, page);
+      return jpa.findByActorAndActionOrderByCreatedAtDesc(actor, action, pageable).stream()
+          .map(this::toView)
+          .toList();
     } else if (actor != null) {
-      entities = jpa.findByActorOrderByCreatedAtDesc(actor, page);
+      return jpa.findByActorOrderByCreatedAtDesc(actor, pageable).stream()
+          .map(this::toView)
+          .toList();
     } else if (action != null) {
-      entities = jpa.findByActionOrderByCreatedAtDesc(action, page);
+      return jpa.findByActionOrderByCreatedAtDesc(action, pageable).stream()
+          .map(this::toView)
+          .toList();
     } else {
-      entities = jpa.findByOrderByCreatedAtDesc(page);
+      return jpa.findByOrderByCreatedAtDesc(pageable).stream().map(this::toView).toList();
     }
-    return entities.stream().map(this::toView).toList();
   }
 
   private AuditEventView toView(AuditEventEntity e) {

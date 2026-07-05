@@ -4,9 +4,11 @@ import dev.kreaker.hile.application.dto.ColumnMetadata;
 import dev.kreaker.hile.application.dto.CreateDataSourceCommand;
 import dev.kreaker.hile.application.dto.DataSourceView;
 import dev.kreaker.hile.application.dto.PreviewResult;
+import dev.kreaker.hile.application.dto.UpdateDataSourceCommand;
 import dev.kreaker.hile.application.dto.ValidationResult;
 import dev.kreaker.hile.application.port.in.DataSourceUseCase;
 import dev.kreaker.hile.application.port.out.AuditEventPort;
+import dev.kreaker.hile.bootstrap.api.PageResponse;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.security.Principal;
@@ -18,8 +20,10 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -59,13 +63,32 @@ public class DataSourceController {
   }
 
   @GetMapping
-  public ResponseEntity<List<DataSourceView>> findAll() {
-    return ResponseEntity.ok(dataSourceUseCase.findAll());
+  public ResponseEntity<PageResponse<DataSourceView>> findAll(
+      @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
+    return ResponseEntity.ok(PageResponse.from(dataSourceUseCase.findAllPaged(page, size)));
   }
 
   @GetMapping("/{id}")
   public ResponseEntity<DataSourceView> findById(@PathVariable UUID id) {
     return ResponseEntity.ok(dataSourceUseCase.findById(id));
+  }
+
+  @PutMapping("/{id}")
+  public ResponseEntity<DataSourceView> update(
+      @PathVariable UUID id, @RequestBody UpdateDataSourceRequest request, Principal principal) {
+    DataSourceView view =
+        dataSourceUseCase.update(
+            new UpdateDataSourceCommand(
+                id,
+                request.name(),
+                request.host(),
+                request.port(),
+                request.databaseOrService(),
+                request.username(),
+                request.password(),
+                request.sslMode()));
+    auditEventPort.record(principal.getName(), "DATASOURCE_UPDATED", "DATASOURCE", id);
+    return ResponseEntity.ok(view);
   }
 
   @DeleteMapping("/{id}")

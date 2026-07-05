@@ -130,4 +130,32 @@ public class DataSourceEntity {
   public OffsetDateTime getCreatedAt() {
     return createdAt;
   }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public void setHost(String host) {
+    this.host = host;
+  }
+
+  public void setPort(Integer port) {
+    this.port = port;
+  }
+
+  public void setDatabaseOrService(String databaseOrService) {
+    this.databaseOrService = databaseOrService;
+  }
+
+  public void setUsername(String username) {
+    this.username = username;
+  }
+
+  public void setSecretRef(String secretRef) {
+    this.secretRef = secretRef;
+  }
+
+  public void setSslMode(String sslMode) {
+    this.sslMode = sslMode;
+  }
 }

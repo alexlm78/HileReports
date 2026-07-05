@@ -23,7 +23,8 @@ public class AuditController {
   public ResponseEntity<List<AuditEventView>> findEvents(
       @RequestParam(required = false) String actor,
       @RequestParam(required = false) String action,
+      @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "100") int limit) {
-    return ResponseEntity.ok(auditEventPort.findEvents(actor, action, Math.min(limit, 1000)));
+    return ResponseEntity.ok(auditEventPort.findEvents(actor, action, page, Math.min(limit, 1000)));
   }
 }

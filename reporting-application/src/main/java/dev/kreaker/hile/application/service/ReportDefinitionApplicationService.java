@@ -2,6 +2,7 @@ package dev.kreaker.hile.application.service;
 
 import dev.kreaker.hile.application.dto.CatalogReportView;
 import dev.kreaker.hile.application.dto.CreateReportDefinitionCommand;
+import dev.kreaker.hile.application.dto.PageResult;
 import dev.kreaker.hile.application.dto.PreviewResult;
 import dev.kreaker.hile.application.dto.ReportColumnView;
 import dev.kreaker.hile.application.dto.ReportDefinitionView;
@@ -98,6 +99,15 @@ public class ReportDefinitionApplicationService implements CreateReportDefinitio
   @Override
   public List<ReportDefinitionView> findAll() {
     return repository.findAll().stream().map(this::toView).toList();
+  }
+
+  @Override
+  public PageResult<ReportDefinitionView> findAllPaged(
+      int page, int size, String name, String status, UUID categoryId) {
+    PageResult<ReportDefinition> result =
+        repository.findAllPaged(page, size, name, status, categoryId);
+    List<ReportDefinitionView> content = result.content().stream().map(this::toView).toList();
+    return new PageResult<>(content, page, size, result.total());
   }
 
   @Override

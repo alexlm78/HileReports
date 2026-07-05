@@ -1,5 +1,6 @@
 package dev.kreaker.hile.infrastructure.persistence;
 
+import dev.kreaker.hile.application.dto.PageResult;
 import dev.kreaker.hile.application.port.out.ReportExportRepository;
 import dev.kreaker.hile.domain.export.ReportExport;
 import dev.kreaker.hile.infrastructure.persistence.entity.ReportExportEntity;
@@ -8,6 +9,8 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -55,6 +58,14 @@ public class ReportExportRepositoryAdapter implements ReportExportRepository {
   @Override
   public void deleteById(UUID id) {
     repo.deleteById(id);
+  }
+
+  @Override
+  public PageResult<ReportExport> findByRequestedBy(String requestedBy, int page, int size) {
+    Page<ReportExportEntity> result =
+        repo.findByRequestedBy(requestedBy, PageRequest.of(page, size));
+    List<ReportExport> content = result.getContent().stream().map(this::toDomain).toList();
+    return new PageResult<>(content, page, size, result.getTotalElements());
   }
 
   private ReportExport toDomain(ReportExportEntity e) {

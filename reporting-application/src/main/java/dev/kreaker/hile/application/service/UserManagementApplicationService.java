@@ -2,6 +2,7 @@ package dev.kreaker.hile.application.service;
 
 import dev.kreaker.hile.application.dto.ChangePasswordCommand;
 import dev.kreaker.hile.application.dto.CreateUserCommand;
+import dev.kreaker.hile.application.dto.PageResult;
 import dev.kreaker.hile.application.dto.UserView;
 import dev.kreaker.hile.application.port.in.UserManagementUseCase;
 import dev.kreaker.hile.application.port.out.PasswordHasherPort;
@@ -33,6 +34,13 @@ public class UserManagementApplicationService implements UserManagementUseCase {
   @Override
   public List<UserView> findAll() {
     return repository.findAllUsers().stream().map(this::toView).toList();
+  }
+
+  @Override
+  public PageResult<UserView> findAllPaged(int page, int size) {
+    PageResult<AppUser> result = repository.findAllUsersPaged(page, size);
+    List<UserView> content = result.content().stream().map(this::toView).toList();
+    return new PageResult<>(content, page, size, result.total());
   }
 
   @Override

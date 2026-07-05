@@ -1,5 +1,6 @@
 package dev.kreaker.hile.infrastructure.persistence;
 
+import dev.kreaker.hile.application.dto.PageResult;
 import dev.kreaker.hile.application.port.out.UserRepositoryPort;
 import dev.kreaker.hile.domain.security.AppUser;
 import dev.kreaker.hile.domain.security.UserCredentials;
@@ -13,6 +14,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -75,6 +78,13 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
   @Override
   public List<AppUser> findAllUsers() {
     return userJpaRepository.findAll().stream().map(this::toDomain).toList();
+  }
+
+  @Override
+  public PageResult<AppUser> findAllUsersPaged(int page, int size) {
+    Page<AppUserEntity> result = userJpaRepository.findAll(PageRequest.of(page, size));
+    List<AppUser> content = result.getContent().stream().map(this::toDomain).toList();
+    return new PageResult<>(content, page, size, result.getTotalElements());
   }
 
   @Override

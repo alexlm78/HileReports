@@ -7,4 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface CategoryJpaRepository extends JpaRepository<CategoryEntity, UUID> {
 
   boolean existsByName(String name);
+
+  boolean existsByNameAndIdNot(String name, UUID id);
 }

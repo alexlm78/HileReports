@@ -1,5 +1,6 @@
 package dev.kreaker.hile.infrastructure.persistence;
 
+import dev.kreaker.hile.application.dto.PageResult;
 import dev.kreaker.hile.application.dto.UpdateReportCommand;
 import dev.kreaker.hile.application.port.out.ReportDefinitionRepository;
 import dev.kreaker.hile.domain.report.ReportDefinition;
@@ -20,6 +21,8 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -172,6 +175,16 @@ public class ReportDefinitionRepositoryAdapter implements ReportDefinitionReposi
     }
     VersionInfo info = latestVersionInfo(id);
     return toDomain(entity, info.sqlText(), info.previewStatus());
+  }
+
+  @Override
+  public PageResult<ReportDefinition> findAllPaged(
+      int page, int size, String name, String status, UUID categoryId) {
+    Page<ReportDefinitionEntity> result =
+        defRepo.findAllFiltered(name, status, categoryId, PageRequest.of(page, size));
+    List<ReportDefinition> content =
+        result.getContent().stream().map(e -> toDomain(e, null, null)).toList();
+    return new PageResult<>(content, page, size, result.getTotalElements());
   }
 
   @Override

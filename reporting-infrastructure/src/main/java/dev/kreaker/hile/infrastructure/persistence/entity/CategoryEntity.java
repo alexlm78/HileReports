@@ -57,4 +57,12 @@ public class CategoryEntity {
   public OffsetDateTime getCreatedAt() {
     return createdAt;
   }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
 }

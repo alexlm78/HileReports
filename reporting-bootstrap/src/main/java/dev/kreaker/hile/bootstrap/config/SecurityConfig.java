@@ -56,11 +56,16 @@ public class SecurityConfig {
                     .hasRole("PLATFORM_ADMIN")
                     .requestMatchers(DELETE, "/api/v1/categories/**")
                     .hasRole("PLATFORM_ADMIN")
+                    .requestMatchers(PUT, "/api/v1/categories/**")
+                    .hasRole("PLATFORM_ADMIN")
                     .requestMatchers("/api/v1/categories/**")
                     .authenticated()
                     // Report creation — PLATFORM_ADMIN or REPORT_DESIGNER
                     .requestMatchers(POST, "/api/v1/reports")
                     .hasAnyRole("PLATFORM_ADMIN", "REPORT_DESIGNER")
+                    // Report list and single read — authenticated
+                    .requestMatchers(GET, "/api/v1/reports", "/api/v1/reports/*")
+                    .authenticated()
                     // Report execution and export — REPORT_EXECUTE permission
                     // (PLATFORM_ADMIN, REPORT_DESIGNER, REPORT_VIEWER)
                     .requestMatchers(POST, "/api/v1/reports/*/execute", "/api/v1/reports/*/export")
