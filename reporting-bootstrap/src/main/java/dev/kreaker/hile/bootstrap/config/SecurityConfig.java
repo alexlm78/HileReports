@@ -3,6 +3,7 @@ package dev.kreaker.hile.bootstrap.config;
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 import dev.kreaker.hile.bootstrap.security.JwtAuthenticationFilter;
@@ -76,6 +77,11 @@ public class SecurityConfig {
                     .requestMatchers(DELETE, "/api/v1/tags/**")
                     .hasRole("PLATFORM_ADMIN")
                     .requestMatchers(GET, "/api/v1/tags")
+                    .authenticated()
+                    // User self-profile — any authenticated user
+                    .requestMatchers(GET, "/api/v1/users/me")
+                    .authenticated()
+                    .requestMatchers(PUT, "/api/v1/users/me/password")
                     .authenticated()
                     // User management — PLATFORM_ADMIN only
                     .requestMatchers("/api/v1/users/**")

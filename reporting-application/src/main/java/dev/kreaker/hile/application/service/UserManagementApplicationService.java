@@ -44,6 +44,23 @@ public class UserManagementApplicationService implements UserManagementUseCase {
   }
 
   @Override
+  public UserView findByUsername(String username) {
+    return repository
+        .findUserByUsername(username)
+        .map(this::toView)
+        .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
+  }
+
+  @Override
+  public void changeOwnPassword(String username, String newPassword) {
+    AppUser user =
+        repository
+            .findUserByUsername(username)
+            .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
+    repository.changeUserPassword(user.id(), passwordHasher.hash(newPassword));
+  }
+
+  @Override
   public void disable(UUID id) {
     if (repository.findUserById(id).isEmpty()) {
       throw new IllegalArgumentException("User not found: " + id);

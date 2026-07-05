@@ -303,6 +303,12 @@ Today the main blockers are:
 
 `springdoc-openapi-starter-webmvc-ui:2.6.0` added to `reporting-bootstrap`. `OpenApiConfig` bean configures API info (title, version, contact) and a global `bearerAuth` JWT security scheme so every endpoint shows the Authorize button. `SecurityConfig` whitelists `/swagger-ui/**`, `/swagger-ui.html`, `/v3/api-docs/**` as public. `springdoc.*` config in `application.yml` sets paths, alpha sorting, and request duration display. Swagger UI available at `http://localhost:8080/swagger-ui.html`; JSON spec at `http://localhost:8080/v3/api-docs`.
 
+## Report Delete + User Self-Profile — Done
+
+`DELETE /api/v1/reports/{id}` (owner or PLATFORM_ADMIN): only DRAFT reports; rejected if report has any execution history (preserves audit trail). Cascade delete order: columns → parameters per version, tags, versions, definition (nulls circular FK first). New port methods: `hasExecutions(UUID)`, `deleteDraft(UUID)` on `ReportDefinitionRepository`; `deleteDraft(UUID)` on `CreateReportDefinitionUseCase`; implemented in `ReportDefinitionApplicationService` and `ReportDefinitionRepositoryAdapter`. New JPA methods: `existsByReportDefinitionId` on `ReportExecutionJpaRepository`, `deleteByReportDefinitionId` on `ReportVersionJpaRepository`. Emits `REPORT_DELETED` audit event.
+
+`GET /api/v1/users/me` and `PUT /api/v1/users/me/password`: any authenticated user can view their own profile or change their own password. New port method `findUserByUsername(String)` on `UserRepositoryPort`; `findByUsername(String)` and `changeOwnPassword(String, String)` on `UserManagementUseCase`; implemented in service and adapter. SecurityConfig: `/api/v1/users/me` routes placed before PLATFORM_ADMIN catch-all. No admin role required.
+
 ## Report Update Endpoint — Done
 
 `PUT /api/v1/reports/{id}` (owner or PLATFORM_ADMIN). Accepts partial update: any of name, description, categoryId, dataSourceId, ownerTeam, sqlText — null fields are ignored (patch semantics). SQL change resets `report_version.preview_status` to PENDING. Only DRAFT reports can be updated; PUBLISHED reports rejected with 500. Validates new SQL through `QueryValidatorPort`. Emits `REPORT_UPDATED` audit event. `UpdateReportCommand` DTO in application; `updateDraft()` added to `CreateReportDefinitionUseCase`, `ReportDefinitionRepository`, `ReportDefinitionApplicationService`, `ReportDefinitionRepositoryAdapter`. Entity setters added to `ReportDefinitionEntity` and `ReportVersionEntity`.

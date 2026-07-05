@@ -10,6 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 public interface ReportExecutionJpaRepository extends JpaRepository<ReportExecutionEntity, UUID> {
 
+  boolean existsByReportDefinitionId(UUID reportDefinitionId);
+
   @Modifying
   @Transactional
   @Query(

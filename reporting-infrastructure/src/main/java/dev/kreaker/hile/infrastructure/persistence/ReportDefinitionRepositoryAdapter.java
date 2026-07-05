@@ -6,7 +6,11 @@ import dev.kreaker.hile.domain.report.ReportDefinition;
 import dev.kreaker.hile.domain.report.ReportStatus;
 import dev.kreaker.hile.infrastructure.persistence.entity.ReportDefinitionEntity;
 import dev.kreaker.hile.infrastructure.persistence.entity.ReportVersionEntity;
+import dev.kreaker.hile.infrastructure.persistence.jpa.ReportColumnJpaRepository;
 import dev.kreaker.hile.infrastructure.persistence.jpa.ReportDefinitionJpaRepository;
+import dev.kreaker.hile.infrastructure.persistence.jpa.ReportExecutionJpaRepository;
+import dev.kreaker.hile.infrastructure.persistence.jpa.ReportParameterJpaRepository;
+import dev.kreaker.hile.infrastructure.persistence.jpa.ReportTagJpaRepository;
 import dev.kreaker.hile.infrastructure.persistence.jpa.ReportVersionJpaRepository;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -24,11 +28,24 @@ public class ReportDefinitionRepositoryAdapter implements ReportDefinitionReposi
 
   private final ReportDefinitionJpaRepository defRepo;
   private final ReportVersionJpaRepository versionRepo;
+  private final ReportColumnJpaRepository columnRepo;
+  private final ReportParameterJpaRepository parameterRepo;
+  private final ReportTagJpaRepository tagRepo;
+  private final ReportExecutionJpaRepository executionRepo;
 
   public ReportDefinitionRepositoryAdapter(
-      ReportDefinitionJpaRepository defRepo, ReportVersionJpaRepository versionRepo) {
+      ReportDefinitionJpaRepository defRepo,
+      ReportVersionJpaRepository versionRepo,
+      ReportColumnJpaRepository columnRepo,
+      ReportParameterJpaRepository parameterRepo,
+      ReportTagJpaRepository tagRepo,
+      ReportExecutionJpaRepository executionRepo) {
     this.defRepo = defRepo;
     this.versionRepo = versionRepo;
+    this.columnRepo = columnRepo;
+    this.parameterRepo = parameterRepo;
+    this.tagRepo = tagRepo;
+    this.executionRepo = executionRepo;
   }
 
   @Override
@@ -155,6 +172,32 @@ public class ReportDefinitionRepositoryAdapter implements ReportDefinitionReposi
     }
     VersionInfo info = latestVersionInfo(id);
     return toDomain(entity, info.sqlText(), info.previewStatus());
+  }
+
+  @Override
+  public boolean hasExecutions(UUID id) {
+    return executionRepo.existsByReportDefinitionId(id);
+  }
+
+  @Override
+  @Transactional
+  public void deleteDraft(UUID id) {
+    ReportDefinitionEntity entity =
+        defRepo
+            .findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Report not found: " + id));
+    List<ReportVersionEntity> versions =
+        versionRepo.findByReportDefinitionIdOrderByVersionNumberAsc(id);
+    for (ReportVersionEntity v : versions) {
+      columnRepo.deleteByReportVersionId(v.getId());
+      parameterRepo.deleteByReportVersionId(v.getId());
+    }
+    tagRepo.deleteByIdReportDefinitionId(id);
+    entity.setCurrentVersionId(null);
+    defRepo.save(entity);
+    defRepo.flush();
+    versionRepo.deleteByReportDefinitionId(id);
+    defRepo.delete(entity);
   }
 
   private VersionInfo latestVersionInfo(UUID defId) {

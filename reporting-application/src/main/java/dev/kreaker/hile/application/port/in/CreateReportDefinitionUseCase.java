@@ -38,4 +38,6 @@ public interface CreateReportDefinitionUseCase {
   List<ReportParameterView> getParameters(UUID reportId);
 
   List<CatalogReportView> getCatalog(String nameFilter);
+
+  void deleteDraft(UUID id);
 }

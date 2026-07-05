@@ -66,4 +66,16 @@ public class UserController {
     userManagement.changePassword(new ChangePasswordCommand(id, request.newPassword()));
     return ResponseEntity.noContent().build();
   }
+
+  @GetMapping("/me")
+  public ResponseEntity<UserView> me(Principal principal) {
+    return ResponseEntity.ok(userManagement.findByUsername(principal.getName()));
+  }
+
+  @PutMapping("/me/password")
+  public ResponseEntity<Void> changeOwnPassword(
+      @Valid @RequestBody ChangePasswordRequest request, Principal principal) {
+    userManagement.changeOwnPassword(principal.getName(), request.newPassword());
+    return ResponseEntity.noContent().build();
+  }
 }

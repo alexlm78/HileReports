@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -91,6 +92,14 @@ public class ReportController {
                 request.sqlText()));
     auditEventPort.record(principal.getName(), "REPORT_UPDATED", "REPORT", id);
     return ResponseEntity.ok(view);
+  }
+
+  @DeleteMapping("/{id}")
+  @PreAuthorize("@reportSecurity.isOwnerOrAdmin(#id, authentication)")
+  public ResponseEntity<Void> delete(@PathVariable UUID id, Principal principal) {
+    reportUseCase.deleteDraft(id);
+    auditEventPort.record(principal.getName(), "REPORT_DELETED", "REPORT", id);
+    return ResponseEntity.noContent().build();
   }
 
   @PostMapping("/{id}/preview")

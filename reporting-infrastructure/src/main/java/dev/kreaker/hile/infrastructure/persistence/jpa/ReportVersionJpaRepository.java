@@ -9,4 +9,6 @@ public interface ReportVersionJpaRepository extends JpaRepository<ReportVersionE
 
   List<ReportVersionEntity> findByReportDefinitionIdOrderByVersionNumberAsc(
       UUID reportDefinitionId);
+
+  void deleteByReportDefinitionId(UUID reportDefinitionId);
 }

@@ -167,6 +167,19 @@ public class ReportDefinitionApplicationService implements CreateReportDefinitio
         .toList();
   }
 
+  @Override
+  public void deleteDraft(UUID id) {
+    ReportDefinition def = repository.findById(id).orElseThrow(() -> notFound(id));
+    if (def.status() != ReportStatus.DRAFT) {
+      throw new IllegalStateException("Only DRAFT reports can be deleted.");
+    }
+    if (repository.hasExecutions(id)) {
+      throw new IllegalStateException(
+          "Report has execution history and cannot be deleted. Unpublish it instead.");
+    }
+    repository.deleteDraft(id);
+  }
+
   private ReportDefinitionView toView(ReportDefinition r) {
     return new ReportDefinitionView(
         r.id(),

@@ -14,7 +14,11 @@ public interface UserManagementUseCase {
 
   UserView findById(UUID id);
 
+  UserView findByUsername(String username);
+
   void disable(UUID id);
 
   void changePassword(ChangePasswordCommand command);
+
+  void changeOwnPassword(String username, String newPassword);
 }
