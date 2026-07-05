@@ -105,6 +105,10 @@ public class ReportVersionEntity {
     return previewStatus;
   }
 
+  public void setPreviewStatus(String previewStatus) {
+    this.previewStatus = previewStatus;
+  }
+
   public int getMaxRows() {
     return maxRows;
   }

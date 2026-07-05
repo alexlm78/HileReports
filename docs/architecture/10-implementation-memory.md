@@ -7,7 +7,7 @@ This document gives an AI agent or a new developer a verified snapshot of the cu
 ## Last Verified Snapshot
 
 - Date: `2026-07-04`
-- Repository status: Real JDBC connectors (PostgreSQL/MySQL) + discover/preview endpoints + report builder REST API backed by JPA
+- Repository status: Full EP-07 builder — report preview gate, publish/unpublish, column config, parameter config; all backed by JPA
 - Build status: `./gradlew test` passes
 - Scope of verification: source tree, Gradle modules, Spring Boot bootstrap, tests, and backlog alignment
 
@@ -38,9 +38,15 @@ What is already in place:
 - `DataSourceApplicationService` builds JDBC URL, decrypts secret, calls connector for test/discover/preview.
 - `POST /api/v1/datasources/{id}/discover` — discovers columns from SQL text against real DB.
 - `POST /api/v1/datasources/{id}/preview` — executes SQL against real DB, returns columns + rows (capped by `hile.reports.preview.max-rows`).
-- Report builder: `POST /api/v1/reports` (PLATFORM_ADMIN or REPORT_DESIGNER), `GET /api/v1/reports`, `GET /api/v1/reports/{id}`.
-- Report creation persists `report_definition` + `report_version` atomically in one `@Transactional` call via `ReportDefinitionRepositoryAdapter`.
-- `ReportVersionEntity` stores SQL text, SHA-256 hash, validation/preview status, max_rows, timeout_seconds, execution_mode.
+- Report builder: `POST /api/v1/reports`, `GET /api/v1/reports`, `GET /api/v1/reports/{id}`.
+- `POST /api/v1/reports/{id}/preview` — runs report SQL against its datasource, updates `report_version.preview_status=VALID|INVALID`.
+- `POST /api/v1/reports/{id}/publish` — transitions DRAFT → PUBLISHED; rejects if `preview_status != VALID`.
+- `POST /api/v1/reports/{id}/unpublish` — transitions PUBLISHED → DRAFT.
+- `PUT /api/v1/reports/{id}/columns` — replace-all column config in `report_column` for current version.
+- `GET /api/v1/reports/{id}/columns` — list configured columns (ordered by ordinal).
+- `PUT /api/v1/reports/{id}/parameters` — replace-all parameter config in `report_parameter`.
+- `GET /api/v1/reports/{id}/parameters` — list configured parameters.
+- `ReportColumnEntity`, `ReportParameterEntity` JPA entities added.
 - `InMemoryReportDefinitionRepository` removed; replaced by `ReportDefinitionRepositoryAdapter` (JPA).
 
 What is not in place yet:
@@ -225,10 +231,10 @@ Status legend:
 | `TASK-06.2.1-b` Preview endpoint | Done | `POST /api/v1/datasources/{id}/preview` + discover endpoint |
 | `TASK-07.1.1-a` `ReportDefinitionService` | Done | Create, findById, findAll wired to JPA |
 | `TASK-07.1.1-b` Save draft and create new version | Done | Adapter saves report_definition + report_version atomically |
-| `TASK-07.1.1-c` Publish and unpublish reports | Not started | No publish flow |
-| `TASK-07.2.1-a` Configure columns | Not started | No column config persisted |
-| `TASK-07.2.1-b` Configure parameters | Not started | No parameter config persisted |
-| `TASK-07.2.1-c` Publish only after successful preview | Not started | No publish workflow |
+| `TASK-07.1.1-c` Publish and unpublish reports | Done | `POST /{id}/publish` (gates on VALID preview), `POST /{id}/unpublish` (PUBLISHED → DRAFT) |
+| `TASK-07.2.1-a` Configure columns | Done | `PUT /api/v1/reports/{id}/columns` — replaces all columns for current version in `report_column` |
+| `TASK-07.2.1-b` Configure parameters | Done | `PUT /api/v1/reports/{id}/parameters` — replaces all params in `report_parameter` |
+| `TASK-07.2.1-c` Publish only after successful preview | Done | `POST /{id}/preview` updates `report_version.preview_status=VALID`; publish rejects if not VALID |
 | `EP-08` Catalog and execution | Not started | No catalog or runtime execution flow |
 | `EP-09` Exports | Not started | Placeholder job only |
 | `EP-10` Observability and hardening | Partial | Actuator exposure exists, rest missing |
@@ -264,10 +270,9 @@ Today the main blockers are:
 
 ## Recommended Next Implementation Slice
 
-1. **Permission-based ACL** (`TASK-02.2.1-c`): per-report and per-datasource ownership/access control — currently any authenticated user can read all reports.
-2. **Report column + parameter configuration** (`TASK-07.2.1-a`, `TASK-07.2.1-b`): persist column visibility/order and named parameter definitions from `report_column` and `report_parameter` tables.
-3. **Publish/unpublish flow** (`TASK-07.1.1-c`): `PATCH /api/v1/reports/{id}/publish` — transitions DRAFT → PUBLISHED, validates preview status.
-4. **Category CRUD** (`TASK-03.2.1-a`): `POST /api/v1/categories`, assign reports to categories.
+1. **Catalog endpoint** (`TASK-08.1.1-a`): `GET /api/v1/catalog` — filterable list of PUBLISHED reports accessible to authenticated users; excludes DRAFT/ARCHIVED.
+2. **Per-report ACL** (`TASK-02.2.1-c`, `TASK-08.1.1-b`): ownership model — creator owns report; PLATFORM_ADMIN can manage all.
+3. **Parameterized execution** (`TASK-08.2.1-a`, `TASK-08.2.1-b`, `TASK-08.2.1-c`): resolve `report_parameter` bindings, execute paginated query, persist `report_execution` + `report_execution_parameter`.
 
 ## Commands Used to Verify the Snapshot
 

@@ -43,8 +43,8 @@ Modular monolith. Dependency direction: `bootstrap → application → domain`. 
 |---|---|
 | `reporting-domain` | Core records, enums — no Spring, no framework deps |
 | `reporting-application` | Use cases, DTOs, outbound ports — no Spring |
-| `reporting-infrastructure` | Port implementations: validator, in-memory repo, Flyway migrations |
-| `reporting-connectors` | Stub JDBC adapters: PostgreSQL, MySQL, Oracle via `ConnectorFactory` |
+| `reporting-infrastructure` | Port implementations: JPA adapters for datasource, report, columns, params; Flyway migrations |
+| `reporting-connectors` | Real JDBC adapters: PostgreSQL, MySQL; Oracle stub; `ConnectorFactory` |
 | `reporting-security` | `LocalAuthenticationProviderAdapter`, `AdAuthenticationProviderStub` |
 | `reporting-jobs` | Placeholder export cleanup job |
 | `reporting-bootstrap` | Spring Boot app, REST controllers, wiring, `application.yml` configs |
@@ -80,6 +80,18 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 | `GET` | `/api/v1/datasources/{id}` | `PLATFORM_ADMIN` |
 | `DELETE` | `/api/v1/datasources/{id}` | `PLATFORM_ADMIN` |
 | `POST` | `/api/v1/datasources/{id}/test` | `PLATFORM_ADMIN` |
+| `POST` | `/api/v1/datasources/{id}/discover` | `PLATFORM_ADMIN` |
+| `POST` | `/api/v1/datasources/{id}/preview` | `PLATFORM_ADMIN` |
+| `POST` | `/api/v1/reports` | `PLATFORM_ADMIN` or `REPORT_DESIGNER` |
+| `GET` | `/api/v1/reports` | authenticated |
+| `GET` | `/api/v1/reports/{id}` | authenticated |
+| `POST` | `/api/v1/reports/{id}/preview` | authenticated |
+| `POST` | `/api/v1/reports/{id}/publish` | authenticated |
+| `POST` | `/api/v1/reports/{id}/unpublish` | authenticated |
+| `PUT` | `/api/v1/reports/{id}/columns` | authenticated |
+| `GET` | `/api/v1/reports/{id}/columns` | authenticated |
+| `PUT` | `/api/v1/reports/{id}/parameters` | authenticated |
+| `GET` | `/api/v1/reports/{id}/parameters` | authenticated |
 
 ## Security Notes
 
@@ -90,6 +102,6 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 
 ## Next Implementation Slice (in order)
 
-1. Real PostgreSQL/MySQL JDBC connectors (`TASK-04.2.1-a`, `TASK-04.2.1-b`)
-2. Column discovery + preview REST endpoints (`TASK-06.1.1-a`, `TASK-06.2.1-b`)
-3. Report builder REST API backed by JPA (`TASK-07.1.1-a`, `TASK-07.1.1-b`)
+1. Catalog endpoint — list published reports with filters (`TASK-08.1.1-a`)
+2. Per-report ACL — ownership-based access control (`TASK-02.2.1-c`, `TASK-08.1.1-b`)
+3. Parameterized report execution + execution history (`TASK-08.2.1-a`, `TASK-08.2.1-b`, `TASK-08.2.1-c`)

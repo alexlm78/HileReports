@@ -8,7 +8,9 @@ import dev.kreaker.hile.application.port.out.DataSourceRepositoryPort;
 import dev.kreaker.hile.application.port.out.DbConnectorPort;
 import dev.kreaker.hile.application.port.out.PasswordEncryptionPort;
 import dev.kreaker.hile.application.port.out.QueryValidatorPort;
+import dev.kreaker.hile.application.port.out.ReportColumnRepositoryPort;
 import dev.kreaker.hile.application.port.out.ReportDefinitionRepository;
+import dev.kreaker.hile.application.port.out.ReportParameterRepositoryPort;
 import dev.kreaker.hile.application.port.out.UserRepositoryPort;
 import dev.kreaker.hile.application.service.AuthenticationApplicationService;
 import dev.kreaker.hile.application.service.DataSourceApplicationService;
@@ -59,9 +61,18 @@ public class ApplicationWiringConfig {
   CreateReportDefinitionUseCase createReportDefinitionUseCase(
       ReportDefinitionRepository reportDefinitionRepository,
       QueryValidatorPort queryValidatorPort,
+      DataSourceUseCase dataSourceUseCase,
+      ReportColumnRepositoryPort reportColumnRepositoryPort,
+      ReportParameterRepositoryPort reportParameterRepositoryPort,
       @Value("${hile.reports.preview.max-rows:100}") int maxRows,
       @Value("${hile.reports.execution.default-timeout-seconds:30}") int timeoutSeconds) {
     return new ReportDefinitionApplicationService(
-        reportDefinitionRepository, queryValidatorPort, maxRows, timeoutSeconds);
+        reportDefinitionRepository,
+        queryValidatorPort,
+        dataSourceUseCase,
+        reportColumnRepositoryPort,
+        reportParameterRepositoryPort,
+        maxRows,
+        timeoutSeconds);
   }
 }

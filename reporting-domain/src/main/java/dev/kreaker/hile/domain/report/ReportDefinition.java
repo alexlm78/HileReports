@@ -11,5 +11,6 @@ public record ReportDefinition(
     String ownerTeam,
     ReportStatus status,
     String sqlText,
+    String previewStatus,
     String createdBy,
     OffsetDateTime createdAt) {}

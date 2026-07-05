@@ -66,7 +66,7 @@ public class ReportDefinitionRepositoryAdapter implements ReportDefinitionReposi
     entity.setCurrentVersionId(version.getId());
     defRepo.save(entity);
 
-    return toDomain(entity, def.sqlText());
+    return toDomain(entity, def.sqlText(), "PENDING");
   }
 
   @Override
@@ -75,24 +75,60 @@ public class ReportDefinitionRepositoryAdapter implements ReportDefinitionReposi
         .findById(id)
         .map(
             e -> {
-              String sql = latestSql(e.getId());
-              return toDomain(e, sql);
+              VersionInfo info = latestVersionInfo(e.getId());
+              return toDomain(e, info.sqlText(), info.previewStatus());
             });
   }
 
   @Override
   public List<ReportDefinition> findAll() {
-    return defRepo.findAll().stream().map(e -> toDomain(e, null)).toList();
+    return defRepo.findAll().stream().map(e -> toDomain(e, null, null)).toList();
   }
 
-  private String latestSql(UUID defId) {
+  @Override
+  @Transactional
+  public ReportDefinition updateStatus(UUID id, ReportStatus newStatus) {
+    ReportDefinitionEntity entity =
+        defRepo
+            .findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Report not found: " + id));
+    entity.setStatus(newStatus.name());
+    defRepo.save(entity);
+    VersionInfo info = latestVersionInfo(id);
+    return toDomain(entity, info.sqlText(), info.previewStatus());
+  }
+
+  @Override
+  @Transactional
+  public ReportDefinition updatePreviewStatus(UUID id, String previewStatus) {
+    ReportDefinitionEntity entity =
+        defRepo
+            .findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Report not found: " + id));
+    UUID versionId = entity.getCurrentVersionId();
+    if (versionId != null) {
+      versionRepo
+          .findById(versionId)
+          .ifPresent(
+              v -> {
+                v.setPreviewStatus(previewStatus);
+                versionRepo.save(v);
+              });
+    }
+    VersionInfo info = latestVersionInfo(id);
+    return toDomain(entity, info.sqlText(), info.previewStatus());
+  }
+
+  private VersionInfo latestVersionInfo(UUID defId) {
     List<ReportVersionEntity> versions =
         versionRepo.findByReportDefinitionIdOrderByVersionNumberAsc(defId);
-    if (versions.isEmpty()) return null;
-    return versions.get(versions.size() - 1).getSqlText();
+    if (versions.isEmpty()) return new VersionInfo(null, null);
+    ReportVersionEntity latest = versions.get(versions.size() - 1);
+    return new VersionInfo(latest.getSqlText(), latest.getPreviewStatus());
   }
 
-  private ReportDefinition toDomain(ReportDefinitionEntity e, String sqlText) {
+  private ReportDefinition toDomain(
+      ReportDefinitionEntity e, String sqlText, String previewStatus) {
     return new ReportDefinition(
         e.getId(),
         e.getName(),
@@ -101,6 +137,7 @@ public class ReportDefinitionRepositoryAdapter implements ReportDefinitionReposi
         e.getOwnerTeam(),
         ReportStatus.valueOf(e.getStatus()),
         sqlText,
+        previewStatus,
         e.getCreatedBy(),
         e.getCreatedAt());
   }
@@ -114,4 +151,6 @@ public class ReportDefinitionRepositoryAdapter implements ReportDefinitionReposi
       throw new RuntimeException(e);
     }
   }
+
+  private record VersionInfo(String sqlText, String previewStatus) {}
 }
