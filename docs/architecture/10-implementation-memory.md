@@ -237,7 +237,7 @@ Status legend:
 | `TASK-05.1.1-c` Detect dangerous patterns and comments | Done | Comment stripping (`--` + `/* */`) before validation; 15 dangerous patterns blocked (sleep, benchmark, waitfor, load_file, into outfile/dumpfile, information_schema, pg_catalog, pg_read_file, pg_ls_dir, xp_cmdshell, exec, execute); 26 tests |
 | `TASK-05.1.1-d` Extract named parameters | Done | Regex-based extraction implemented |
 | `TASK-05.2.1-a` Matrix of valid and invalid cases | Done | 26 tests: accept/reject, comment stripping, 15 dangerous patterns, named param extraction edge cases |
-| `TASK-05.2.1-b` Tests by dialect | Not started | No dialect-specific tests |
+| `TASK-05.2.1-b` Tests by dialect | Done | `SimpleReadOnlyQueryValidatorDialectTest`: 30 tests across PG accept (ILIKE, NULLS LAST, FETCH NEXT, AT TIME ZONE, recursive CTE, JSON operators, `::` cast, ARRAY ANY, qualified schema) + PG reject (pg_sleep — gap fixed, pg_read_file, pg_ls_dir, pg_catalog) + MySQL accept (backtick identifiers, LIMIT/OFFSET, IF, IFNULL, DATE_FORMAT, GROUP_CONCAT, USE INDEX) + MySQL reject (sleep, benchmark, load_file, into outfile) + param-extraction edge cases (:: cast, backtick, recursive CTE). Validator updated: added `pg_sleep(` to DANGEROUS_PATTERNS; `extractNamedParameters` now replaces `::` before regex to prevent spurious params from PG cast syntax. |
 | `TASK-06.1.1-a` `discoverColumns` | Done | Real JDBC via `ResultSetMetaData` for PG/MySQL |
 | `TASK-06.1.1-b` Standardize output types | Done | `ColumnMetadata(sourceName, label, dataType)` with driver-native type name |
 | `TASK-06.2.1-a` `executePreview` with limits | Done | Real JDBC with `setMaxRows(limit)` for PG/MySQL |
@@ -294,8 +294,7 @@ Today the main blockers are:
 
 ## Recommended Next Implementation Slice
 
-1. **Tests by dialect** (`TASK-05.2.1-b`): dialect-specific `QueryValidator` tests for PostgreSQL and MySQL SQL surface.
-2. **Observability** (`TASK-10.2.1-a/b/c`): load tests, connection pool tuning, capacity baseline.
+1. **Observability / performance** (`TASK-10.2.1-a/b/c`): connection pool tuning, capacity baseline, load test scaffolding.
 
 ## Commands Used to Verify the Snapshot
 

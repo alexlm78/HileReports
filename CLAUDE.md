@@ -116,4 +116,4 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 
 ## Next Implementation Slice (in order)
 
-1. Tests by dialect: dialect-specific `QueryValidator` cases for PostgreSQL and MySQL (`TASK-05.2.1-b`)
+1. Connection pool tuning and capacity baseline (`TASK-10.2.1-a/b/c`)
