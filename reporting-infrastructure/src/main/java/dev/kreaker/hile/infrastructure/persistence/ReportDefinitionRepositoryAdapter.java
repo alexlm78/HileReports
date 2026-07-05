@@ -86,6 +86,13 @@ public class ReportDefinitionRepositoryAdapter implements ReportDefinitionReposi
   }
 
   @Override
+  public List<ReportDefinition> findByStatus(ReportStatus status) {
+    return defRepo.findByStatusOrderByCreatedAtDesc(status.name()).stream()
+        .map(e -> toDomain(e, null, null))
+        .toList();
+  }
+
+  @Override
   @Transactional
   public ReportDefinition updateStatus(UUID id, ReportStatus newStatus) {
     ReportDefinitionEntity entity =

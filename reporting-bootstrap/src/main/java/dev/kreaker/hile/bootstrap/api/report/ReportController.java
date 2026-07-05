@@ -14,6 +14,7 @@ import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -61,21 +62,25 @@ public class ReportController {
   }
 
   @PostMapping("/{id}/preview")
+  @PreAuthorize("@reportSecurity.isOwnerOrAdmin(#id, authentication)")
   public ResponseEntity<PreviewResult> runPreview(@PathVariable UUID id) {
     return ResponseEntity.ok(reportUseCase.runPreview(id));
   }
 
   @PostMapping("/{id}/publish")
+  @PreAuthorize("@reportSecurity.isOwnerOrAdmin(#id, authentication)")
   public ResponseEntity<ReportDefinitionView> publish(@PathVariable UUID id) {
     return ResponseEntity.ok(reportUseCase.publish(id));
   }
 
   @PostMapping("/{id}/unpublish")
+  @PreAuthorize("@reportSecurity.isOwnerOrAdmin(#id, authentication)")
   public ResponseEntity<ReportDefinitionView> unpublish(@PathVariable UUID id) {
     return ResponseEntity.ok(reportUseCase.unpublish(id));
   }
 
   @PutMapping("/{id}/columns")
+  @PreAuthorize("@reportSecurity.isOwnerOrAdmin(#id, authentication)")
   public ResponseEntity<List<ReportColumnView>> upsertColumns(
       @PathVariable UUID id, @Valid @RequestBody List<ColumnConfigRequest> request) {
     List<ReportColumn> columns =
@@ -104,6 +109,7 @@ public class ReportController {
   }
 
   @PutMapping("/{id}/parameters")
+  @PreAuthorize("@reportSecurity.isOwnerOrAdmin(#id, authentication)")
   public ResponseEntity<List<ReportParameterView>> upsertParameters(
       @PathVariable UUID id, @Valid @RequestBody List<ParameterConfigRequest> request) {
     List<ReportParameter> params =

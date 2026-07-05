@@ -42,6 +42,8 @@ public class SecurityConfig {
                     .hasAnyRole("PLATFORM_ADMIN", "REPORT_DESIGNER")
                     .requestMatchers("/api/v1/reports/**")
                     .authenticated()
+                    .requestMatchers("/api/v1/catalog/**")
+                    .authenticated()
                     .anyRequest()
                     .authenticated())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

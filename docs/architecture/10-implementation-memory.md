@@ -7,7 +7,7 @@ This document gives an AI agent or a new developer a verified snapshot of the cu
 ## Last Verified Snapshot
 
 - Date: `2026-07-04`
-- Repository status: Full EP-07 builder — report preview gate, publish/unpublish, column config, parameter config; all backed by JPA
+- Repository status: Catalog endpoint + report ownership ACL via @PreAuthorize; R1 builder path complete
 - Build status: `./gradlew test` passes
 - Scope of verification: source tree, Gradle modules, Spring Boot bootstrap, tests, and backlog alignment
 
@@ -48,6 +48,8 @@ What is already in place:
 - `GET /api/v1/reports/{id}/parameters` — list configured parameters.
 - `ReportColumnEntity`, `ReportParameterEntity` JPA entities added.
 - `InMemoryReportDefinitionRepository` removed; replaced by `ReportDefinitionRepositoryAdapter` (JPA).
+- `GET /api/v1/catalog` — returns PUBLISHED reports only; optional `?name=` case-insensitive substring filter; ordered by `created_at DESC`.
+- `ReportSecurityGuard` — `@Component("reportSecurity")` that checks report ownership or `ROLE_PLATFORM_ADMIN`. Used via `@PreAuthorize("@reportSecurity.isOwnerOrAdmin(#id, authentication)")` on publish/unpublish/preview/columns/parameters endpoints.
 
 What is not in place yet:
 
@@ -235,7 +237,7 @@ Status legend:
 | `TASK-07.2.1-a` Configure columns | Done | `PUT /api/v1/reports/{id}/columns` — replaces all columns for current version in `report_column` |
 | `TASK-07.2.1-b` Configure parameters | Done | `PUT /api/v1/reports/{id}/parameters` — replaces all params in `report_parameter` |
 | `TASK-07.2.1-c` Publish only after successful preview | Done | `POST /{id}/preview` updates `report_version.preview_status=VALID`; publish rejects if not VALID |
-| `EP-08` Catalog and execution | Not started | No catalog or runtime execution flow |
+| `EP-08` Catalog and execution | Partial | Catalog listing + ownership ACL done; execution not started |
 | `EP-09` Exports | Not started | Placeholder job only |
 | `EP-10` Observability and hardening | Partial | Actuator exposure exists, rest missing |
 
@@ -270,9 +272,9 @@ Today the main blockers are:
 
 ## Recommended Next Implementation Slice
 
-1. **Catalog endpoint** (`TASK-08.1.1-a`): `GET /api/v1/catalog` — filterable list of PUBLISHED reports accessible to authenticated users; excludes DRAFT/ARCHIVED.
-2. **Per-report ACL** (`TASK-02.2.1-c`, `TASK-08.1.1-b`): ownership model — creator owns report; PLATFORM_ADMIN can manage all.
-3. **Parameterized execution** (`TASK-08.2.1-a`, `TASK-08.2.1-b`, `TASK-08.2.1-c`): resolve `report_parameter` bindings, execute paginated query, persist `report_execution` + `report_execution_parameter`.
+1. **Parameterized execution** (`TASK-08.2.1-a`, `TASK-08.2.1-b`, `TASK-08.2.1-c`): resolve `report_parameter` bindings, execute paginated query, persist `report_execution` + `report_execution_parameter`.
+2. **Category CRUD** (`TASK-03.2.1-a`): `POST/GET/DELETE /api/v1/categories`, assign `category_id` when creating reports.
+3. **CSV/XLSX async export** (`TASK-09.1.1-a`, `TASK-09.2.1-a`, `TASK-09.2.1-b`): POST export job, poll status, stream file.
 
 ## Commands Used to Verify the Snapshot
 

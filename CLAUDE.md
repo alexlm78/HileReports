@@ -92,6 +92,7 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 | `GET` | `/api/v1/reports/{id}/columns` | authenticated |
 | `PUT` | `/api/v1/reports/{id}/parameters` | authenticated |
 | `GET` | `/api/v1/reports/{id}/parameters` | authenticated |
+| `GET` | `/api/v1/catalog` | authenticated |
 
 ## Security Notes
 
@@ -102,6 +103,6 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 
 ## Next Implementation Slice (in order)
 
-1. Catalog endpoint — list published reports with filters (`TASK-08.1.1-a`)
-2. Per-report ACL — ownership-based access control (`TASK-02.2.1-c`, `TASK-08.1.1-b`)
-3. Parameterized report execution + execution history (`TASK-08.2.1-a`, `TASK-08.2.1-b`, `TASK-08.2.1-c`)
+1. Parameterized report execution + execution history (`TASK-08.2.1-a`, `TASK-08.2.1-b`, `TASK-08.2.1-c`)
+2. Category CRUD + assign reports to categories (`TASK-03.2.1-a`)
+3. CSV/XLSX export async jobs (`TASK-09.1.1-a`, `TASK-09.2.1-a`, `TASK-09.2.1-b`)

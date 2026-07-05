@@ -1,5 +1,6 @@
 package dev.kreaker.hile.application.port.in;
 
+import dev.kreaker.hile.application.dto.CatalogReportView;
 import dev.kreaker.hile.application.dto.CreateReportDefinitionCommand;
 import dev.kreaker.hile.application.dto.PreviewResult;
 import dev.kreaker.hile.application.dto.ReportColumnView;
@@ -32,4 +33,6 @@ public interface CreateReportDefinitionUseCase {
   List<ReportParameterView> upsertParameters(UUID reportId, List<ReportParameter> parameters);
 
   List<ReportParameterView> getParameters(UUID reportId);
+
+  List<CatalogReportView> getCatalog(String nameFilter);
 }

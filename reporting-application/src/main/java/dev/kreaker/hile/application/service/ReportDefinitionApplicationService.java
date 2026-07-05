@@ -1,5 +1,6 @@
 package dev.kreaker.hile.application.service;
 
+import dev.kreaker.hile.application.dto.CatalogReportView;
 import dev.kreaker.hile.application.dto.CreateReportDefinitionCommand;
 import dev.kreaker.hile.application.dto.PreviewResult;
 import dev.kreaker.hile.application.dto.ReportColumnView;
@@ -185,6 +186,29 @@ public class ReportDefinitionApplicationService implements CreateReportDefinitio
         p.allowsMultiple(),
         p.sourceColumn(),
         p.validationRule());
+  }
+
+  @Override
+  public List<CatalogReportView> getCatalog(String nameFilter) {
+    return repository.findByStatus(ReportStatus.PUBLISHED).stream()
+        .filter(
+            r ->
+                nameFilter == null
+                    || nameFilter.isBlank()
+                    || r.name().toLowerCase().contains(nameFilter.toLowerCase()))
+        .map(this::toCatalogView)
+        .toList();
+  }
+
+  private CatalogReportView toCatalogView(ReportDefinition r) {
+    return new CatalogReportView(
+        r.id(),
+        r.name(),
+        r.description(),
+        r.dataSourceId(),
+        r.ownerTeam(),
+        r.createdBy(),
+        r.createdAt());
   }
 
   private IllegalArgumentException notFound(UUID id) {
