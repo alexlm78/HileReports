@@ -8,6 +8,7 @@ import dev.kreaker.hile.application.dto.ReportParameterView;
 import dev.kreaker.hile.application.dto.TagView;
 import dev.kreaker.hile.application.port.in.CreateReportDefinitionUseCase;
 import dev.kreaker.hile.application.port.in.TagUseCase;
+import dev.kreaker.hile.application.port.out.AuditEventPort;
 import dev.kreaker.hile.bootstrap.api.tag.SetReportTagsRequest;
 import dev.kreaker.hile.domain.report.ReportColumn;
 import dev.kreaker.hile.domain.report.ReportParameter;
@@ -32,10 +33,15 @@ public class ReportController {
 
   private final CreateReportDefinitionUseCase reportUseCase;
   private final TagUseCase tagUseCase;
+  private final AuditEventPort auditEventPort;
 
-  public ReportController(CreateReportDefinitionUseCase reportUseCase, TagUseCase tagUseCase) {
+  public ReportController(
+      CreateReportDefinitionUseCase reportUseCase,
+      TagUseCase tagUseCase,
+      AuditEventPort auditEventPort) {
     this.reportUseCase = reportUseCase;
     this.tagUseCase = tagUseCase;
+    this.auditEventPort = auditEventPort;
   }
 
   @PostMapping
@@ -51,6 +57,7 @@ public class ReportController {
                 request.ownerTeam(),
                 request.sqlText(),
                 principal.getName()));
+    auditEventPort.record(principal.getName(), "REPORT_CREATED", "REPORT", view.id());
     return ResponseEntity.created(URI.create("/api/v1/reports/" + view.id())).body(view);
   }
 
@@ -75,14 +82,19 @@ public class ReportController {
 
   @PostMapping("/{id}/publish")
   @PreAuthorize("@reportSecurity.isOwnerOrAdmin(#id, authentication)")
-  public ResponseEntity<ReportDefinitionView> publish(@PathVariable UUID id) {
-    return ResponseEntity.ok(reportUseCase.publish(id));
+  public ResponseEntity<ReportDefinitionView> publish(@PathVariable UUID id, Principal principal) {
+    ReportDefinitionView view = reportUseCase.publish(id);
+    auditEventPort.record(principal.getName(), "REPORT_PUBLISHED", "REPORT", id);
+    return ResponseEntity.ok(view);
   }
 
   @PostMapping("/{id}/unpublish")
   @PreAuthorize("@reportSecurity.isOwnerOrAdmin(#id, authentication)")
-  public ResponseEntity<ReportDefinitionView> unpublish(@PathVariable UUID id) {
-    return ResponseEntity.ok(reportUseCase.unpublish(id));
+  public ResponseEntity<ReportDefinitionView> unpublish(
+      @PathVariable UUID id, Principal principal) {
+    ReportDefinitionView view = reportUseCase.unpublish(id);
+    auditEventPort.record(principal.getName(), "REPORT_UNPUBLISHED", "REPORT", id);
+    return ResponseEntity.ok(view);
   }
 
   @PutMapping("/{id}/columns")

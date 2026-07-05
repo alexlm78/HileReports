@@ -77,6 +77,9 @@ public class SecurityConfig {
                     // User management — PLATFORM_ADMIN only
                     .requestMatchers("/api/v1/users/**")
                     .hasRole("PLATFORM_ADMIN")
+                    // Audit log — PLATFORM_ADMIN only
+                    .requestMatchers("/api/v1/audit-events/**")
+                    .hasRole("PLATFORM_ADMIN")
                     .anyRequest()
                     .authenticated())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

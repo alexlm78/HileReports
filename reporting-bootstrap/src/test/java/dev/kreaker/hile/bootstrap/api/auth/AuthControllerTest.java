@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import dev.kreaker.hile.application.dto.AuthenticationResult;
 import dev.kreaker.hile.application.exception.InvalidCredentialsException;
 import dev.kreaker.hile.application.port.in.AuthenticateUserUseCase;
+import dev.kreaker.hile.application.port.out.AuditEventPort;
 import dev.kreaker.hile.bootstrap.api.ArchitectureController;
 import dev.kreaker.hile.bootstrap.api.GlobalExceptionHandler;
 import dev.kreaker.hile.bootstrap.config.SecurityConfig;
@@ -33,6 +34,7 @@ class AuthControllerTest {
 
   @MockBean private AuthenticateUserUseCase authenticateUserUseCase;
   @MockBean private TokenProviderPort jwtTokenProvider;
+  @MockBean private AuditEventPort auditEventPort;
 
   @Test
   void shouldAuthenticateWithValidCredentials() throws Exception {

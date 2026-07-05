@@ -6,6 +6,7 @@ import dev.kreaker.hile.application.dto.DataSourceView;
 import dev.kreaker.hile.application.dto.PreviewResult;
 import dev.kreaker.hile.application.dto.ValidationResult;
 import dev.kreaker.hile.application.port.in.DataSourceUseCase;
+import dev.kreaker.hile.application.port.out.AuditEventPort;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.security.Principal;
@@ -26,12 +27,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class DataSourceController {
 
   private final DataSourceUseCase dataSourceUseCase;
+  private final AuditEventPort auditEventPort;
   private final int previewMaxRows;
 
   public DataSourceController(
       DataSourceUseCase dataSourceUseCase,
+      AuditEventPort auditEventPort,
       @Value("${hile.reports.preview.max-rows:100}") int previewMaxRows) {
     this.dataSourceUseCase = dataSourceUseCase;
+    this.auditEventPort = auditEventPort;
     this.previewMaxRows = previewMaxRows;
   }
 
@@ -50,6 +54,7 @@ public class DataSourceController {
                 request.password(),
                 request.sslMode(),
                 principal.getName()));
+    auditEventPort.record(principal.getName(), "DATASOURCE_CREATED", "DATASOURCE", view.id());
     return ResponseEntity.created(URI.create("/api/v1/datasources/" + view.id())).body(view);
   }
 
@@ -64,8 +69,9 @@ public class DataSourceController {
   }
 
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> delete(@PathVariable UUID id) {
+  public ResponseEntity<Void> delete(@PathVariable UUID id, Principal principal) {
     dataSourceUseCase.delete(id);
+    auditEventPort.record(principal.getName(), "DATASOURCE_DELETED", "DATASOURCE", id);
     return ResponseEntity.noContent().build();
   }
 

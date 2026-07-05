@@ -3,6 +3,7 @@ package dev.kreaker.hile.bootstrap.api.report;
 import dev.kreaker.hile.application.dto.ExecuteReportCommand;
 import dev.kreaker.hile.application.dto.ExecutionResultView;
 import dev.kreaker.hile.application.port.in.ExecuteReportUseCase;
+import dev.kreaker.hile.application.port.out.AuditEventPort;
 import jakarta.validation.Valid;
 import java.security.Principal;
 import java.util.UUID;
@@ -18,9 +19,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class ExecuteReportController {
 
   private final ExecuteReportUseCase executeUseCase;
+  private final AuditEventPort auditEventPort;
 
-  public ExecuteReportController(ExecuteReportUseCase executeUseCase) {
+  public ExecuteReportController(
+      ExecuteReportUseCase executeUseCase, AuditEventPort auditEventPort) {
     this.executeUseCase = executeUseCase;
+    this.auditEventPort = auditEventPort;
   }
 
   @PostMapping("/{id}/execute")
@@ -32,6 +36,7 @@ public class ExecuteReportController {
         executeUseCase.execute(
             new ExecuteReportCommand(id, request.parameters(), request.page(), request.pageSize()),
             principal.getName());
+    auditEventPort.record(principal.getName(), "REPORT_EXECUTED", "REPORT", id);
     return ResponseEntity.ok(result);
   }
 }

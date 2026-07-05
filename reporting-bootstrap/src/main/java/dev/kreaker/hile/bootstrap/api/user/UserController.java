@@ -4,8 +4,10 @@ import dev.kreaker.hile.application.dto.ChangePasswordCommand;
 import dev.kreaker.hile.application.dto.CreateUserCommand;
 import dev.kreaker.hile.application.dto.UserView;
 import dev.kreaker.hile.application.port.in.UserManagementUseCase;
+import dev.kreaker.hile.application.port.out.AuditEventPort;
 import jakarta.validation.Valid;
 import java.net.URI;
+import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
@@ -23,17 +25,21 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
   private final UserManagementUseCase userManagement;
+  private final AuditEventPort auditEventPort;
 
-  public UserController(UserManagementUseCase userManagement) {
+  public UserController(UserManagementUseCase userManagement, AuditEventPort auditEventPort) {
     this.userManagement = userManagement;
+    this.auditEventPort = auditEventPort;
   }
 
   @PostMapping
-  public ResponseEntity<UserView> create(@Valid @RequestBody CreateUserRequest request) {
+  public ResponseEntity<UserView> create(
+      @Valid @RequestBody CreateUserRequest request, Principal principal) {
     UserView view =
         userManagement.create(
             new CreateUserCommand(
                 request.username(), request.password(), request.email(), request.role()));
+    auditEventPort.record(principal.getName(), "USER_CREATED", "USER", view.id());
     return ResponseEntity.created(URI.create("/api/v1/users/" + view.id())).body(view);
   }
 
@@ -48,8 +54,9 @@ public class UserController {
   }
 
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> disable(@PathVariable UUID id) {
+  public ResponseEntity<Void> disable(@PathVariable UUID id, Principal principal) {
     userManagement.disable(id);
+    auditEventPort.record(principal.getName(), "USER_DISABLED", "USER", id);
     return ResponseEntity.noContent().build();
   }
 
