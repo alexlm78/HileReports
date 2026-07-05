@@ -10,6 +10,7 @@ import dev.kreaker.hile.application.port.out.AuthenticationProviderPort;
 import dev.kreaker.hile.application.port.out.CategoryRepositoryPort;
 import dev.kreaker.hile.application.port.out.DataSourceRepositoryPort;
 import dev.kreaker.hile.application.port.out.DbConnectorPort;
+import dev.kreaker.hile.application.port.out.MetricsPort;
 import dev.kreaker.hile.application.port.out.PasswordEncryptionPort;
 import dev.kreaker.hile.application.port.out.QueryValidatorPort;
 import dev.kreaker.hile.application.port.out.ReportColumnRepositoryPort;
@@ -112,11 +113,13 @@ public class ApplicationWiringConfig {
       ReportDefinitionRepository reportDefinitionRepository,
       ReportParameterRepositoryPort reportParameterRepositoryPort,
       DataSourceUseCase dataSourceUseCase,
-      ReportExecutionRepository reportExecutionRepository) {
+      ReportExecutionRepository reportExecutionRepository,
+      MetricsPort metricsPort) {
     return new ExecuteReportApplicationService(
         reportDefinitionRepository,
         reportParameterRepositoryPort,
         dataSourceUseCase,
-        reportExecutionRepository);
+        reportExecutionRepository,
+        metricsPort);
   }
 }

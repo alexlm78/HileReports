@@ -30,15 +30,19 @@ management:
   endpoint:
     health:
       show-details: when_authorized
+    prometheus:
+      enabled: true
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info,metrics,prometheus
 
 logging:
   level:
     root: ${APP_LOG_LEVEL_ROOT:INFO}
     dev.kreaker.hile: ${APP_LOG_LEVEL_HILE:INFO}
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{correlationId:-}] %logger{36} - %msg%n"
 
 hile:
   reports:

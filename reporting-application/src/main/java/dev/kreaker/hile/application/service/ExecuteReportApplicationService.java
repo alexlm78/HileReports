@@ -5,6 +5,7 @@ import dev.kreaker.hile.application.dto.ExecutionResultView;
 import dev.kreaker.hile.application.dto.PreviewResult;
 import dev.kreaker.hile.application.port.in.DataSourceUseCase;
 import dev.kreaker.hile.application.port.in.ExecuteReportUseCase;
+import dev.kreaker.hile.application.port.out.MetricsPort;
 import dev.kreaker.hile.application.port.out.ReportDefinitionRepository;
 import dev.kreaker.hile.application.port.out.ReportExecutionRepository;
 import dev.kreaker.hile.application.port.out.ReportParameterRepositoryPort;
@@ -23,16 +24,19 @@ public class ExecuteReportApplicationService implements ExecuteReportUseCase {
   private final ReportParameterRepositoryPort parameterRepository;
   private final DataSourceUseCase dataSourceUseCase;
   private final ReportExecutionRepository executionRepository;
+  private final MetricsPort metrics;
 
   public ExecuteReportApplicationService(
       ReportDefinitionRepository reportRepository,
       ReportParameterRepositoryPort parameterRepository,
       DataSourceUseCase dataSourceUseCase,
-      ReportExecutionRepository executionRepository) {
+      ReportExecutionRepository executionRepository,
+      MetricsPort metrics) {
     this.reportRepository = reportRepository;
     this.parameterRepository = parameterRepository;
     this.dataSourceUseCase = dataSourceUseCase;
     this.executionRepository = executionRepository;
+    this.metrics = metrics;
   }
 
   @Override
@@ -89,6 +93,7 @@ public class ExecuteReportApplicationService implements ExecuteReportUseCase {
               null,
               correlationId);
       executionRepository.save(execution, paramValues);
+      metrics.recordExecution("COMPLETED", durationMs, rowCount);
 
       return new ExecutionResultView(
           executionId,
@@ -117,6 +122,7 @@ public class ExecuteReportApplicationService implements ExecuteReportUseCase {
               sanitize(e.getMessage()),
               correlationId);
       executionRepository.save(failed, Map.of());
+      metrics.recordExecution("FAILED", durationMs, -1);
       throw e;
     }
   }

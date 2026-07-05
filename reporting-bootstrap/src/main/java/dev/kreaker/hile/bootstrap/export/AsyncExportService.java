@@ -3,6 +3,7 @@ package dev.kreaker.hile.bootstrap.export;
 import dev.kreaker.hile.application.dto.AsyncExportTask;
 import dev.kreaker.hile.application.dto.PreviewResult;
 import dev.kreaker.hile.application.port.in.DataSourceUseCase;
+import dev.kreaker.hile.application.port.out.MetricsPort;
 import dev.kreaker.hile.application.port.out.ReportExecutionRepository;
 import dev.kreaker.hile.application.port.out.ReportExportRepository;
 import java.io.ByteArrayOutputStream;
@@ -27,14 +28,17 @@ public class AsyncExportService {
   private final DataSourceUseCase dataSourceUseCase;
   private final ReportExportRepository exportRepository;
   private final ReportExecutionRepository executionRepository;
+  private final MetricsPort metrics;
 
   public AsyncExportService(
       DataSourceUseCase dataSourceUseCase,
       ReportExportRepository exportRepository,
-      ReportExecutionRepository executionRepository) {
+      ReportExecutionRepository executionRepository,
+      MetricsPort metrics) {
     this.dataSourceUseCase = dataSourceUseCase;
     this.exportRepository = exportRepository;
     this.executionRepository = executionRepository;
+    this.metrics = metrics;
   }
 
   @Async("exportTaskExecutor")
@@ -60,11 +64,13 @@ public class AsyncExportService {
       exportRepository.updateStatusAndPath(task.exportId(), "COMPLETED", task.storagePath());
       executionRepository.updateStatus(
           task.executionId(), "COMPLETED", (long) result.rows().size(), duration);
+      metrics.recordExport(task.format(), "COMPLETED", duration);
 
     } catch (Exception e) {
       long duration = System.currentTimeMillis() - startMs;
       exportRepository.updateStatus(task.exportId(), "FAILED");
       executionRepository.updateStatus(task.executionId(), "FAILED", null, duration);
+      metrics.recordExport(task.format(), "FAILED", duration);
     }
   }
 

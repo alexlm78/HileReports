@@ -34,7 +34,11 @@ public class SecurityConfig {
         .authorizeHttpRequests(
             authorize ->
                 authorize
-                    .requestMatchers("/api/v1/auth/login", "/actuator/health", "/actuator/info")
+                    .requestMatchers(
+                        "/api/v1/auth/login",
+                        "/actuator/health",
+                        "/actuator/info",
+                        "/actuator/prometheus")
                     .permitAll()
                     .requestMatchers("/api/v1/datasources/**")
                     .hasRole("PLATFORM_ADMIN")
