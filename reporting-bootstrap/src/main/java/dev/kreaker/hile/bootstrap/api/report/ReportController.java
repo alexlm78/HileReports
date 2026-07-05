@@ -6,6 +6,7 @@ import dev.kreaker.hile.application.dto.ReportColumnView;
 import dev.kreaker.hile.application.dto.ReportDefinitionView;
 import dev.kreaker.hile.application.dto.ReportParameterView;
 import dev.kreaker.hile.application.dto.TagView;
+import dev.kreaker.hile.application.dto.UpdateReportCommand;
 import dev.kreaker.hile.application.port.in.CreateReportDefinitionUseCase;
 import dev.kreaker.hile.application.port.in.TagUseCase;
 import dev.kreaker.hile.application.port.out.AuditEventPort;
@@ -72,6 +73,24 @@ public class ReportController {
         .findById(id)
         .map(ResponseEntity::ok)
         .orElse(ResponseEntity.notFound().build());
+  }
+
+  @PutMapping("/{id}")
+  @PreAuthorize("@reportSecurity.isOwnerOrAdmin(#id, authentication)")
+  public ResponseEntity<ReportDefinitionView> update(
+      @PathVariable UUID id, @RequestBody UpdateReportRequest request, Principal principal) {
+    ReportDefinitionView view =
+        reportUseCase.updateDraft(
+            new UpdateReportCommand(
+                id,
+                request.name(),
+                request.description(),
+                request.categoryId(),
+                request.dataSourceId(),
+                request.ownerTeam(),
+                request.sqlText()));
+    auditEventPort.record(principal.getName(), "REPORT_UPDATED", "REPORT", id);
+    return ResponseEntity.ok(view);
   }
 
   @PostMapping("/{id}/preview")

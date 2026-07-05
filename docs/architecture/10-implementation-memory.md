@@ -300,6 +300,10 @@ Today the main blockers are:
 1. **AD authentication** (`TASK-02.3.1-b`): deferred — requires live AD/LDAP environment for testing.
 2. **Scheduled export cleanup job** (`reporting-jobs`): currently a placeholder; implement actual file deletion for expired exports.
 
+## Report Update Endpoint — Done
+
+`PUT /api/v1/reports/{id}` (owner or PLATFORM_ADMIN). Accepts partial update: any of name, description, categoryId, dataSourceId, ownerTeam, sqlText — null fields are ignored (patch semantics). SQL change resets `report_version.preview_status` to PENDING. Only DRAFT reports can be updated; PUBLISHED reports rejected with 500. Validates new SQL through `QueryValidatorPort`. Emits `REPORT_UPDATED` audit event. `UpdateReportCommand` DTO in application; `updateDraft()` added to `CreateReportDefinitionUseCase`, `ReportDefinitionRepository`, `ReportDefinitionApplicationService`, `ReportDefinitionRepositoryAdapter`. Entity setters added to `ReportDefinitionEntity` and `ReportVersionEntity`.
+
 ## Audit Event Logging — Done
 
 `AuditEventPort` (outbound port in `reporting-application`) with `record()` and `findEvents()`. `AuditEventRepositoryAdapter` (`@Repository` in `reporting-infrastructure`) implements both write (try/catch, swallowed on failure) and read with actor/action filters. `AuditEventEntity` maps `audit_event` table; `AuditEventJpaRepository` provides filtered Pageable queries. `AuditController` exposes `GET /api/v1/audit-events?actor=&action=&limit=100` (PLATFORM_ADMIN). Instrumented: `AuthController` (USER_LOGIN), `ReportController` (REPORT_CREATED, REPORT_PUBLISHED, REPORT_UNPUBLISHED), `ExecuteReportController` (REPORT_EXECUTED), `DataSourceController` (DATASOURCE_CREATED, DATASOURCE_DELETED), `UserController` (USER_CREATED, USER_DISABLED).

@@ -89,6 +89,7 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 | `POST` | `/api/v1/reports` | `PLATFORM_ADMIN` or `REPORT_DESIGNER` |
 | `GET` | `/api/v1/reports` | authenticated |
 | `GET` | `/api/v1/reports/{id}` | authenticated |
+| `PUT` | `/api/v1/reports/{id}` | owner or `PLATFORM_ADMIN` |
 | `POST` | `/api/v1/reports/{id}/preview` | authenticated |
 | `POST` | `/api/v1/reports/{id}/publish` | authenticated |
 | `POST` | `/api/v1/reports/{id}/unpublish` | authenticated |
@@ -111,6 +112,7 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 | `GET` | `/api/v1/users/{id}` | `PLATFORM_ADMIN` |
 | `DELETE` | `/api/v1/users/{id}` | `PLATFORM_ADMIN` (soft-disable) |
 | `PUT` | `/api/v1/users/{id}/password` | `PLATFORM_ADMIN` |
+| `GET` | `/api/v1/audit-events` | `PLATFORM_ADMIN` |
 
 ## Security Notes
 
@@ -121,4 +123,5 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 
 ## Next Implementation Slice (in order)
 
-1. Audit event logging — write to existing `audit_event` table; add `GET /api/v1/audit-events`
+1. OpenAPI/Swagger documentation — add `springdoc-openapi-starter-webmvc-ui`; annotate controllers
+2. AD authentication (`TASK-02.3.1-b`) — deferred until live LDAP/AD is available for testing

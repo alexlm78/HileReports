@@ -1,5 +1,6 @@
 package dev.kreaker.hile.infrastructure.persistence;
 
+import dev.kreaker.hile.application.dto.UpdateReportCommand;
 import dev.kreaker.hile.application.port.out.ReportDefinitionRepository;
 import dev.kreaker.hile.domain.report.ReportDefinition;
 import dev.kreaker.hile.domain.report.ReportStatus;
@@ -91,6 +92,35 @@ public class ReportDefinitionRepositoryAdapter implements ReportDefinitionReposi
     return defRepo.findByStatusOrderByCreatedAtDesc(status.name()).stream()
         .map(e -> toDomain(e, null, null))
         .toList();
+  }
+
+  @Override
+  @Transactional
+  public ReportDefinition updateDraft(UpdateReportCommand command) {
+    ReportDefinitionEntity entity =
+        defRepo
+            .findById(command.id())
+            .orElseThrow(() -> new IllegalArgumentException("Report not found: " + command.id()));
+    if (command.name() != null) entity.setName(command.name());
+    if (command.description() != null) entity.setDescription(command.description());
+    if (command.categoryId() != null) entity.setCategoryId(command.categoryId());
+    if (command.dataSourceId() != null) entity.setDataSourceId(command.dataSourceId());
+    if (command.ownerTeam() != null) entity.setOwnerTeam(command.ownerTeam());
+    defRepo.save(entity);
+
+    VersionInfo info = latestVersionInfo(command.id());
+    if (command.sqlText() != null && entity.getCurrentVersionId() != null) {
+      versionRepo
+          .findById(entity.getCurrentVersionId())
+          .ifPresent(
+              v -> {
+                v.setSqlText(command.sqlText());
+                v.setPreviewStatus("PENDING");
+                versionRepo.save(v);
+              });
+      return toDomain(entity, command.sqlText(), "PENDING");
+    }
+    return toDomain(entity, info.sqlText(), info.previewStatus());
   }
 
   @Override

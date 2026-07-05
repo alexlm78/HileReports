@@ -92,6 +92,26 @@ public class ReportDefinitionEntity extends AuditableEntity {
     return status;
   }
 
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public void setCategoryId(UUID categoryId) {
+    this.categoryId = categoryId;
+  }
+
+  public void setDataSourceId(UUID dataSourceId) {
+    this.dataSourceId = dataSourceId;
+  }
+
+  public void setOwnerTeam(String ownerTeam) {
+    this.ownerTeam = ownerTeam;
+  }
+
   public void setStatus(String status) {
     this.status = status;
   }

@@ -109,6 +109,10 @@ public class ReportVersionEntity extends AuditableEntity {
     this.previewStatus = previewStatus;
   }
 
+  public void setSqlText(String sqlText) {
+    this.sqlText = sqlText;
+  }
+
   public int getMaxRows() {
     return maxRows;
   }

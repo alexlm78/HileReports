@@ -6,6 +6,7 @@ import dev.kreaker.hile.application.dto.PreviewResult;
 import dev.kreaker.hile.application.dto.ReportColumnView;
 import dev.kreaker.hile.application.dto.ReportDefinitionView;
 import dev.kreaker.hile.application.dto.ReportParameterView;
+import dev.kreaker.hile.application.dto.UpdateReportCommand;
 import dev.kreaker.hile.domain.report.ReportColumn;
 import dev.kreaker.hile.domain.report.ReportParameter;
 import java.util.List;
@@ -15,6 +16,8 @@ import java.util.UUID;
 public interface CreateReportDefinitionUseCase {
 
   ReportDefinitionView createDraft(CreateReportDefinitionCommand command);
+
+  ReportDefinitionView updateDraft(UpdateReportCommand command);
 
   Optional<ReportDefinitionView> findById(UUID id);
 

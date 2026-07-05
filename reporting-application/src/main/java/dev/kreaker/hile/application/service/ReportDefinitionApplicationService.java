@@ -6,6 +6,7 @@ import dev.kreaker.hile.application.dto.PreviewResult;
 import dev.kreaker.hile.application.dto.ReportColumnView;
 import dev.kreaker.hile.application.dto.ReportDefinitionView;
 import dev.kreaker.hile.application.dto.ReportParameterView;
+import dev.kreaker.hile.application.dto.UpdateReportCommand;
 import dev.kreaker.hile.application.port.in.CreateReportDefinitionUseCase;
 import dev.kreaker.hile.application.port.in.DataSourceUseCase;
 import dev.kreaker.hile.application.port.out.QueryValidatorPort;
@@ -69,6 +70,24 @@ public class ReportDefinitionApplicationService implements CreateReportDefinitio
             command.createdBy(),
             OffsetDateTime.now());
     return toView(repository.save(draft, defaultMaxRows, defaultTimeoutSeconds));
+  }
+
+  @Override
+  public ReportDefinitionView updateDraft(UpdateReportCommand command) {
+    ReportDefinition current =
+        repository
+            .findById(command.id())
+            .orElseThrow(() -> new IllegalArgumentException("Report not found: " + command.id()));
+    if (current.status() != ReportStatus.DRAFT) {
+      throw new IllegalStateException("Only DRAFT reports can be updated.");
+    }
+    if (command.sqlText() != null) {
+      var validation = queryValidator.validateReadOnly(command.sqlText());
+      if (!validation.valid()) {
+        throw new IllegalArgumentException(String.join(", ", validation.messages()));
+      }
+    }
+    return toView(repository.updateDraft(command));
   }
 
   @Override
