@@ -116,4 +116,4 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 
 ## Next Implementation Slice (in order)
 
-1. Connection pool tuning and capacity baseline (`TASK-10.2.1-a/b/c`)
+1. Oracle connector (`TASK-04.2.1-c`) — currently a stub; requires ojdbc11 which is not on Maven Central

@@ -262,6 +262,9 @@ Status legend:
 | `TASK-10.1.1-b` Prometheus metrics | Done | `micrometer-registry-prometheus` added; endpoint public |
 | `TASK-10.1.1-c` Correlation ID + structured logging | Done | `CorrelationIdFilter`; MDC `correlationId`; `X-Correlation-ID` header; MDC propagated to async threads via TaskDecorator |
 | `EP-10` Observability and hardening | Done | Observability done; `GlobalExceptionHandler` provides consistent error responses |
+| `TASK-10.2.1-a` Load tests | Done | k6 scaffold at `load-tests/k6/hile-reports-load.js`; smoke (1 VU/30s), load (50 VU/5m ramp), stress (200 VU/9m) scenarios; thresholds: p95<2s http, p95<5s execute, error rate<1%; shared setup authenticates + discovers first published report |
+| `TASK-10.2.1-b` Tune pools/timeouts | Done | HikariCP: idle-timeout (10m), max-lifetime (30m), keepalive (1m), validation-timeout (5s), leak-detection configurable; Tomcat threads: max=200/400 (default/prod); async export pool externalized (`hile.reports.export.async.*`, overridable via env); prod profile overrides (pool-max=30, threads=400, export-pool=10) |
+| `TASK-10.2.1-c` Rate limiting | Done | `RateLimitFilter` (IP-based, CAS sliding-window, no external deps) on `/execute` + `/export` endpoints; 30 req/min default (prod: 60); disabled via `APP_RATE_LIMIT_ENABLED=false`; returns 429 JSON; note: not distributed — use API gateway for multi-instance |
 
 ## Working Vertical Slice Already Available
 
@@ -294,7 +297,7 @@ Today the main blockers are:
 
 ## Recommended Next Implementation Slice
 
-1. **Observability / performance** (`TASK-10.2.1-a/b/c`): connection pool tuning, capacity baseline, load test scaffolding.
+1. **Oracle connector** (`TASK-04.2.1-c`): replace stub with real JDBC using the Oracle JDBC driver (ojdbc11) — must be added as a local or Maven-compatible dependency since it's not on Maven Central.
 
 ## Commands Used to Verify the Snapshot
 
