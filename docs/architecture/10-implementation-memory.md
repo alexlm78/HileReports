@@ -212,7 +212,7 @@ Status legend:
 | `TASK-01.2.1-a` Base config and profiles | Done | Base config plus `local`, `dev`, `qa`, and `prod` profiles exist |
 | `TASK-01.2.1-b` Externalize sensitive variables | Done | Operational datasource settings are externalized through environment variables |
 | `TASK-01.3.1-a` CI pipeline | Done | `.github/workflows/ci.yml` — push+PR to main; Java 21 temurin; `spotlessCheck test`; test report artifact on failure |
-| `TASK-01.3.1-b` Publish executable artifact | Partial | Boot app can build locally, no pipeline/release flow |
+| `TASK-01.3.1-b` Publish executable artifact | Done | `publish` job in CI; multi-stage Dockerfile (temurin:21-jdk-alpine builder + jre-alpine runtime); pushes to ghcr.io on main push (short SHA + latest tags) |
 | `TASK-02.1.1-a` User, role, permission entities | Done | `AppUserEntity`, `AppRoleEntity`, `AppPermissionEntity` (SQL) + V2 migration with seeded roles and permissions |
 | `TASK-02.1.1-b` Spring Security and hashing | Done | `BCrypt`, `Spring Security` stateless config, JWT filter, persistent user repository |
 | `TASK-02.1.1-c` Authentication endpoint | Done | `POST /api/v1/auth/login` returns signed JWT with roles |
@@ -221,7 +221,7 @@ Status legend:
 | `TASK-02.2.1-c` Permissions by report and datasource | Done | Execute/export gated to REPORT_EXECUTE roles (PLATFORM_ADMIN, REPORT_DESIGNER, REPORT_VIEWER); design ops (/reports/**) restricted to REPORT_DESIGNER+; catalog + exports same gate; `canExecute(auth)` on `ReportSecurityGuard` |
 | `TASK-02.3.1-a` Decoupled authentication port | Done | Port and local/AD adapters exist |
 | `TASK-03.1.1-a` Flyway migrations | Done | V1 operational metadata + V2 security schema both configured and applied |
-| `TASK-03.1.1-b` Repositories and base services | Partial | Only in-memory report repository plus one app service |
+| `TASK-03.1.1-b` Repositories and base services | Done | Full JPA adapters for all entities; InMemoryReportDefinitionRepository removed |
 | `TASK-03.1.1-c` Entity auditing | Done | `AuditableEntity` @MappedSuperclass (@LastModifiedDate updatedAt, @LastModifiedBy updatedBy); `ReportDefinitionEntity` + `ReportVersionEntity` extend it; `@EnableJpaAuditing` + `AuditorAware` from SecurityContextHolder in `JpaConfig`; V3 migration adds nullable `updated_at`/`updated_by` columns |
 | `TASK-03.2.1-a` Category CRUD | Done | `CategoryEntity`, `CategoryRepositoryAdapter`, `CategoryApplicationService`, `CategoryController`; name uniqueness; `categoryId` FK on report |
 | `TASK-03.2.1-b` Tag and ownership model | Not started | No implementation |
@@ -232,11 +232,11 @@ Status legend:
 | `TASK-04.2.1-b` `MySqlConnector` | Done | Real JDBC testConnection, discoverColumns, executePreview |
 | `TASK-04.2.1-c` `OracleConnector` | Partial | Stub only — no Oracle JDBC driver on Maven Central |
 | `TASK-04.2.1-d` `ConnectorFactory` | Done | Factory wired to real adapters; discover/preview exposed via REST |
-| `TASK-05.1.1-a` `QueryValidator` | Partial | Simple implementation exists |
-| `TASK-05.1.1-b` Block DDL, DML, multiple statements | Partial | Basic token blocking exists |
+| `TASK-05.1.1-a` `QueryValidator` | Done | `SimpleReadOnlyQueryValidator` with comment stripping + dangerous pattern blocking |
+| `TASK-05.1.1-b` Block DDL, DML, multiple statements | Done | Blocks insert/update/delete/drop/alter/truncate/semicolon after comment stripping |
 | `TASK-05.1.1-c` Detect dangerous patterns and comments | Done | Comment stripping (`--` + `/* */`) before validation; 15 dangerous patterns blocked (sleep, benchmark, waitfor, load_file, into outfile/dumpfile, information_schema, pg_catalog, pg_read_file, pg_ls_dir, xp_cmdshell, exec, execute); 26 tests |
 | `TASK-05.1.1-d` Extract named parameters | Done | Regex-based extraction implemented |
-| `TASK-05.2.1-a` Matrix of valid and invalid cases | Partial | Only a few tests exist |
+| `TASK-05.2.1-a` Matrix of valid and invalid cases | Done | 26 tests: accept/reject, comment stripping, 15 dangerous patterns, named param extraction edge cases |
 | `TASK-05.2.1-b` Tests by dialect | Not started | No dialect-specific tests |
 | `TASK-06.1.1-a` `discoverColumns` | Done | Real JDBC via `ResultSetMetaData` for PG/MySQL |
 | `TASK-06.1.1-b` Standardize output types | Done | `ColumnMetadata(sourceName, label, dataType)` with driver-native type name |
@@ -258,7 +258,10 @@ Status legend:
 | `TASK-09.2.1-b` XLSX generation | Done | `AsyncExportService` uses `poi-ooxml:5.3.0` |
 | `TASK-09.2.1-c` Export cleanup job | Done | `ExportCleanupScheduler` `@Scheduled` deletes expired files + DB records |
 | `EP-09` Exports | Done | Full async export pipeline + cleanup |
-| `EP-10` Observability and hardening | Partial | Actuator exposure exists, rest missing |
+| `TASK-10.1.1-a` Micrometer + Actuator | Done | `MicrometerMetricsAdapter`; execution + export counters/timers/summaries; `/actuator/prometheus` exposed |
+| `TASK-10.1.1-b` Prometheus metrics | Done | `micrometer-registry-prometheus` added; endpoint public |
+| `TASK-10.1.1-c` Correlation ID + structured logging | Done | `CorrelationIdFilter`; MDC `correlationId`; `X-Correlation-ID` header; MDC propagated to async threads via TaskDecorator |
+| `EP-10` Observability and hardening | Done | Observability done; `GlobalExceptionHandler` provides consistent error responses |
 
 ## Working Vertical Slice Already Available
 
@@ -291,7 +294,7 @@ Today the main blockers are:
 
 ## Recommended Next Implementation Slice
 
-1. **Publish executable artifact** (`TASK-01.3.1-b`): extend CI to build and publish Docker image or fat JAR.
+1. **Tag and ownership model** (`TASK-03.2.1-b`): many-to-many tags on reports; team ownership beyond `owner_team` string.
 
 ## Commands Used to Verify the Snapshot
 

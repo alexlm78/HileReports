@@ -13,6 +13,7 @@ import dev.kreaker.hile.application.dto.AuthenticationResult;
 import dev.kreaker.hile.application.exception.InvalidCredentialsException;
 import dev.kreaker.hile.application.port.in.AuthenticateUserUseCase;
 import dev.kreaker.hile.bootstrap.api.ArchitectureController;
+import dev.kreaker.hile.bootstrap.api.GlobalExceptionHandler;
 import dev.kreaker.hile.bootstrap.config.SecurityConfig;
 import dev.kreaker.hile.security.TokenProviderPort;
 import java.util.Set;
@@ -25,7 +26,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(controllers = {AuthController.class, ArchitectureController.class})
-@Import({SecurityConfig.class, AuthExceptionHandler.class})
+@Import({SecurityConfig.class, GlobalExceptionHandler.class})
 class AuthControllerTest {
 
   @Autowired private MockMvc mockMvc;

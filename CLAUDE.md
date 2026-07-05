@@ -111,4 +111,4 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 
 ## Next Implementation Slice (in order)
 
-1. Publish executable artifact via CI: Docker image or fat JAR upload (`TASK-01.3.1-b`)
+1. Tag and ownership model (`TASK-03.2.1-b`)
