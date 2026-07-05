@@ -1,0 +1,10 @@
+.git
+.gradle
+.github
+**/build/
+**/.idea/
+**/*.iml
+**/.DS_Store
+docs
+AGENT_HANDOFF.md
+compose.yaml
