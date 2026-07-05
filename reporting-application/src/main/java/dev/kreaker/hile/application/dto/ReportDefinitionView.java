@@ -8,6 +8,7 @@ public record ReportDefinitionView(
     UUID id,
     String name,
     String description,
+    UUID categoryId,
     UUID dataSourceId,
     String ownerTeam,
     ReportStatus status,

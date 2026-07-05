@@ -7,7 +7,7 @@ This document gives an AI agent or a new developer a verified snapshot of the cu
 ## Last Verified Snapshot
 
 - Date: `2026-07-05`
-- Repository status: Parameterized execution + execution history persisted; R2 FEAT-08.2 complete
+- Repository status: Category CRUD + `categoryId` on reports; EP-08 fully done
 - Build status: `./gradlew test` passes
 - Scope of verification: source tree, Gradle modules, Spring Boot bootstrap, tests, and backlog alignment
 
@@ -52,6 +52,7 @@ What is already in place:
 - `ReportSecurityGuard` — `@Component("reportSecurity")` that checks report ownership or `ROLE_PLATFORM_ADMIN`. Used via `@PreAuthorize("@reportSecurity.isOwnerOrAdmin(#id, authentication)")` on publish/unpublish/preview/columns/parameters endpoints.
 - `POST /api/v1/reports/{id}/execute` — executes a PUBLISHED report with optional parameter map and pagination (`page`, `pageSize`). Named params (`:paramName`) in SQL text substituted with typed values from `report_parameter` metadata. Appends `LIMIT ? OFFSET ?` for pagination (PostgreSQL/MySQL). Persists `report_execution` + `report_execution_parameter` rows with COMPLETED or FAILED status, duration, and row count. Returns `ExecutionResultView` with `executionId`, `correlationId`, `columns`, `rows`, `rowCount`, `durationMs`, `page`, `pageSize`.
 - `ReportDefinition` domain record gained `currentVersionId UUID` field (used internally by execution layer).
+- Category CRUD: `POST /api/v1/categories` (`PLATFORM_ADMIN`), `GET /api/v1/categories`, `GET /api/v1/categories/{id}`, `DELETE /api/v1/categories/{id}` (`PLATFORM_ADMIN`). Name uniqueness enforced. `category_id` optional FK on `report_definition` — passed in `POST /api/v1/reports` body.
 
 What is not in place yet:
 
@@ -239,6 +240,7 @@ Status legend:
 | `TASK-07.2.1-a` Configure columns | Done | `PUT /api/v1/reports/{id}/columns` — replaces all columns for current version in `report_column` |
 | `TASK-07.2.1-b` Configure parameters | Done | `PUT /api/v1/reports/{id}/parameters` — replaces all params in `report_parameter` |
 | `TASK-07.2.1-c` Publish only after successful preview | Done | `POST /{id}/preview` updates `report_version.preview_status=VALID`; publish rejects if not VALID |
+| `TASK-03.2.1-a` Category CRUD | Done | `CategoryEntity`, `CategoryRepositoryAdapter`, `CategoryApplicationService`, `CategoryController`; name uniqueness checked; `categoryId` FK wired into report create |
 | `TASK-08.2.1-a` Resolve dynamic filters | Done | Named param substitution `:name`→`?` with type coercion from `report_parameter.parameter_type` |
 | `TASK-08.2.1-b` Execute paginated query | Done | `LIMIT ? OFFSET ?` appended; `DbConnectorPort.executeWithParams` in PG/MySQL adapters |
 | `TASK-08.2.1-c` Persist execution history | Done | `report_execution` + `report_execution_parameter` via JPA; COMPLETED/FAILED status + duration |
@@ -277,8 +279,7 @@ Today the main blockers are:
 
 ## Recommended Next Implementation Slice
 
-1. **Category CRUD** (`TASK-03.2.1-a`): `POST/GET/DELETE /api/v1/categories`, assign `category_id` when creating reports.
-2. **CSV/XLSX async export** (`TASK-09.1.1-a`, `TASK-09.2.1-a`, `TASK-09.2.1-b`): POST export job, poll status, stream file.
+1. **CSV/XLSX async export** (`TASK-09.1.1-a`, `TASK-09.2.1-a`, `TASK-09.2.1-b`): POST export job, poll status, stream file (CSV via `commons-csv`, XLSX via `apache-poi`).
 
 ## Commands Used to Verify the Snapshot
 

@@ -7,6 +7,7 @@ import java.util.UUID;
 public record ReportRequest(
     @NotBlank String name,
     String description,
+    UUID categoryId,
     @NotNull UUID dataSourceId,
     String ownerTeam,
     @NotBlank String sqlText) {}

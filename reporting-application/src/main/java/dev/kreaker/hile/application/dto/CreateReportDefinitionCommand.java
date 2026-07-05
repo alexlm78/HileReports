@@ -5,6 +5,7 @@ import java.util.UUID;
 public record CreateReportDefinitionCommand(
     String name,
     String description,
+    UUID categoryId,
     UUID dataSourceId,
     String ownerTeam,
     String sqlText,

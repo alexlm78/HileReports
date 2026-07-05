@@ -20,6 +20,9 @@ public class ReportDefinitionEntity {
 
   @Column private String description;
 
+  @Column(name = "category_id", columnDefinition = "uuid")
+  private UUID categoryId;
+
   @Column(name = "data_source_id", nullable = false, columnDefinition = "uuid")
   private UUID dataSourceId;
 
@@ -44,6 +47,7 @@ public class ReportDefinitionEntity {
       UUID id,
       String name,
       String description,
+      UUID categoryId,
       UUID dataSourceId,
       String ownerTeam,
       String status,
@@ -52,6 +56,7 @@ public class ReportDefinitionEntity {
     this.id = id;
     this.name = name;
     this.description = description;
+    this.categoryId = categoryId;
     this.dataSourceId = dataSourceId;
     this.ownerTeam = ownerTeam;
     this.status = status;
@@ -69,6 +74,10 @@ public class ReportDefinitionEntity {
 
   public String getDescription() {
     return description;
+  }
+
+  public UUID getCategoryId() {
+    return categoryId;
   }
 
   public UUID getDataSourceId() {

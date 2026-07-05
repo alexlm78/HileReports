@@ -41,6 +41,7 @@ public class ReportController {
             new CreateReportDefinitionCommand(
                 request.name(),
                 request.description(),
+                request.categoryId(),
                 request.dataSourceId(),
                 request.ownerTeam(),
                 request.sqlText(),

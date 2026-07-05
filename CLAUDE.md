@@ -75,6 +75,10 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 |---|---|---|
 | `POST` | `/api/v1/auth/login` | public |
 | `GET` | `/api/v1/architecture/modules` | authenticated |
+| `POST` | `/api/v1/categories` | `PLATFORM_ADMIN` |
+| `GET` | `/api/v1/categories` | authenticated |
+| `GET` | `/api/v1/categories/{id}` | authenticated |
+| `DELETE` | `/api/v1/categories/{id}` | `PLATFORM_ADMIN` |
 | `POST` | `/api/v1/datasources` | `PLATFORM_ADMIN` |
 | `GET` | `/api/v1/datasources` | `PLATFORM_ADMIN` |
 | `GET` | `/api/v1/datasources/{id}` | `PLATFORM_ADMIN` |
@@ -104,5 +108,4 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 
 ## Next Implementation Slice (in order)
 
-1. Category CRUD + assign reports to categories (`TASK-03.2.1-a`)
-2. CSV/XLSX export async jobs (`TASK-09.1.1-a`, `TASK-09.2.1-a`, `TASK-09.2.1-b`)
+1. CSV/XLSX export async jobs (`TASK-09.1.1-a`, `TASK-09.2.1-a`, `TASK-09.2.1-b`)

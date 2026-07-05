@@ -1,10 +1,12 @@
 package dev.kreaker.hile.bootstrap.config;
 
 import dev.kreaker.hile.application.port.in.AuthenticateUserUseCase;
+import dev.kreaker.hile.application.port.in.CategoryUseCase;
 import dev.kreaker.hile.application.port.in.CreateReportDefinitionUseCase;
 import dev.kreaker.hile.application.port.in.DataSourceUseCase;
 import dev.kreaker.hile.application.port.in.ExecuteReportUseCase;
 import dev.kreaker.hile.application.port.out.AuthenticationProviderPort;
+import dev.kreaker.hile.application.port.out.CategoryRepositoryPort;
 import dev.kreaker.hile.application.port.out.DataSourceRepositoryPort;
 import dev.kreaker.hile.application.port.out.DbConnectorPort;
 import dev.kreaker.hile.application.port.out.PasswordEncryptionPort;
@@ -15,6 +17,7 @@ import dev.kreaker.hile.application.port.out.ReportExecutionRepository;
 import dev.kreaker.hile.application.port.out.ReportParameterRepositoryPort;
 import dev.kreaker.hile.application.port.out.UserRepositoryPort;
 import dev.kreaker.hile.application.service.AuthenticationApplicationService;
+import dev.kreaker.hile.application.service.CategoryApplicationService;
 import dev.kreaker.hile.application.service.DataSourceApplicationService;
 import dev.kreaker.hile.application.service.ExecuteReportApplicationService;
 import dev.kreaker.hile.application.service.ReportDefinitionApplicationService;
@@ -77,6 +80,11 @@ public class ApplicationWiringConfig {
         reportParameterRepositoryPort,
         maxRows,
         timeoutSeconds);
+  }
+
+  @Bean
+  CategoryUseCase categoryUseCase(CategoryRepositoryPort categoryRepositoryPort) {
+    return new CategoryApplicationService(categoryRepositoryPort);
   }
 
   @Bean
