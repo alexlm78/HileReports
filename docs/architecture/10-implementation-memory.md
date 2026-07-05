@@ -222,7 +222,7 @@ Status legend:
 | `TASK-02.3.1-a` Decoupled authentication port | Done | Port and local/AD adapters exist |
 | `TASK-03.1.1-a` Flyway migrations | Done | V1 operational metadata + V2 security schema both configured and applied |
 | `TASK-03.1.1-b` Repositories and base services | Partial | Only in-memory report repository plus one app service |
-| `TASK-03.1.1-c` Entity auditing | Not started | No auditing model or infrastructure |
+| `TASK-03.1.1-c` Entity auditing | Done | `AuditableEntity` @MappedSuperclass (@LastModifiedDate updatedAt, @LastModifiedBy updatedBy); `ReportDefinitionEntity` + `ReportVersionEntity` extend it; `@EnableJpaAuditing` + `AuditorAware` from SecurityContextHolder in `JpaConfig`; V3 migration adds nullable `updated_at`/`updated_by` columns |
 | `TASK-03.2.1-a` Category CRUD | Done | `CategoryEntity`, `CategoryRepositoryAdapter`, `CategoryApplicationService`, `CategoryController`; name uniqueness; `categoryId` FK on report |
 | `TASK-03.2.1-b` Tag and ownership model | Not started | No implementation |
 | `TASK-04.1.1-a` `data_source` CRUD | Done | `DataSourceController` with create/list/get/delete endpoints wired to `DataSourceApplicationService` |
@@ -291,7 +291,7 @@ Today the main blockers are:
 
 ## Recommended Next Implementation Slice
 
-1. **Entity auditing** (`TASK-03.1.1-c`): JPA `@EntityListeners` / Spring Data `AuditorAware` to auto-populate `created_at`, `updated_at`, `created_by` on key entities.
+1. **Per-resource ACL** (`TASK-02.2.1-c`): ownership-based access control for reports and datasources; extend `ReportSecurityGuard` or add `@PreAuthorize` guards on datasource endpoints.
 
 ## Commands Used to Verify the Snapshot
 

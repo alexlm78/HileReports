@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "report_version")
-public class ReportVersionEntity {
+public class ReportVersionEntity extends AuditableEntity {
 
   @Id
   @Column(columnDefinition = "uuid")
