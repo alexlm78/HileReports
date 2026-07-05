@@ -7,7 +7,7 @@ This document gives an AI agent or a new developer a verified snapshot of the cu
 ## Last Verified Snapshot
 
 - Date: `2026-07-05`
-- Repository status: EP-08 done; EP-09 done (async CSV/XLSX export + cleanup scheduler)
+- Repository status: EP-08 done; EP-09 done; TASK-10.1.1-a/c done; CI pipeline added (TASK-01.3.1-a)
 - Build status: `./gradlew test` passes
 - Scope of verification: source tree, Gradle modules, Spring Boot bootstrap, tests, and backlog alignment
 
@@ -211,7 +211,7 @@ Status legend:
 | `TASK-01.1.1-c` Build and test plugins | Done | Shared Gradle conventions and tests configured |
 | `TASK-01.2.1-a` Base config and profiles | Done | Base config plus `local`, `dev`, `qa`, and `prod` profiles exist |
 | `TASK-01.2.1-b` Externalize sensitive variables | Done | Operational datasource settings are externalized through environment variables |
-| `TASK-01.3.1-a` CI pipeline | Not started | No pipeline files found |
+| `TASK-01.3.1-a` CI pipeline | Done | `.github/workflows/ci.yml` — push+PR to main; Java 21 temurin; `spotlessCheck test`; test report artifact on failure |
 | `TASK-01.3.1-b` Publish executable artifact | Partial | Boot app can build locally, no pipeline/release flow |
 | `TASK-02.1.1-a` User, role, permission entities | Done | `AppUserEntity`, `AppRoleEntity`, `AppPermissionEntity` (SQL) + V2 migration with seeded roles and permissions |
 | `TASK-02.1.1-b` Spring Security and hashing | Done | `BCrypt`, `Spring Security` stateless config, JWT filter, persistent user repository |
@@ -291,7 +291,7 @@ Today the main blockers are:
 
 ## Recommended Next Implementation Slice
 
-1. **Observability**: structured logging with correlation ID propagation, Micrometer metrics for execution count/duration/export volume (`TASK-10.1.1-a`, `TASK-10.1.1-c`).
+1. **Query validator hardening** (`TASK-05.1.1-c`): strip SQL comments before validation, block dangerous patterns (stacked queries, system functions, information_schema access).
 
 ## Commands Used to Verify the Snapshot
 

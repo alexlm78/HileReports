@@ -111,4 +111,4 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 
 ## Next Implementation Slice (in order)
 
-1. Observability: structured logging, correlation ID propagation, Micrometer metrics (`TASK-10.1.1-a`, `TASK-10.1.1-c`)
+1. Query validator hardening: dangerous pattern detection, SQL comment stripping (`TASK-05.1.1-c`)
