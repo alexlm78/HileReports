@@ -120,6 +120,12 @@ export interface UserView {
   enabled: boolean;
 }
 
+export interface TagView {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 export interface PreviewResult {
   columns: ColumnMetadata[];
   rows: unknown[][];

@@ -11,9 +11,10 @@ import type {
   ReportColumnView,
   ReportDefinitionView,
   ReportParameterView,
+  TagView,
 } from '../../api/types';
 
-type Tab = 'info' | 'sql' | 'columns' | 'parameters';
+type Tab = 'info' | 'sql' | 'columns' | 'parameters' | 'tags';
 
 interface InfoForm {
   name: string;
@@ -53,6 +54,8 @@ export function ReportEditPage() {
   const [previewing, setPreviewing] = useState(false);
   const [columns, setColumns] = useState<ReportColumnView[]>([]);
   const [params, setParams] = useState<ReportParameterView[]>([]);
+  const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
+  const [savingTags, setSavingTags] = useState(false);
 
   const { data: report } = useQuery({
     queryKey: ['admin-report', id],
@@ -85,6 +88,21 @@ export function ReportEditPage() {
     queryFn: async () => {
       const data = await api.get<ReportParameterView[]>(`/api/v1/reports/${id}/parameters`);
       setParams(data);
+      return data;
+    },
+    enabled: !isNew,
+  });
+
+  const { data: allTags = [] } = useQuery({
+    queryKey: ['admin-tags'],
+    queryFn: () => api.get<TagView[]>('/api/v1/tags'),
+  });
+
+  useQuery({
+    queryKey: ['admin-report-tags', id],
+    queryFn: async () => {
+      const data = await api.get<TagView[]>(`/api/v1/reports/${id}/tags`);
+      setSelectedTagIds(new Set(data.map(t => t.id)));
       return data;
     },
     enabled: !isNew,
@@ -232,6 +250,21 @@ export function ReportEditPage() {
     }
   }
 
+  async function handleTagsSave() {
+    setSavingTags(true);
+    setError(null);
+    setSuccessMsg(null);
+    try {
+      await api.put(`/api/v1/reports/${id}/tags`, { tagIds: [...selectedTagIds] });
+      await qc.invalidateQueries({ queryKey: ['admin-report-tags', id] });
+      setSuccessMsg('Tags saved');
+    } catch (err) {
+      setError(err instanceof ApiException ? err.message : 'Save failed');
+    } finally {
+      setSavingTags(false);
+    }
+  }
+
   async function handlePublish() {
     try {
       await api.post(`/api/v1/reports/${id}/publish`);
@@ -289,6 +322,7 @@ export function ReportEditPage() {
     { key: 'sql', label: 'SQL' },
     { key: 'columns', label: 'Columns' },
     { key: 'parameters', label: 'Parameters' },
+    { key: 'tags', label: 'Tags' },
   ];
 
   return (
@@ -552,6 +586,49 @@ export function ReportEditPage() {
             <button onClick={() => void handleParamsSave()} disabled={saving}
               className="px-5 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50">
               {saving ? 'Saving…' : 'Save parameters'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {!isNew && tab === 'tags' && (
+        <div className="space-y-4 max-w-2xl">
+          {allTags.length === 0 && (
+            <p className="text-sm text-gray-400">No tags defined yet. Create them in the Tags section.</p>
+          )}
+          <div className="flex flex-wrap gap-2">
+            {allTags.map(tag => {
+              const selected = selectedTagIds.has(tag.id);
+              return (
+                <button
+                  key={tag.id}
+                  type="button"
+                  onClick={() =>
+                    setSelectedTagIds(prev => {
+                      const next = new Set(prev);
+                      if (next.has(tag.id)) next.delete(tag.id);
+                      else next.add(tag.id);
+                      return next;
+                    })
+                  }
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                    selected
+                      ? 'bg-indigo-600 border-indigo-600 text-white'
+                      : 'bg-white border-gray-300 text-gray-600 hover:border-indigo-400'
+                  }`}
+                >
+                  {tag.name}
+                </button>
+              );
+            })}
+          </div>
+          <div className="flex justify-end">
+            <button
+              onClick={() => void handleTagsSave()}
+              disabled={savingTags}
+              className="px-5 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+            >
+              {savingTags ? 'Saving…' : 'Save tags'}
             </button>
           </div>
         </div>

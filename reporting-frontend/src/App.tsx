@@ -10,6 +10,7 @@ import { CategoriesPage } from './pages/admin/CategoriesPage';
 import { DatasourcesPage } from './pages/admin/DatasourcesPage';
 import { ReportEditPage } from './pages/admin/ReportEditPage';
 import { ReportsAdminPage } from './pages/admin/ReportsAdminPage';
+import { TagsPage } from './pages/admin/TagsPage';
 import { UsersPage } from './pages/admin/UsersPage';
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
@@ -50,6 +51,7 @@ export default function App() {
             <Route path="datasources" element={<DatasourcesPage />} />
             <Route path="users" element={<UsersPage />} />
             <Route path="categories" element={<CategoriesPage />} />
+            <Route path="tags" element={<TagsPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/catalog" replace />} />
         </Routes>
