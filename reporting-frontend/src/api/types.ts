@@ -120,6 +120,29 @@ export interface UserView {
   enabled: boolean;
 }
 
+export interface ExecutionView {
+  id: string;
+  reportDefinitionId: string;
+  requestedBy: string;
+  requestedAt: string;
+  status: 'RUNNING' | 'COMPLETED' | 'FAILED' | string;
+  executionMode: string;
+  rowCount: number | null;
+  durationMs: number | null;
+  errorCode: string | null;
+  correlationId: string | null;
+}
+
+export interface AuditEventView {
+  id: string;
+  actor: string;
+  action: string;
+  entityType: string;
+  entityId: string | null;
+  payloadJson: string | null;
+  createdAt: string;
+}
+
 export interface TagView {
   id: string;
   name: string;

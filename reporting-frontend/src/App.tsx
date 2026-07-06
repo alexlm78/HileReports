@@ -10,6 +10,7 @@ import { CategoriesPage } from './pages/admin/CategoriesPage';
 import { DatasourcesPage } from './pages/admin/DatasourcesPage';
 import { ReportEditPage } from './pages/admin/ReportEditPage';
 import { ReportsAdminPage } from './pages/admin/ReportsAdminPage';
+import { AuditPage } from './pages/admin/AuditPage';
 import { TagsPage } from './pages/admin/TagsPage';
 import { UsersPage } from './pages/admin/UsersPage';
 
@@ -52,6 +53,7 @@ export default function App() {
             <Route path="users" element={<UsersPage />} />
             <Route path="categories" element={<CategoriesPage />} />
             <Route path="tags" element={<TagsPage />} />
+            <Route path="audit" element={<AuditPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/catalog" replace />} />
         </Routes>

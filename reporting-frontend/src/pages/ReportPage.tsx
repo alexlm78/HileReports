@@ -4,7 +4,9 @@ import { useQuery } from '@tanstack/react-query';
 import { api, ApiException } from '../api/client';
 import type {
   ExecutionResultView,
+  ExecutionView,
   ExportJobView,
+  PageResponse,
   ReportDefinitionView,
   ReportParameter,
 } from '../api/types';
@@ -40,6 +42,8 @@ export function ReportPage() {
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [historyPage, setHistoryPage] = useState(0);
 
   const { data: report, isLoading: loadingReport } = useQuery({
     queryKey: ['report', id],
@@ -51,6 +55,15 @@ export function ReportPage() {
     queryKey: ['report-params', id],
     queryFn: () => api.get<ReportParameter[]>(`/api/v1/reports/${id}/parameters`),
     enabled: id != null,
+  });
+
+  const { data: historyData } = useQuery({
+    queryKey: ['report-history', id, historyPage],
+    queryFn: () =>
+      api.get<PageResponse<ExecutionView>>(
+        `/api/v1/reports/${id}/executions?page=${historyPage}&size=10`,
+      ),
+    enabled: showHistory && id != null,
   });
 
   const { data: exportJob } = useQuery({
@@ -272,6 +285,58 @@ export function ReportPage() {
           </div>
         </div>
       )}
+
+      <div className="mt-8">
+        <button
+          onClick={() => { setShowHistory(h => !h); setHistoryPage(0); }}
+          className="text-sm text-gray-500 hover:text-gray-800 underline"
+        >
+          {showHistory ? 'Hide execution history' : 'Show execution history'}
+        </button>
+
+        {showHistory && (
+          <div className="mt-3">
+            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 bg-gray-50">
+                    {['When', 'By', 'Status', 'Rows', 'Duration'].map(h => (
+                      <th key={h} className="px-4 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {(historyData?.content ?? []).map(ex => (
+                    <tr key={ex.id} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="px-4 py-2 text-gray-400 whitespace-nowrap">{new Date(ex.requestedAt).toLocaleString()}</td>
+                      <td className="px-4 py-2 text-gray-600">{ex.requestedBy}</td>
+                      <td className="px-4 py-2">
+                        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${ex.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : ex.status === 'FAILED' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600'}`}>
+                          {ex.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2 text-gray-500">{ex.rowCount ?? '—'}</td>
+                      <td className="px-4 py-2 text-gray-500">{ex.durationMs != null ? `${ex.durationMs}ms` : '—'}</td>
+                    </tr>
+                  ))}
+                  {(historyData?.content ?? []).length === 0 && (
+                    <tr><td colSpan={5} className="px-4 py-6 text-center text-gray-400">No executions yet.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+            {historyData && historyData.totalPages > 1 && (
+              <div className="flex gap-2 mt-3">
+                <button disabled={historyPage === 0} onClick={() => setHistoryPage(p => p - 1)}
+                  className="px-3 py-1 text-sm border border-gray-300 rounded-lg disabled:opacity-40">Previous</button>
+                <span className="text-sm text-gray-500 self-center">Page {historyPage + 1} of {historyData.totalPages}</span>
+                <button disabled={historyPage >= historyData.totalPages - 1} onClick={() => setHistoryPage(p => p + 1)}
+                  className="px-3 py-1 text-sm border border-gray-300 rounded-lg disabled:opacity-40">Next</button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
