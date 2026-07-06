@@ -6,8 +6,8 @@ This document gives an AI agent or a new developer a verified snapshot of the cu
 
 ## Last Verified Snapshot
 
-- Date: `2026-07-05`
-- Repository status: EP-08 done; EP-09 done; TASK-10.1.1-a/c done; CI pipeline added (TASK-01.3.1-a); TASK-03.2.1-b (Tag model) done; pagination on all list endpoints done; PUT datasource + PUT category done; GET /api/v1/exports done; report list filters done; execution history endpoints done; user management completion done; structured observability done (TASK-10.1.1-c); per-datasource ACL done (TASK-02.2.1-c); frontend integration prep done; frontend module (consumption path) done
+- Date: `2026-07-06`
+- Repository status: EP-08 done; EP-09 done; TASK-10.1.1-a/c done; CI pipeline added (TASK-01.3.1-a); TASK-03.2.1-b (Tag model) done; pagination on all list endpoints done; PUT datasource + PUT category done; GET /api/v1/exports done; report list filters done; execution history endpoints done; user management completion done; structured observability done (TASK-10.1.1-c); per-datasource ACL done (TASK-02.2.1-c); frontend integration prep done; frontend module (consumption path) done; frontend admin panel done; Oracle connector real JDBC done
 - Build status: `./gradlew test` passes
 - Scope of verification: source tree, Gradle modules, Spring Boot bootstrap, tests, and backlog alignment
 
@@ -74,12 +74,11 @@ What is already in place:
 
 - Frontend integration preparation: CORS enabled via `CorsConfig.java` — `APP_CORS_ALLOWED_ORIGINS` env var (default `http://localhost:3000,http://localhost:4200`), exposes `X-Correlation-ID` and `Location` headers. `AccessDeniedException` (application layer) maps to 403 in `GlobalExceptionHandler`. `ApiErrorResponse` gained `timestamp` field (ISO-8601). `SecurityConfig` wires CORS via `Customizer.withDefaults()`.
 
-- Frontend module `reporting-frontend/` (consumption path): Vite + React 18 + TypeScript + Tailwind CSS + React Query + React Router v6. Pages: Login, Catalog (published reports grid), Report execution (parameterized form, paginated results table). API client uses relative URLs; Vite dev server proxies `/api → localhost:8080`. `tsc && vite build` passes clean. Admin panel (datasource/user/report builder screens) is next frontend slice.
+- Frontend module `reporting-frontend/` (consumption path + admin): Vite + React 18 + TypeScript + Tailwind CSS + React Query + React Router v6. Consumption pages: Login, Catalog (published reports grid), Report execution (parameterized form, paginated results table). Admin panel (`/admin/*`, PLATFORM_ADMIN role guard): Datasources (CRUD + test connection), Users (create/edit/enable/disable), Categories (CRUD), Reports list + tabbed report builder (info, SQL with column discover, columns config, parameters CRUD, publish/unpublish). API client uses relative URLs; Vite dev server proxies `/api → localhost:8080`. `tsc && vite build` passes clean (94 modules).
 
 What is not in place yet:
 
-- Frontend admin panel (datasource management, user management, report builder).
-- Oracle connector fully implemented via `ojdbc11:21.11.0.0` from Maven Central.
+- AD/LDAP authentication (`TASK-02.3.1-b`) — deferred; port and stub exist, production adapter requires live LDAP/AD environment.
 
 ## Verified Implementation by Module
 
@@ -313,6 +312,7 @@ Today the main blockers are:
 ## Recommended Next Implementation Slice
 
 1. **AD authentication** (`TASK-02.3.1-b`): deferred — requires live AD/LDAP environment for testing.
+2. All backlog items through R3 are Done. R4 evolution items (AD auth, UX improvements) are the only remaining planned work.
 
 ## OpenAPI / Swagger UI — Done
 
