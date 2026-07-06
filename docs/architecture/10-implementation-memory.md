@@ -313,6 +313,10 @@ Today the main blockers are:
 
 `PUT /api/v1/reports/{id}` (owner or PLATFORM_ADMIN). Accepts partial update: any of name, description, categoryId, dataSourceId, ownerTeam, sqlText — null fields are ignored (patch semantics). SQL change resets `report_version.preview_status` to PENDING. Only DRAFT reports can be updated; PUBLISHED reports rejected with 500. Validates new SQL through `QueryValidatorPort`. Emits `REPORT_UPDATED` audit event. `UpdateReportCommand` DTO in application; `updateDraft()` added to `CreateReportDefinitionUseCase`, `ReportDefinitionRepository`, `ReportDefinitionApplicationService`, `ReportDefinitionRepositoryAdapter`. Entity setters added to `ReportDefinitionEntity` and `ReportVersionEntity`.
 
+## Execution History Endpoints — Done
+
+`GET /api/v1/reports/{id}/executions?page=0&size=20` (authenticated): lists executions for a specific report, ordered by `requestedAt DESC`. `GET /api/v1/executions?page=0&size=20` (authenticated): lists caller's own executions across all reports, filtered by `requestedBy`. New `ExecutionView` DTO (lighter than `ExecutionResultView` — no columns/rows data). New port methods: `ReportExecutionRepository.findByReportId(UUID, int, int)` and `findByRequestedBy(String, int, int)`. New use case methods: `ExecuteReportUseCase.listByReport(UUID, String, int, int)` and `listMine(String, int, int)`. New `ExecutionController` at `/api/v1/executions`. `ExecuteReportController` updated with GET `/{id}/executions`. SecurityConfig: execution history routes added as `authenticated()` before REPORT_DESIGNER catch-all. `/api/v1/executions/**` added to REPORT_EXECUTE role group.
+
 ## Pagination, Update Endpoints, Export List, Report Filters — Done
 
 All list endpoints now return `PageResponse<T>` (`content`, `page`, `size`, `total`, `totalPages`) with `?page=0&size=20` query params (default 20 items/page). `PageResult<T>` is the framework-free application-layer record; Spring `Page<>` + `Pageable` only at JPA layer. Existing `findAll()` kept for backward-compat in tests; `findAllPaged()` added as parallel methods.

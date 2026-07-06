@@ -102,7 +102,9 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 | `GET` | `/api/v1/reports/{id}/parameters` | authenticated |
 | `GET` | `/api/v1/catalog` | authenticated |
 | `POST` | `/api/v1/reports/{id}/execute` | authenticated |
+| `GET` | `/api/v1/reports/{id}/executions?page=0&size=20` | authenticated |
 | `POST` | `/api/v1/reports/{id}/export` | authenticated |
+| `GET` | `/api/v1/executions?page=0&size=20` | authenticated |
 | `GET` | `/api/v1/exports?page=0&size=20` | authenticated |
 | `GET` | `/api/v1/exports/{id}` | authenticated |
 | `GET` | `/api/v1/exports/{id}/download` | authenticated |

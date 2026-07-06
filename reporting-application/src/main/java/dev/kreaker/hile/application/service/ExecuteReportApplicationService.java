@@ -2,6 +2,8 @@ package dev.kreaker.hile.application.service;
 
 import dev.kreaker.hile.application.dto.ExecuteReportCommand;
 import dev.kreaker.hile.application.dto.ExecutionResultView;
+import dev.kreaker.hile.application.dto.ExecutionView;
+import dev.kreaker.hile.application.dto.PageResult;
 import dev.kreaker.hile.application.dto.PreviewResult;
 import dev.kreaker.hile.application.port.in.DataSourceUseCase;
 import dev.kreaker.hile.application.port.in.ExecuteReportUseCase;
@@ -125,6 +127,39 @@ public class ExecuteReportApplicationService implements ExecuteReportUseCase {
       metrics.recordExecution("FAILED", durationMs, -1);
       throw e;
     }
+  }
+
+  @Override
+  public PageResult<ExecutionView> listByReport(
+      UUID reportId, String requestedBy, int page, int size) {
+    reportRepository
+        .findById(reportId)
+        .orElseThrow(() -> new IllegalArgumentException("Report not found: " + reportId));
+    PageResult<ReportExecution> result = executionRepository.findByReportId(reportId, page, size);
+    List<ExecutionView> content = result.content().stream().map(this::toView).toList();
+    return new PageResult<>(content, page, size, result.total());
+  }
+
+  @Override
+  public PageResult<ExecutionView> listMine(String requestedBy, int page, int size) {
+    PageResult<ReportExecution> result =
+        executionRepository.findByRequestedBy(requestedBy, page, size);
+    List<ExecutionView> content = result.content().stream().map(this::toView).toList();
+    return new PageResult<>(content, page, size, result.total());
+  }
+
+  private ExecutionView toView(ReportExecution e) {
+    return new ExecutionView(
+        e.id(),
+        e.reportDefinitionId(),
+        e.requestedBy(),
+        e.requestedAt(),
+        e.status(),
+        e.executionMode(),
+        e.rowCount(),
+        e.durationMs(),
+        e.errorCode(),
+        e.correlationId());
   }
 
   private String sanitize(String message) {

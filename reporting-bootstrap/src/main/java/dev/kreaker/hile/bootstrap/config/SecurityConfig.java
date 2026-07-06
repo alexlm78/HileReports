@@ -70,11 +70,15 @@ public class SecurityConfig {
                     // (PLATFORM_ADMIN, REPORT_DESIGNER, REPORT_VIEWER)
                     .requestMatchers(POST, "/api/v1/reports/*/execute", "/api/v1/reports/*/export")
                     .hasAnyRole("PLATFORM_ADMIN", "REPORT_DESIGNER", "REPORT_VIEWER")
+                    // Execution history — authenticated
+                    .requestMatchers(GET, "/api/v1/reports/*/executions", "/api/v1/executions")
+                    .authenticated()
                     // All other report operations (design) — PLATFORM_ADMIN or REPORT_DESIGNER
                     .requestMatchers("/api/v1/reports/**")
                     .hasAnyRole("PLATFORM_ADMIN", "REPORT_DESIGNER")
-                    // Catalog and exports — REPORT_EXECUTE permission
-                    .requestMatchers("/api/v1/catalog/**", "/api/v1/exports/**")
+                    // Catalog, exports, and executions — REPORT_EXECUTE permission
+                    .requestMatchers(
+                        "/api/v1/catalog/**", "/api/v1/exports/**", "/api/v1/executions/**")
                     .hasAnyRole("PLATFORM_ADMIN", "REPORT_DESIGNER", "REPORT_VIEWER")
                     // Tag management — mutations are PLATFORM_ADMIN; reads authenticated
                     .requestMatchers(POST, "/api/v1/tags")
