@@ -136,6 +136,9 @@ cmake-build-*/
 
 # IntelliJ
 out/
+# Keep hexagonal port/out source directories (the out/ rule above would exclude them)
+!**/port/out/
+!**/port/out/**
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/
