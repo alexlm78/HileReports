@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Status
 
-Compilable baseline, not an MVP yet. Before making changes:
+R1–R3 backlog complete. Full-stack MVP: backend + frontend consumption + admin panel all operational. Only deferred item: AD authentication (TASK-02.3.1-b). Before making changes:
 
 1. Read `docs/architecture/10-implementation-memory.md` for verified implementation state.
 2. Confirm the task against backlog IDs in `docs/architecture/08-backlog-implementation.md`.
@@ -148,9 +148,10 @@ npm run build
 
 Stack: Vite + React 18 + TypeScript + Tailwind CSS + React Query + React Router v6.
 
-Pages: `/login`, `/catalog` (published reports grid), `/reports/:id` (parameterized execution + paginated results).
+**Consumption** (`/login`, `/catalog`, `/reports/:id`): login, published-report grid, parameterized execution with paginated results, CSV/XLSX export with polling + download, collapsible execution history.
+
+**Admin** (`/admin/*`, PLATFORM_ADMIN only): Datasources (CRUD + test + ACL grant/revoke), Users (create/edit/enable/disable), Categories (CRUD), Tags (CRUD), Reports list + tabbed report builder (info · SQL+discover+preview · columns · parameters · tags · publish/unpublish), Audit log (filterable).
 
 ## Next Implementation Slice (in order)
 
 1. AD authentication (`TASK-02.3.1-b`) — deferred until live LDAP/AD is available for testing
-2. Frontend admin panel (datasource, user, report builder screens)

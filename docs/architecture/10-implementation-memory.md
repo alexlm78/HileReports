@@ -7,13 +7,13 @@ This document gives an AI agent or a new developer a verified snapshot of the cu
 ## Last Verified Snapshot
 
 - Date: `2026-07-06`
-- Repository status: EP-08 done; EP-09 done; TASK-10.1.1-a/c done; CI pipeline added (TASK-01.3.1-a); TASK-03.2.1-b (Tag model) done; pagination on all list endpoints done; PUT datasource + PUT category done; GET /api/v1/exports done; report list filters done; execution history endpoints done; user management completion done; structured observability done (TASK-10.1.1-c); per-datasource ACL done (TASK-02.2.1-c); frontend integration prep done; frontend module (consumption path) done; frontend admin panel done; Oracle connector real JDBC done
+- Repository status: R1–R3 backlog 100% done. Full-stack MVP operational. Frontend complete: consumption path (login/catalog/execute/export/history) + admin panel (datasources+ACL, users, categories, tags, reports builder, audit log). Only deferred: AD auth (TASK-02.3.1-b).
 - Build status: `./gradlew test` passes
 - Scope of verification: source tree, Gradle modules, Spring Boot bootstrap, tests, and backlog alignment
 
 ## Executive Summary
 
-The repository is currently an **active R1 MVP baseline** — local security slice is now substantially complete.
+The repository is a **complete R1–R3 MVP** — all planned backlog items done.
 
 What is already in place:
 
@@ -74,7 +74,10 @@ What is already in place:
 
 - Frontend integration preparation: CORS enabled via `CorsConfig.java` — `APP_CORS_ALLOWED_ORIGINS` env var (default `http://localhost:3000,http://localhost:4200`), exposes `X-Correlation-ID` and `Location` headers. `AccessDeniedException` (application layer) maps to 403 in `GlobalExceptionHandler`. `ApiErrorResponse` gained `timestamp` field (ISO-8601). `SecurityConfig` wires CORS via `Customizer.withDefaults()`.
 
-- Frontend module `reporting-frontend/` (consumption path + admin): Vite + React 18 + TypeScript + Tailwind CSS + React Query + React Router v6. Consumption pages: Login, Catalog (published reports grid), Report execution (parameterized form, paginated results table). Admin panel (`/admin/*`, PLATFORM_ADMIN role guard): Datasources (CRUD + test connection), Users (create/edit/enable/disable), Categories (CRUD), Reports list + tabbed report builder (info, SQL with column discover, columns config, parameters CRUD, publish/unpublish). API client uses relative URLs; Vite dev server proxies `/api → localhost:8080`. `tsc && vite build` passes clean (94 modules).
+- Frontend module `reporting-frontend/` — Vite + React 18 + TypeScript + Tailwind CSS + React Query + React Router v6. `tsc && vite build` passes clean (96 modules).
+  - **Consumption** (`/login`, `/catalog`, `/reports/:id`): login, published-report grid, parameterized execution + paginated results, Export CSV/XLSX with async polling + authorized blob download, collapsible execution history (paginated).
+  - **Admin** (`/admin/*`, PLATFORM_ADMIN role guard decoded from JWT): Datasources (CRUD + test connection + ACL grant/revoke modal), Users (create/edit email+role/enable/disable), Categories (CRUD), Tags (CRUD, slug auto-derived by server), Reports list + tabbed builder (info · SQL+discover+preview rows · columns config · parameters CRUD · tags assignment · publish/unpublish), Audit log (actor/action text filters, paginated, color-coded action badges).
+  - API client uses relative URLs; Vite dev server proxies `/api → localhost:8080`. JWT stored in localStorage, decoded for username + roles. `AdminRoute` component enforces `PLATFORM_ADMIN` role on `/admin/*`.
 
 What is not in place yet:
 
@@ -312,7 +315,8 @@ Today the main blockers are:
 ## Recommended Next Implementation Slice
 
 1. **AD authentication** (`TASK-02.3.1-b`): deferred — requires live AD/LDAP environment for testing.
-2. All backlog items through R3 are Done. R4 evolution items (AD auth, UX improvements) are the only remaining planned work.
+
+All R1–R3 backlog items are Done. R4 evolution items (AD auth, UX improvements, functional expansion) are the only remaining planned work.
 
 ## OpenAPI / Swagger UI — Done
 
