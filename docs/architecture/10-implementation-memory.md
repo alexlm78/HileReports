@@ -318,6 +318,17 @@ Today the main blockers are:
 
 All R1–R3 backlog items are Done. R4 evolution items (AD auth, UX improvements, functional expansion) are the only remaining planned work.
 
+## Optional Frontend Improvements (backend already implemented, no UI yet)
+
+These are not in the official backlog. Backend endpoints exist and work; only the frontend UI is missing.
+
+| Priority | Feature | Backend endpoint | Notes |
+|---|---|---|---|
+| 1 | Catalog search bar | `GET /api/v1/catalog?name=` | Endpoint accepts `name` filter; CatalogPage does not expose an input |
+| 2 | User profile + own password change | `GET /api/v1/users/me`, `PUT /api/v1/users/me/password` | Any authenticated user; no profile page or password form in frontend |
+| 3 | CI pipeline verification | `.github/workflows/ci.yml` | Pipeline exists; verify it runs green end-to-end on GitHub Actions after the port/out gitignore fix |
+| 4 | Export history page | `GET /api/v1/exports?page=0&size=20` | Lists caller's own exports; no dedicated page (per-report export status is visible in ReportPage) |
+
 ## OpenAPI / Swagger UI — Done
 
 `springdoc-openapi-starter-webmvc-ui:2.6.0` added to `reporting-bootstrap`. `OpenApiConfig` bean configures API info (title, version, contact) and a global `bearerAuth` JWT security scheme so every endpoint shows the Authorize button. `SecurityConfig` whitelists `/swagger-ui/**`, `/swagger-ui.html`, `/v3/api-docs/**` as public. `springdoc.*` config in `application.yml` sets paths, alpha sorting, and request duration display. Swagger UI available at `http://localhost:8080/swagger-ui.html`; JSON spec at `http://localhost:8080/v3/api-docs`.

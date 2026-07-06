@@ -155,3 +155,12 @@ Stack: Vite + React 18 + TypeScript + Tailwind CSS + React Query + React Router 
 ## Next Implementation Slice (in order)
 
 1. AD authentication (`TASK-02.3.1-b`) — deferred until live LDAP/AD is available for testing
+
+## Optional Frontend Improvements (backend ready, no UI)
+
+| Priority | Feature | Endpoint |
+|---|---|---|
+| 1 | Catalog search bar | `GET /api/v1/catalog?name=` |
+| 2 | User profile + own password change | `GET /api/v1/users/me`, `PUT /api/v1/users/me/password` |
+| 3 | Verify CI pipeline green on GitHub Actions | `.github/workflows/ci.yml` |
+| 4 | Export history page | `GET /api/v1/exports?page=0&size=20` |
