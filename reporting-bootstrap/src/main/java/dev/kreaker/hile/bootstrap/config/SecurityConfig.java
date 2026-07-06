@@ -5,6 +5,7 @@ import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+import static org.springframework.security.config.Customizer.withDefaults;
 
 import dev.kreaker.hile.bootstrap.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
@@ -29,7 +30,8 @@ public class SecurityConfig {
 
   @Bean
   SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http.csrf(AbstractHttpConfigurer::disable)
+    http.cors(withDefaults())
+        .csrf(AbstractHttpConfigurer::disable)
         .httpBasic(AbstractHttpConfigurer::disable)
         .formLogin(AbstractHttpConfigurer::disable)
         .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

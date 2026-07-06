@@ -79,6 +79,8 @@ hile:
     rate-limit:
       execute-rpm: ${APP_RATE_LIMIT_EXECUTE_RPM:30}
       enabled: ${APP_RATE_LIMIT_ENABLED:true}
+    cors:
+      allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:4200}
 
 springdoc:
   api-docs:

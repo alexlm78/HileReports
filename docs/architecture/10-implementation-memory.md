@@ -7,7 +7,7 @@ This document gives an AI agent or a new developer a verified snapshot of the cu
 ## Last Verified Snapshot
 
 - Date: `2026-07-05`
-- Repository status: EP-08 done; EP-09 done; TASK-10.1.1-a/c done; CI pipeline added (TASK-01.3.1-a); TASK-03.2.1-b (Tag model) done; pagination on all list endpoints done; PUT datasource + PUT category done; GET /api/v1/exports done; report list filters done; execution history endpoints done; user management completion done; structured observability done (TASK-10.1.1-c); per-datasource ACL done (TASK-02.2.1-c)
+- Repository status: EP-08 done; EP-09 done; TASK-10.1.1-a/c done; CI pipeline added (TASK-01.3.1-a); TASK-03.2.1-b (Tag model) done; pagination on all list endpoints done; PUT datasource + PUT category done; GET /api/v1/exports done; report list filters done; execution history endpoints done; user management completion done; structured observability done (TASK-10.1.1-c); per-datasource ACL done (TASK-02.2.1-c); frontend integration prep done
 - Build status: `./gradlew test` passes
 - Scope of verification: source tree, Gradle modules, Spring Boot bootstrap, tests, and backlog alignment
 
@@ -71,6 +71,8 @@ What is already in place:
 - Structured observability (TASK-10.1.1-c): `JwtAuthenticationFilter` sets `correlationId` (from `X-Correlation-ID` request header or generated UUID) and `username` in MDC on every request; echoes `X-Correlation-ID` in response; clears MDC in finally. `AsyncConfig.exportTaskExecutor` copies MDC to async export threads via `TaskDecorator`. Log pattern includes `%X{correlationId:-}` and `%X{username:-}`.
 
 - Per-datasource ACL (TASK-02.2.1-c): `datasource_access` table (V5 migration, composite PK `datasource_id + user_id`). `DataSourceAccessPort` (outbound port) with `grant`, `revoke`, `listUserIds`, `isAuthorized(UUID, String)`. `DataSourceAccessAdapter` checks PLATFORM_ADMIN role first, then falls back to explicit grant lookup. Access check in `ExecuteReportApplicationService.execute()` and `ExportJobApplicationService.requestExport()` — throws `IllegalStateException` if unauthorized. Admin endpoints: `POST/DELETE/GET /api/v1/datasources/{id}/access` (PLATFORM_ADMIN only, covered by existing catch-all).
+
+- Frontend integration preparation: CORS enabled via `CorsConfig.java` — `APP_CORS_ALLOWED_ORIGINS` env var (default `http://localhost:3000,http://localhost:4200`), exposes `X-Correlation-ID` and `Location` headers. `AccessDeniedException` (application layer) maps to 403 in `GlobalExceptionHandler`. `ApiErrorResponse` gained `timestamp` field (ISO-8601). `SecurityConfig` wires CORS via `Customizer.withDefaults()`.
 
 What is not in place yet:
 

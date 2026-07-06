@@ -1,5 +1,6 @@
 package dev.kreaker.hile.bootstrap.api;
 
+import dev.kreaker.hile.application.exception.AccessDeniedException;
 import dev.kreaker.hile.application.exception.DataSourceNotFoundException;
 import dev.kreaker.hile.application.exception.InvalidCredentialsException;
 import java.util.stream.Collectors;
@@ -16,25 +17,31 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(InvalidCredentialsException.class)
   ResponseEntity<ApiErrorResponse> handleInvalidCredentials(InvalidCredentialsException ex) {
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-        .body(new ApiErrorResponse("AUTH_INVALID_CREDENTIALS", ex.getMessage()));
+        .body(ApiErrorResponse.of("AUTH_INVALID_CREDENTIALS", ex.getMessage()));
+  }
+
+  @ExceptionHandler(AccessDeniedException.class)
+  @ResponseStatus(HttpStatus.FORBIDDEN)
+  ApiErrorResponse handleAccessDenied(AccessDeniedException ex) {
+    return ApiErrorResponse.of("ACCESS_DENIED", ex.getMessage());
   }
 
   @ExceptionHandler(DataSourceNotFoundException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
   ApiErrorResponse handleDataSourceNotFound(DataSourceNotFoundException ex) {
-    return new ApiErrorResponse("DATASOURCE_NOT_FOUND", ex.getMessage());
+    return ApiErrorResponse.of("DATASOURCE_NOT_FOUND", ex.getMessage());
   }
 
   @ExceptionHandler(IllegalArgumentException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
   ApiErrorResponse handleNotFound(IllegalArgumentException ex) {
-    return new ApiErrorResponse("NOT_FOUND", ex.getMessage());
+    return ApiErrorResponse.of("NOT_FOUND", ex.getMessage());
   }
 
   @ExceptionHandler(IllegalStateException.class)
   @ResponseStatus(HttpStatus.CONFLICT)
   ApiErrorResponse handleConflict(IllegalStateException ex) {
-    return new ApiErrorResponse("CONFLICT", ex.getMessage());
+    return ApiErrorResponse.of("CONFLICT", ex.getMessage());
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -44,13 +51,13 @@ public class GlobalExceptionHandler {
         ex.getBindingResult().getFieldErrors().stream()
             .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
             .collect(Collectors.joining("; "));
-    return new ApiErrorResponse(
+    return ApiErrorResponse.of(
         "VALIDATION_ERROR", message.isEmpty() ? "Validation failed" : message);
   }
 
   @ExceptionHandler(Exception.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   ApiErrorResponse handleUnexpected(Exception ex) {
-    return new ApiErrorResponse("INTERNAL_ERROR", "An unexpected error occurred");
+    return ApiErrorResponse.of("INTERNAL_ERROR", "An unexpected error occurred");
   }
 }

@@ -5,6 +5,7 @@ import dev.kreaker.hile.application.dto.ExportJobCreationResult;
 import dev.kreaker.hile.application.dto.ExportJobView;
 import dev.kreaker.hile.application.dto.PageResult;
 import dev.kreaker.hile.application.dto.RequestExportCommand;
+import dev.kreaker.hile.application.exception.AccessDeniedException;
 import dev.kreaker.hile.application.port.in.ExportJobUseCase;
 import dev.kreaker.hile.application.port.out.DataSourceAccessPort;
 import dev.kreaker.hile.application.port.out.ReportDefinitionRepository;
@@ -57,7 +58,7 @@ public class ExportJobApplicationService implements ExportJobUseCase {
                 () -> new IllegalArgumentException("Report not found: " + command.reportId()));
 
     if (!dataSourceAccessPort.isAuthorized(def.dataSourceId(), requestedBy)) {
-      throw new IllegalStateException(
+      throw new AccessDeniedException(
           "User does not have access to the datasource for this report.");
     }
 

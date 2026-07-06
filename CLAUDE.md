@@ -62,6 +62,7 @@ Environment variables for the operational PostgreSQL database:
 | `APP_DB_PASSWORD` | `postgres` |
 | `APP_SERVER_PORT` | `8080` |
 | `APP_SECURITY_MODE` | `local` |
+| `APP_CORS_ALLOWED_ORIGINS` | `http://localhost:3000,http://localhost:4200` |
 
 Start local PostgreSQL: `docker compose up -d`. Flyway runs automatically on boot.
 
@@ -138,4 +139,4 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 ## Next Implementation Slice (in order)
 
 1. AD authentication (`TASK-02.3.1-b`) — deferred until live LDAP/AD is available for testing
-2. Frontend / API client integration
+2. Frontend module (separate project)

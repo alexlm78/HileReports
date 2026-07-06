@@ -5,6 +5,7 @@ import dev.kreaker.hile.application.dto.ExecutionResultView;
 import dev.kreaker.hile.application.dto.ExecutionView;
 import dev.kreaker.hile.application.dto.PageResult;
 import dev.kreaker.hile.application.dto.PreviewResult;
+import dev.kreaker.hile.application.exception.AccessDeniedException;
 import dev.kreaker.hile.application.port.in.DataSourceUseCase;
 import dev.kreaker.hile.application.port.in.ExecuteReportUseCase;
 import dev.kreaker.hile.application.port.out.DataSourceAccessPort;
@@ -54,7 +55,7 @@ public class ExecuteReportApplicationService implements ExecuteReportUseCase {
                 () -> new IllegalArgumentException("Report not found: " + command.reportId()));
 
     if (!dataSourceAccessPort.isAuthorized(def.dataSourceId(), requestedBy)) {
-      throw new IllegalStateException(
+      throw new AccessDeniedException(
           "User does not have access to the datasource for this report.");
     }
 
