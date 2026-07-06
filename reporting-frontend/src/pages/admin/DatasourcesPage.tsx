@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, ApiException } from '../../api/client';
-import type { DataSourceView, PageResponse, ValidationResult } from '../../api/types';
+import type { DataSourceView, PageResponse, UserView, ValidationResult } from '../../api/types';
 
 const DB_TYPES = ['POSTGRESQL', 'MYSQL', 'ORACLE'] as const;
 
@@ -48,10 +48,24 @@ export function DatasourcesPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<Record<string, ValidationResult>>({});
+  const [accessTarget, setAccessTarget] = useState<DataSourceView | null>(null);
+  const [grantUserId, setGrantUserId] = useState('');
 
   const { data } = useQuery({
     queryKey: ['admin-datasources', page],
     queryFn: () => api.get<PageResponse<DataSourceView>>(`/api/v1/datasources?page=${page}&size=20`),
+  });
+
+  const { data: grantedUsers = [], refetch: refetchGranted } = useQuery({
+    queryKey: ['ds-access', accessTarget?.id],
+    queryFn: () => api.get<UserView[]>(`/api/v1/datasources/${accessTarget!.id}/access`),
+    enabled: accessTarget != null,
+  });
+
+  const { data: allUsersPage } = useQuery({
+    queryKey: ['admin-users-all'],
+    queryFn: () => api.get<PageResponse<UserView>>('/api/v1/users?page=0&size=200'),
+    enabled: accessTarget != null,
   });
 
   function openCreate() {
@@ -121,6 +135,27 @@ export function DatasourcesPage() {
     }
   }
 
+  async function handleGrant() {
+    if (!accessTarget || !grantUserId) return;
+    try {
+      await api.post(`/api/v1/datasources/${accessTarget.id}/access`, { userId: grantUserId });
+      setGrantUserId('');
+      await refetchGranted();
+    } catch (err) {
+      alert(err instanceof ApiException ? err.message : 'Grant failed');
+    }
+  }
+
+  async function handleRevoke(userId: string) {
+    if (!accessTarget) return;
+    try {
+      await api.delete(`/api/v1/datasources/${accessTarget.id}/access/${userId}`);
+      await refetchGranted();
+    } catch (err) {
+      alert(err instanceof ApiException ? err.message : 'Revoke failed');
+    }
+  }
+
   const items = data?.content ?? [];
 
   return (
@@ -169,6 +204,9 @@ export function DatasourcesPage() {
                     </button>
                     <button onClick={() => openEdit(ds)} className="text-indigo-600 hover:underline">
                       Edit
+                    </button>
+                    <button onClick={() => { setGrantUserId(''); setAccessTarget(ds); }} className="text-purple-600 hover:underline">
+                      Access
                     </button>
                     <button onClick={() => void handleDelete(ds.id)} className="text-red-500 hover:underline">
                       Delete
@@ -263,6 +301,66 @@ export function DatasourcesPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {accessTarget != null && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+            <h2 className="text-lg font-bold text-gray-900 mb-1">Access — {accessTarget.name}</h2>
+            <p className="text-xs text-gray-400 mb-4">PLATFORM_ADMIN always has access. Grant additional users below.</p>
+
+            <div className="mb-4 space-y-2">
+              {grantedUsers.length === 0 && (
+                <p className="text-sm text-gray-400">No explicit grants.</p>
+              )}
+              {grantedUsers.map(u => (
+                <div key={u.id} className="flex items-center justify-between py-1.5 px-3 bg-gray-50 rounded-lg">
+                  <div>
+                    <span className="text-sm font-medium text-gray-800">{u.username}</span>
+                    {u.email != null && <span className="text-xs text-gray-400 ml-2">{u.email}</span>}
+                  </div>
+                  <button
+                    onClick={() => void handleRevoke(u.id)}
+                    className="text-xs text-red-500 hover:underline"
+                  >
+                    Revoke
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex gap-2 mb-4">
+              <select
+                value={grantUserId}
+                onChange={e => setGrantUserId(e.target.value)}
+                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="">— select user to grant —</option>
+                {(allUsersPage?.content ?? [])
+                  .filter(u => !grantedUsers.some(g => g.id === u.id))
+                  .map(u => (
+                    <option key={u.id} value={u.id}>{u.username}</option>
+                  ))}
+              </select>
+              <button
+                onClick={() => void handleGrant()}
+                disabled={!grantUserId}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-40"
+              >
+                Grant
+              </button>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                onClick={() => setAccessTarget(null)}
+                className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
