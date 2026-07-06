@@ -7,7 +7,7 @@ This document gives an AI agent or a new developer a verified snapshot of the cu
 ## Last Verified Snapshot
 
 - Date: `2026-07-05`
-- Repository status: EP-08 done; EP-09 done; TASK-10.1.1-a/c done; CI pipeline added (TASK-01.3.1-a); TASK-03.2.1-b (Tag model) done; pagination on all list endpoints done; PUT datasource + PUT category done; GET /api/v1/exports done; report list filters done; execution history endpoints done; user management completion done (PUT /users/{id}, POST /users/{id}/enable, GET /executions/{id})
+- Repository status: EP-08 done; EP-09 done; TASK-10.1.1-a/c done; CI pipeline added (TASK-01.3.1-a); TASK-03.2.1-b (Tag model) done; pagination on all list endpoints done; PUT datasource + PUT category done; GET /api/v1/exports done; report list filters done; execution history endpoints done; user management completion done; structured observability done (TASK-10.1.1-c)
 - Build status: `./gradlew test` passes
 - Scope of verification: source tree, Gradle modules, Spring Boot bootstrap, tests, and backlog alignment
 
@@ -68,12 +68,13 @@ What is already in place:
 - CSV via `commons-csv:1.11.0`; XLSX via `poi-ooxml:5.3.0`.
 - Export storage path, expiry hours, and cleanup intervals configurable via env vars.
 
+- Structured observability (TASK-10.1.1-c): `JwtAuthenticationFilter` sets `correlationId` (from `X-Correlation-ID` request header or generated UUID) and `username` in MDC on every request; echoes `X-Correlation-ID` in response; clears MDC in finally. `AsyncConfig.exportTaskExecutor` copies MDC to async export threads via `TaskDecorator`. Log pattern includes `%X{correlationId:-}` and `%X{username:-}`.
+
 What is not in place yet:
 
 - No frontend module.
 - No per-datasource ACL.
 - Oracle connector fully implemented via `ojdbc11:21.11.0.0` from Maven Central.
-- No structured observability (correlation ID propagation, Micrometer metrics beyond Actuator exposure).
 
 ## Verified Implementation by Module
 

@@ -52,7 +52,7 @@ logging:
     root: ${APP_LOG_LEVEL_ROOT:INFO}
     dev.kreaker.hile: ${APP_LOG_LEVEL_HILE:INFO}
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{correlationId:-}] %logger{36} - %msg%n"
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{correlationId:-}] [%X{username:-}] %logger{36} - %msg%n"
 
 hile:
   reports:

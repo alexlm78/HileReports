@@ -137,4 +137,3 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 1. AD authentication (`TASK-02.3.1-b`) — deferred until live LDAP/AD is available for testing
 2. Frontend / API client integration
 3. Per-datasource ACL
-4. Structured observability: correlation ID propagation to export async threads
