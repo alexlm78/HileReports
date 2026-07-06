@@ -7,6 +7,7 @@ import type {
   ColumnMetadata,
   DataSourceView,
   PageResponse,
+  PreviewResult,
   ReportColumnView,
   ReportDefinitionView,
   ReportParameterView,
@@ -48,6 +49,8 @@ export function ReportEditPage() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [discoverResult, setDiscoverResult] = useState<ColumnMetadata[]>([]);
   const [discovering, setDiscovering] = useState(false);
+  const [previewResult, setPreviewResult] = useState<PreviewResult | null>(null);
+  const [previewing, setPreviewing] = useState(false);
   const [columns, setColumns] = useState<ReportColumnView[]>([]);
   const [params, setParams] = useState<ReportParameterView[]>([]);
 
@@ -146,6 +149,25 @@ export function ReportEditPage() {
       setError(err instanceof ApiException ? err.message : 'Save failed');
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleSaveAndPreview() {
+    if (!id) return;
+    setPreviewing(true);
+    setError(null);
+    setSuccessMsg(null);
+    setPreviewResult(null);
+    try {
+      await api.put(`/api/v1/reports/${id}`, { sqlText: info.sqlText });
+      const result = await api.post<PreviewResult>(`/api/v1/reports/${id}/preview`);
+      setPreviewResult(result);
+      setSuccessMsg('Preview OK — report is ready to publish');
+      await qc.invalidateQueries({ queryKey: ['admin-report', id] });
+    } catch (err) {
+      setError(err instanceof ApiException ? err.message : 'Preview failed');
+    } finally {
+      setPreviewing(false);
     }
   }
 
@@ -364,25 +386,64 @@ export function ReportEditPage() {
       )}
 
       {!isNew && tab === 'sql' && (
-        <form onSubmit={handleSqlSave} className="space-y-4 max-w-3xl">
-          <textarea rows={12} value={info.sqlText}
-            onChange={e => setInfo(prev => ({ ...prev, sqlText: e.target.value }))}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="SELECT ..." />
-          <div className="flex items-center gap-3">
-            <button type="button" onClick={() => void handleDiscover()} disabled={discovering || !info.dataSourceId}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-40">
-              {discovering ? 'Discovering…' : 'Discover columns'}
-            </button>
-            {discoverResult.length > 0 && (
-              <span className="text-sm text-green-600">{discoverResult.length} columns found</span>
-            )}
-            <button type="submit" disabled={saving}
-              className="ml-auto px-5 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50">
-              {saving ? 'Saving…' : 'Save SQL'}
-            </button>
-          </div>
-        </form>
+        <div className="space-y-4 max-w-3xl">
+          <form onSubmit={handleSqlSave} className="space-y-4">
+            <textarea rows={12} value={info.sqlText}
+              onChange={e => { setInfo(prev => ({ ...prev, sqlText: e.target.value })); setPreviewResult(null); }}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="SELECT ..." />
+            <div className="flex flex-wrap items-center gap-3">
+              <button type="button" onClick={() => void handleDiscover()} disabled={discovering || !info.dataSourceId}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-40">
+                {discovering ? 'Discovering…' : 'Discover columns'}
+              </button>
+              {discoverResult.length > 0 && (
+                <span className="text-sm text-green-600">{discoverResult.length} columns found</span>
+              )}
+              <button type="button" onClick={() => void handleSaveAndPreview()} disabled={previewing || !info.sqlText}
+                className="px-4 py-2 border border-indigo-300 text-indigo-600 rounded-lg text-sm hover:bg-indigo-50 disabled:opacity-40">
+                {previewing ? 'Running preview…' : 'Save & Preview'}
+              </button>
+              <button type="submit" disabled={saving}
+                className="ml-auto px-5 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50">
+                {saving ? 'Saving…' : 'Save SQL'}
+              </button>
+            </div>
+          </form>
+
+          {previewResult != null && (
+            <div>
+              <p className="text-sm text-gray-500 mb-2">{previewResult.rows.length} row(s) — preview capped by server limit</p>
+              <div className="overflow-x-auto bg-white border border-gray-200 rounded-xl">
+                <table className="min-w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-200 bg-gray-50">
+                      {previewResult.columns.map(col => (
+                        <th key={col.name} className="px-4 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                          {col.label ?? col.name}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {previewResult.rows.map((row, ri) => (
+                      <tr key={ri} className="border-b border-gray-100 hover:bg-gray-50">
+                        {(row as unknown[]).map((cell, ci) => (
+                          <td key={ci} className="px-4 py-2 text-gray-700 text-xs">
+                            {cell == null ? <span className="text-gray-400">—</span> : String(cell)}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                    {previewResult.rows.length === 0 && (
+                      <tr><td colSpan={previewResult.columns.length} className="px-4 py-6 text-center text-gray-400">Query returned no rows</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
       )}
 
       {!isNew && tab === 'columns' && (

@@ -120,6 +120,11 @@ export interface UserView {
   enabled: boolean;
 }
 
+export interface PreviewResult {
+  columns: ColumnMetadata[];
+  rows: unknown[][];
+}
+
 export interface ExportJobView {
   id: string;
   executionId: string;
