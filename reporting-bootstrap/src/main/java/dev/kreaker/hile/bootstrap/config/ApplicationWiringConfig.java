@@ -10,6 +10,7 @@ import dev.kreaker.hile.application.port.in.TagUseCase;
 import dev.kreaker.hile.application.port.in.UserManagementUseCase;
 import dev.kreaker.hile.application.port.out.AuthenticationProviderPort;
 import dev.kreaker.hile.application.port.out.CategoryRepositoryPort;
+import dev.kreaker.hile.application.port.out.DataSourceAccessPort;
 import dev.kreaker.hile.application.port.out.DataSourceRepositoryPort;
 import dev.kreaker.hile.application.port.out.DbConnectorPort;
 import dev.kreaker.hile.application.port.out.MetricsPort;
@@ -79,9 +80,15 @@ public class ApplicationWiringConfig {
   DataSourceUseCase dataSourceUseCase(
       DataSourceRepositoryPort dataSourceRepositoryPort,
       PasswordEncryptionPort passwordEncryptionPort,
-      List<DbConnectorPort> connectors) {
+      List<DbConnectorPort> connectors,
+      DataSourceAccessPort dataSourceAccessPort,
+      UserRepositoryPort userRepositoryPort) {
     return new DataSourceApplicationService(
-        dataSourceRepositoryPort, passwordEncryptionPort, connectors);
+        dataSourceRepositoryPort,
+        passwordEncryptionPort,
+        connectors,
+        dataSourceAccessPort,
+        userRepositoryPort);
   }
 
   @Bean
@@ -114,6 +121,7 @@ public class ApplicationWiringConfig {
       ReportParameterRepositoryPort reportParameterRepositoryPort,
       ReportExecutionRepository reportExecutionRepository,
       ReportExportRepository reportExportRepository,
+      DataSourceAccessPort dataSourceAccessPort,
       @Value("${hile.reports.export.storage-path:/tmp/hile-exports}") String storageBasePath,
       @Value("${hile.reports.export.expiry-hours:24}") int expiryHours) {
     return new ExportJobApplicationService(
@@ -121,6 +129,7 @@ public class ApplicationWiringConfig {
         reportParameterRepositoryPort,
         reportExecutionRepository,
         reportExportRepository,
+        dataSourceAccessPort,
         storageBasePath,
         expiryHours);
   }
@@ -136,12 +145,14 @@ public class ApplicationWiringConfig {
       ReportParameterRepositoryPort reportParameterRepositoryPort,
       DataSourceUseCase dataSourceUseCase,
       ReportExecutionRepository reportExecutionRepository,
-      MetricsPort metricsPort) {
+      MetricsPort metricsPort,
+      DataSourceAccessPort dataSourceAccessPort) {
     return new ExecuteReportApplicationService(
         reportDefinitionRepository,
         reportParameterRepositoryPort,
         dataSourceUseCase,
         reportExecutionRepository,
-        metricsPort);
+        metricsPort,
+        dataSourceAccessPort);
   }
 }

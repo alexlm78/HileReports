@@ -6,12 +6,15 @@ import dev.kreaker.hile.application.dto.DataSourceView;
 import dev.kreaker.hile.application.dto.PageResult;
 import dev.kreaker.hile.application.dto.PreviewResult;
 import dev.kreaker.hile.application.dto.UpdateDataSourceCommand;
+import dev.kreaker.hile.application.dto.UserView;
 import dev.kreaker.hile.application.dto.ValidationResult;
 import dev.kreaker.hile.application.exception.DataSourceNotFoundException;
 import dev.kreaker.hile.application.port.in.DataSourceUseCase;
+import dev.kreaker.hile.application.port.out.DataSourceAccessPort;
 import dev.kreaker.hile.application.port.out.DataSourceRepositoryPort;
 import dev.kreaker.hile.application.port.out.DbConnectorPort;
 import dev.kreaker.hile.application.port.out.PasswordEncryptionPort;
+import dev.kreaker.hile.application.port.out.UserRepositoryPort;
 import dev.kreaker.hile.domain.datasource.DataSource;
 import dev.kreaker.hile.domain.datasource.DataSourceStatus;
 import dev.kreaker.hile.domain.datasource.DataSourceType;
@@ -27,11 +30,15 @@ public class DataSourceApplicationService implements DataSourceUseCase {
   private final DataSourceRepositoryPort repository;
   private final PasswordEncryptionPort encryption;
   private final Map<DataSourceType, DbConnectorPort> connectors;
+  private final DataSourceAccessPort accessPort;
+  private final UserRepositoryPort userRepository;
 
   public DataSourceApplicationService(
       DataSourceRepositoryPort repository,
       PasswordEncryptionPort encryption,
-      List<DbConnectorPort> connectorList) {
+      List<DbConnectorPort> connectorList,
+      DataSourceAccessPort accessPort,
+      UserRepositoryPort userRepository) {
     this.repository = repository;
     this.encryption = encryption;
     this.connectors =
@@ -44,6 +51,8 @@ public class DataSourceApplicationService implements DataSourceUseCase {
                             .findFirst()
                             .orElseThrow(),
                     Function.identity()));
+    this.accessPort = accessPort;
+    this.userRepository = userRepository;
   }
 
   @Override
@@ -175,6 +184,27 @@ public class DataSourceApplicationService implements DataSourceUseCase {
     }
     return connector.executeWithParams(
         jdbcUrl, ds.username(), rawPassword, sqlText, paramValues, pageSize, offset);
+  }
+
+  @Override
+  public void grantAccess(UUID datasourceId, UUID userId) {
+    if (!repository.existsById(datasourceId)) {
+      throw new DataSourceNotFoundException(datasourceId);
+    }
+    accessPort.grant(datasourceId, userId);
+  }
+
+  @Override
+  public void revokeAccess(UUID datasourceId, UUID userId) {
+    accessPort.revoke(datasourceId, userId);
+  }
+
+  @Override
+  public List<UserView> listGrantedUsers(UUID datasourceId) {
+    return accessPort.listUserIds(datasourceId).stream()
+        .flatMap(uid -> userRepository.findUserById(uid).stream())
+        .map(u -> new UserView(u.id(), u.username(), u.email(), u.roles(), u.enabled()))
+        .toList();
   }
 
   private DataSourceView toView(DataSource ds) {

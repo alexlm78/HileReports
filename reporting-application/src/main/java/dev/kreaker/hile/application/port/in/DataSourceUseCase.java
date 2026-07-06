@@ -6,6 +6,7 @@ import dev.kreaker.hile.application.dto.DataSourceView;
 import dev.kreaker.hile.application.dto.PageResult;
 import dev.kreaker.hile.application.dto.PreviewResult;
 import dev.kreaker.hile.application.dto.UpdateDataSourceCommand;
+import dev.kreaker.hile.application.dto.UserView;
 import dev.kreaker.hile.application.dto.ValidationResult;
 import java.util.List;
 import java.util.UUID;
@@ -32,4 +33,10 @@ public interface DataSourceUseCase {
 
   PreviewResult executeWithParams(
       UUID dataSourceId, String sqlText, List<Object> paramValues, int pageSize, int offset);
+
+  void grantAccess(UUID datasourceId, UUID userId);
+
+  void revokeAccess(UUID datasourceId, UUID userId);
+
+  List<UserView> listGrantedUsers(UUID datasourceId);
 }

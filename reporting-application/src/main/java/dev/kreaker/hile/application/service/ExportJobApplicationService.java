@@ -6,6 +6,7 @@ import dev.kreaker.hile.application.dto.ExportJobView;
 import dev.kreaker.hile.application.dto.PageResult;
 import dev.kreaker.hile.application.dto.RequestExportCommand;
 import dev.kreaker.hile.application.port.in.ExportJobUseCase;
+import dev.kreaker.hile.application.port.out.DataSourceAccessPort;
 import dev.kreaker.hile.application.port.out.ReportDefinitionRepository;
 import dev.kreaker.hile.application.port.out.ReportExecutionRepository;
 import dev.kreaker.hile.application.port.out.ReportExportRepository;
@@ -26,6 +27,7 @@ public class ExportJobApplicationService implements ExportJobUseCase {
   private final ReportParameterRepositoryPort parameterRepository;
   private final ReportExecutionRepository executionRepository;
   private final ReportExportRepository exportRepository;
+  private final DataSourceAccessPort dataSourceAccessPort;
   private final String storageBasePath;
   private final int expiryHours;
 
@@ -34,12 +36,14 @@ public class ExportJobApplicationService implements ExportJobUseCase {
       ReportParameterRepositoryPort parameterRepository,
       ReportExecutionRepository executionRepository,
       ReportExportRepository exportRepository,
+      DataSourceAccessPort dataSourceAccessPort,
       String storageBasePath,
       int expiryHours) {
     this.reportRepository = reportRepository;
     this.parameterRepository = parameterRepository;
     this.executionRepository = executionRepository;
     this.exportRepository = exportRepository;
+    this.dataSourceAccessPort = dataSourceAccessPort;
     this.storageBasePath = storageBasePath;
     this.expiryHours = expiryHours;
   }
@@ -51,6 +55,11 @@ public class ExportJobApplicationService implements ExportJobUseCase {
             .findById(command.reportId())
             .orElseThrow(
                 () -> new IllegalArgumentException("Report not found: " + command.reportId()));
+
+    if (!dataSourceAccessPort.isAuthorized(def.dataSourceId(), requestedBy)) {
+      throw new IllegalStateException(
+          "User does not have access to the datasource for this report.");
+    }
 
     if (def.status() != ReportStatus.PUBLISHED) {
       throw new IllegalStateException("Only PUBLISHED reports can be exported.");

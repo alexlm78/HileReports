@@ -10,9 +10,11 @@ import dev.kreaker.hile.application.dto.CreateDataSourceCommand;
 import dev.kreaker.hile.application.dto.DataSourceView;
 import dev.kreaker.hile.application.dto.ValidationResult;
 import dev.kreaker.hile.application.exception.DataSourceNotFoundException;
+import dev.kreaker.hile.application.port.out.DataSourceAccessPort;
 import dev.kreaker.hile.application.port.out.DataSourceRepositoryPort;
 import dev.kreaker.hile.application.port.out.DbConnectorPort;
 import dev.kreaker.hile.application.port.out.PasswordEncryptionPort;
+import dev.kreaker.hile.application.port.out.UserRepositoryPort;
 import dev.kreaker.hile.domain.datasource.DataSource;
 import dev.kreaker.hile.domain.datasource.DataSourceStatus;
 import dev.kreaker.hile.domain.datasource.DataSourceType;
@@ -32,6 +34,8 @@ class DataSourceApplicationServiceTest {
   @Mock private DataSourceRepositoryPort repository;
   @Mock private PasswordEncryptionPort encryption;
   @Mock private DbConnectorPort pgConnector;
+  @Mock private DataSourceAccessPort accessPort;
+  @Mock private UserRepositoryPort userRepository;
 
   private DataSourceApplicationService service;
 
@@ -40,7 +44,9 @@ class DataSourceApplicationServiceTest {
     given(pgConnector.supports(DataSourceType.POSTGRESQL)).willReturn(true);
     given(pgConnector.supports(DataSourceType.MYSQL)).willReturn(false);
     given(pgConnector.supports(DataSourceType.ORACLE)).willReturn(false);
-    service = new DataSourceApplicationService(repository, encryption, List.of(pgConnector));
+    service =
+        new DataSourceApplicationService(
+            repository, encryption, List.of(pgConnector), accessPort, userRepository);
   }
 
   @Test

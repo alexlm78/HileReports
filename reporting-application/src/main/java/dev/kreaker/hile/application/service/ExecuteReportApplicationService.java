@@ -7,6 +7,7 @@ import dev.kreaker.hile.application.dto.PageResult;
 import dev.kreaker.hile.application.dto.PreviewResult;
 import dev.kreaker.hile.application.port.in.DataSourceUseCase;
 import dev.kreaker.hile.application.port.in.ExecuteReportUseCase;
+import dev.kreaker.hile.application.port.out.DataSourceAccessPort;
 import dev.kreaker.hile.application.port.out.MetricsPort;
 import dev.kreaker.hile.application.port.out.ReportDefinitionRepository;
 import dev.kreaker.hile.application.port.out.ReportExecutionRepository;
@@ -27,18 +28,21 @@ public class ExecuteReportApplicationService implements ExecuteReportUseCase {
   private final DataSourceUseCase dataSourceUseCase;
   private final ReportExecutionRepository executionRepository;
   private final MetricsPort metrics;
+  private final DataSourceAccessPort dataSourceAccessPort;
 
   public ExecuteReportApplicationService(
       ReportDefinitionRepository reportRepository,
       ReportParameterRepositoryPort parameterRepository,
       DataSourceUseCase dataSourceUseCase,
       ReportExecutionRepository executionRepository,
-      MetricsPort metrics) {
+      MetricsPort metrics,
+      DataSourceAccessPort dataSourceAccessPort) {
     this.reportRepository = reportRepository;
     this.parameterRepository = parameterRepository;
     this.dataSourceUseCase = dataSourceUseCase;
     this.executionRepository = executionRepository;
     this.metrics = metrics;
+    this.dataSourceAccessPort = dataSourceAccessPort;
   }
 
   @Override
@@ -48,6 +52,11 @@ public class ExecuteReportApplicationService implements ExecuteReportUseCase {
             .findById(command.reportId())
             .orElseThrow(
                 () -> new IllegalArgumentException("Report not found: " + command.reportId()));
+
+    if (!dataSourceAccessPort.isAuthorized(def.dataSourceId(), requestedBy)) {
+      throw new IllegalStateException(
+          "User does not have access to the datasource for this report.");
+    }
 
     if (def.status() != ReportStatus.PUBLISHED) {
       throw new IllegalStateException("Only PUBLISHED reports can be executed.");

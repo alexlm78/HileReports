@@ -5,6 +5,7 @@ import dev.kreaker.hile.application.dto.CreateDataSourceCommand;
 import dev.kreaker.hile.application.dto.DataSourceView;
 import dev.kreaker.hile.application.dto.PreviewResult;
 import dev.kreaker.hile.application.dto.UpdateDataSourceCommand;
+import dev.kreaker.hile.application.dto.UserView;
 import dev.kreaker.hile.application.dto.ValidationResult;
 import dev.kreaker.hile.application.port.in.DataSourceUseCase;
 import dev.kreaker.hile.application.port.out.AuditEventPort;
@@ -114,5 +115,26 @@ public class DataSourceController {
       @PathVariable UUID id, @Valid @RequestBody SqlQueryRequest request) {
     return ResponseEntity.ok(
         dataSourceUseCase.executePreview(id, request.sqlText(), previewMaxRows));
+  }
+
+  @PostMapping("/{id}/access")
+  public ResponseEntity<Void> grantAccess(
+      @PathVariable UUID id, @RequestBody AccessGrantRequest request, Principal principal) {
+    dataSourceUseCase.grantAccess(id, request.userId());
+    auditEventPort.record(principal.getName(), "DATASOURCE_ACCESS_GRANTED", "DATASOURCE", id);
+    return ResponseEntity.noContent().build();
+  }
+
+  @DeleteMapping("/{id}/access/{userId}")
+  public ResponseEntity<Void> revokeAccess(
+      @PathVariable UUID id, @PathVariable UUID userId, Principal principal) {
+    dataSourceUseCase.revokeAccess(id, userId);
+    auditEventPort.record(principal.getName(), "DATASOURCE_ACCESS_REVOKED", "DATASOURCE", id);
+    return ResponseEntity.noContent().build();
+  }
+
+  @GetMapping("/{id}/access")
+  public ResponseEntity<List<UserView>> listAccess(@PathVariable UUID id) {
+    return ResponseEntity.ok(dataSourceUseCase.listGrantedUsers(id));
   }
 }

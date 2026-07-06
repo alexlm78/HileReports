@@ -123,6 +123,9 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 | `GET` | `/api/v1/users/me` | authenticated |
 | `PUT` | `/api/v1/users/me/password` | authenticated |
 | `GET` | `/api/v1/executions/{id}` | authenticated |
+| `POST` | `/api/v1/datasources/{id}/access` | `PLATFORM_ADMIN` |
+| `DELETE` | `/api/v1/datasources/{id}/access/{userId}` | `PLATFORM_ADMIN` |
+| `GET` | `/api/v1/datasources/{id}/access` | `PLATFORM_ADMIN` |
 | `GET` | `/api/v1/audit-events?actor=&action=&page=0&limit=100` | `PLATFORM_ADMIN` |
 
 ## Security Notes
@@ -136,4 +139,3 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 
 1. AD authentication (`TASK-02.3.1-b`) — deferred until live LDAP/AD is available for testing
 2. Frontend / API client integration
-3. Per-datasource ACL
