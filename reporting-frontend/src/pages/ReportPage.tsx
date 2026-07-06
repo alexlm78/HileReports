@@ -2,7 +2,31 @@ import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api, ApiException } from '../api/client';
-import type { ExecutionResultView, ReportDefinitionView, ReportParameter } from '../api/types';
+import type {
+  ExecutionResultView,
+  ExportJobView,
+  ReportDefinitionView,
+  ReportParameter,
+} from '../api/types';
+
+const TERMINAL = new Set(['COMPLETED', 'FAILED', 'EXPIRED']);
+
+async function downloadExport(exportId: string, format: string) {
+  const token = localStorage.getItem('jwt_token');
+  const res = await fetch(`/api/v1/exports/${exportId}/download`, {
+    headers: { Authorization: `Bearer ${token ?? ''}` },
+  });
+  if (!res.ok) throw new Error(`Download failed: ${res.status}`);
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `export.${format.toLowerCase()}`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
 
 export function ReportPage() {
   const { id } = useParams<{ id: string }>();
@@ -11,6 +35,11 @@ export function ReportPage() {
   const [result, setResult] = useState<ExecutionResultView | null>(null);
   const [executing, setExecuting] = useState(false);
   const [execError, setExecError] = useState<string | null>(null);
+
+  const [exportJobId, setExportJobId] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState(false);
 
   const { data: report, isLoading: loadingReport } = useQuery({
     queryKey: ['report', id],
@@ -22,6 +51,16 @@ export function ReportPage() {
     queryKey: ['report-params', id],
     queryFn: () => api.get<ReportParameter[]>(`/api/v1/reports/${id}/parameters`),
     enabled: id != null,
+  });
+
+  const { data: exportJob } = useQuery({
+    queryKey: ['export-job', exportJobId],
+    queryFn: () => api.get<ExportJobView>(`/api/v1/exports/${exportJobId}`),
+    enabled: exportJobId != null,
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      return status == null || !TERMINAL.has(status) ? 2000 : false;
+    },
   });
 
   async function runReport(targetPage: number) {
@@ -43,6 +82,37 @@ export function ReportPage() {
     }
   }
 
+  async function requestExport(format: 'CSV' | 'XLSX') {
+    if (id == null) return;
+    setExporting(true);
+    setExportError(null);
+    setExportJobId(null);
+    try {
+      const job = await api.post<ExportJobView>(`/api/v1/reports/${id}/export`, {
+        format,
+        parameters: paramValues,
+        pageSize: 10000,
+      });
+      setExportJobId(job.id);
+    } catch (err) {
+      setExportError(err instanceof ApiException ? err.message : 'Export request failed');
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  async function handleDownload() {
+    if (exportJob == null) return;
+    setDownloading(true);
+    try {
+      await downloadExport(exportJob.id, exportJob.format);
+    } catch (err) {
+      setExportError(err instanceof Error ? err.message : 'Download failed');
+    } finally {
+      setDownloading(false);
+    }
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     void runReport(0);
@@ -52,6 +122,9 @@ export function ReportPage() {
   if (report == null) return <p className="text-red-600">Report not found.</p>;
 
   const hasMorePages = result != null && result.rows.length >= 50;
+  const exportReady = exportJob?.status === 'COMPLETED';
+  const exportFailed = exportJob?.status === 'FAILED' || exportJob?.status === 'EXPIRED';
+  const exportRunning = exportJobId != null && !TERMINAL.has(exportJob?.status ?? '');
 
   return (
     <div>
@@ -91,13 +164,55 @@ export function ReportPage() {
             ))}
           </div>
         )}
-        <button
-          type="submit"
-          disabled={executing}
-          className="bg-indigo-600 text-white rounded-lg px-5 py-2 text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
-        >
-          {executing ? 'Running…' : 'Run report'}
-        </button>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="submit"
+            disabled={executing}
+            className="bg-indigo-600 text-white rounded-lg px-5 py-2 text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+          >
+            {executing ? 'Running…' : 'Run report'}
+          </button>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              disabled={exporting || exportRunning}
+              onClick={() => void requestExport('CSV')}
+              className="border border-gray-300 rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 transition-colors"
+            >
+              Export CSV
+            </button>
+            <button
+              type="button"
+              disabled={exporting || exportRunning}
+              onClick={() => void requestExport('XLSX')}
+              className="border border-gray-300 rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 transition-colors"
+            >
+              Export XLSX
+            </button>
+          </div>
+
+          {exportRunning && (
+            <span className="text-sm text-gray-500 animate-pulse">Generating export…</span>
+          )}
+          {exportReady && (
+            <button
+              type="button"
+              onClick={() => void handleDownload()}
+              disabled={downloading}
+              className="bg-green-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
+            >
+              {downloading ? 'Downloading…' : `Download ${exportJob?.format ?? ''}`}
+            </button>
+          )}
+          {exportFailed && (
+            <span className="text-sm text-red-600">Export failed or expired</span>
+          )}
+          {exportError != null && (
+            <span className="text-sm text-red-600">{exportError}</span>
+          )}
+        </div>
       </form>
 
       {execError != null && <p className="text-red-600 mb-4">{execError}</p>}
@@ -124,7 +239,7 @@ export function ReportPage() {
               <tbody>
                 {result.rows.map((row, ri) => (
                   <tr key={ri} className="border-b border-gray-100 hover:bg-gray-50">
-                    {row.map((cell, ci) => (
+                    {(row as unknown[]).map((cell, ci) => (
                       <td key={ci} className="px-4 py-3 text-gray-700">
                         {cell == null ? (
                           <span className="text-gray-400">—</span>

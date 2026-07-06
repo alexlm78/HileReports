@@ -119,3 +119,11 @@ export interface UserView {
   roles: string[];
   enabled: boolean;
 }
+
+export interface ExportJobView {
+  id: string;
+  executionId: string;
+  format: 'CSV' | 'XLSX';
+  status: 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'EXPIRED';
+  expiresAt: string;
+}
