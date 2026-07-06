@@ -7,7 +7,7 @@ This document gives an AI agent or a new developer a verified snapshot of the cu
 ## Last Verified Snapshot
 
 - Date: `2026-07-05`
-- Repository status: EP-08 done; EP-09 done; TASK-10.1.1-a/c done; CI pipeline added (TASK-01.3.1-a); TASK-03.2.1-b (Tag model) done; pagination on all list endpoints done; PUT datasource + PUT category done; GET /api/v1/exports done; report list filters done; execution history endpoints done; user management completion done; structured observability done (TASK-10.1.1-c); per-datasource ACL done (TASK-02.2.1-c); frontend integration prep done
+- Repository status: EP-08 done; EP-09 done; TASK-10.1.1-a/c done; CI pipeline added (TASK-01.3.1-a); TASK-03.2.1-b (Tag model) done; pagination on all list endpoints done; PUT datasource + PUT category done; GET /api/v1/exports done; report list filters done; execution history endpoints done; user management completion done; structured observability done (TASK-10.1.1-c); per-datasource ACL done (TASK-02.2.1-c); frontend integration prep done; frontend module (consumption path) done
 - Build status: `./gradlew test` passes
 - Scope of verification: source tree, Gradle modules, Spring Boot bootstrap, tests, and backlog alignment
 
@@ -74,9 +74,11 @@ What is already in place:
 
 - Frontend integration preparation: CORS enabled via `CorsConfig.java` — `APP_CORS_ALLOWED_ORIGINS` env var (default `http://localhost:3000,http://localhost:4200`), exposes `X-Correlation-ID` and `Location` headers. `AccessDeniedException` (application layer) maps to 403 in `GlobalExceptionHandler`. `ApiErrorResponse` gained `timestamp` field (ISO-8601). `SecurityConfig` wires CORS via `Customizer.withDefaults()`.
 
+- Frontend module `reporting-frontend/` (consumption path): Vite + React 18 + TypeScript + Tailwind CSS + React Query + React Router v6. Pages: Login, Catalog (published reports grid), Report execution (parameterized form, paginated results table). API client uses relative URLs; Vite dev server proxies `/api → localhost:8080`. `tsc && vite build` passes clean. Admin panel (datasource/user/report builder screens) is next frontend slice.
+
 What is not in place yet:
 
-- No frontend module.
+- Frontend admin panel (datasource management, user management, report builder).
 - Oracle connector fully implemented via `ojdbc11:21.11.0.0` from Maven Central.
 
 ## Verified Implementation by Module

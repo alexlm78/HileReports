@@ -136,7 +136,21 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 - `APP_ENCRYPTION_SECRET`: AES-256-GCM key source (default dev key insecure)
 - `APP_DB_SCHEMA`: defaults to `hile_reports` (used by Flyway and Hibernate)
 
+## Frontend (`reporting-frontend/`)
+
+```bash
+# Install and run dev server (proxies /api → localhost:8080)
+cd reporting-frontend && npm install && npm run dev
+
+# Production build
+npm run build
+```
+
+Stack: Vite + React 18 + TypeScript + Tailwind CSS + React Query + React Router v6.
+
+Pages: `/login`, `/catalog` (published reports grid), `/reports/:id` (parameterized execution + paginated results).
+
 ## Next Implementation Slice (in order)
 
 1. AD authentication (`TASK-02.3.1-b`) — deferred until live LDAP/AD is available for testing
-2. Frontend module (separate project)
+2. Frontend admin panel (datasource, user, report builder screens)
