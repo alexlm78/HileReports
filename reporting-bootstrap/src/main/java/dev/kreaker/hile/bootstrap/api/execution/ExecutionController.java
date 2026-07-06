@@ -4,8 +4,10 @@ import dev.kreaker.hile.application.dto.ExecutionView;
 import dev.kreaker.hile.application.port.in.ExecuteReportUseCase;
 import dev.kreaker.hile.bootstrap.api.PageResponse;
 import java.security.Principal;
+import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,5 +29,10 @@ public class ExecutionController {
       Principal principal) {
     return ResponseEntity.ok(
         PageResponse.from(executeUseCase.listMine(principal.getName(), page, size)));
+  }
+
+  @GetMapping("/{id}")
+  public ResponseEntity<ExecutionView> getById(@PathVariable UUID id) {
+    return ResponseEntity.ok(executeUseCase.getExecution(id));
   }
 }

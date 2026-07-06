@@ -77,6 +77,22 @@ public class UserManagementApplicationService implements UserManagementUseCase {
   }
 
   @Override
+  public void enable(UUID id) {
+    if (repository.findUserById(id).isEmpty()) {
+      throw new IllegalArgumentException("User not found: " + id);
+    }
+    repository.enableUser(id);
+  }
+
+  @Override
+  public UserView update(UUID id, String email, String role) {
+    if (repository.findUserById(id).isEmpty()) {
+      throw new IllegalArgumentException("User not found: " + id);
+    }
+    return toView(repository.updateUser(id, email, role));
+  }
+
+  @Override
   public void changePassword(ChangePasswordCommand command) {
     if (repository.findUserById(command.userId()).isEmpty()) {
       throw new IllegalArgumentException("User not found: " + command.userId());

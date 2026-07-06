@@ -7,7 +7,7 @@ This document gives an AI agent or a new developer a verified snapshot of the cu
 ## Last Verified Snapshot
 
 - Date: `2026-07-05`
-- Repository status: EP-08 done; EP-09 done; TASK-10.1.1-a/c done; CI pipeline added (TASK-01.3.1-a); TASK-03.2.1-b (Tag model) done; pagination on all list endpoints done; PUT datasource + PUT category done; GET /api/v1/exports done; report list filters done
+- Repository status: EP-08 done; EP-09 done; TASK-10.1.1-a/c done; CI pipeline added (TASK-01.3.1-a); TASK-03.2.1-b (Tag model) done; pagination on all list endpoints done; PUT datasource + PUT category done; GET /api/v1/exports done; report list filters done; execution history endpoints done; user management completion done (PUT /users/{id}, POST /users/{id}/enable, GET /executions/{id})
 - Build status: `./gradlew test` passes
 - Scope of verification: source tree, Gradle modules, Spring Boot bootstrap, tests, and backlog alignment
 
@@ -48,6 +48,15 @@ What is already in place:
 - `GET /api/v1/reports/{id}/parameters` — list configured parameters.
 - `ReportColumnEntity`, `ReportParameterEntity` JPA entities added.
 - `InMemoryReportDefinitionRepository` removed; replaced by `ReportDefinitionRepositoryAdapter` (JPA).
+- Pagination on all list endpoints: `GET /api/v1/categories`, `/api/v1/datasources`, `/api/v1/reports`, `/api/v1/users`, `/api/v1/exports`, `/api/v1/executions` all support `?page=0&size=20`. Returns `PageResponse<T>` with `content, page, size, total, totalPages`.
+- `PUT /api/v1/categories/{id}` — partial update (name, description); name uniqueness enforced via `existsByNameAndIdNot`.
+- `PUT /api/v1/datasources/{id}` — partial update; password re-encrypted before storage; audit event `DATASOURCE_UPDATED`.
+- `GET /api/v1/reports?page=0&size=20&name=&status=&categoryId=` — optional null-safe filters via JPQL `:param IS NULL OR field = :param` pattern.
+- `GET /api/v1/reports/{id}/executions?page=0&size=20` — execution history for a specific report, authenticated.
+- `GET /api/v1/executions?page=0&size=20` — caller's own execution history (filtered by `requestedBy = principal`).
+- `GET /api/v1/executions/{id}` — single execution detail, authenticated.
+- `PUT /api/v1/users/{id}` — partial update: email and/or role (`PLATFORM_ADMIN` only). Single-role model: replaces entire role set. Audit event `USER_UPDATED`.
+- `POST /api/v1/users/{id}/enable` — re-enable a previously disabled user (`PLATFORM_ADMIN` only). Audit event `USER_ENABLED`.
 - `GET /api/v1/catalog` — returns PUBLISHED reports only; optional `?name=` case-insensitive substring filter; ordered by `created_at DESC`.
 - `ReportSecurityGuard` — `@Component("reportSecurity")` that checks report ownership or `ROLE_PLATFORM_ADMIN`. Used via `@PreAuthorize("@reportSecurity.isOwnerOrAdmin(#id, authentication)")` on publish/unpublish/preview/columns/parameters endpoints.
 - `POST /api/v1/reports/{id}/execute` — executes a PUBLISHED report with optional parameter map and pagination (`page`, `pageSize`). Named params (`:paramName`) in SQL text substituted with typed values from `report_parameter` metadata. Appends `LIMIT ? OFFSET ?` for pagination (PostgreSQL/MySQL). Persists `report_execution` + `report_execution_parameter` rows with COMPLETED or FAILED status, duration, and row count. Returns `ExecutionResultView` with `executionId`, `correlationId`, `columns`, `rows`, `rowCount`, `durationMs`, `page`, `pageSize`.

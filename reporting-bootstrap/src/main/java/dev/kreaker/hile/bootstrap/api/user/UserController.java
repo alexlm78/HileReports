@@ -55,10 +55,25 @@ public class UserController {
     return ResponseEntity.ok(userManagement.findById(id));
   }
 
+  @PutMapping("/{id}")
+  public ResponseEntity<UserView> update(
+      @PathVariable UUID id, @RequestBody UpdateUserRequest request, Principal principal) {
+    UserView view = userManagement.update(id, request.email(), request.role());
+    auditEventPort.record(principal.getName(), "USER_UPDATED", "USER", id);
+    return ResponseEntity.ok(view);
+  }
+
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> disable(@PathVariable UUID id, Principal principal) {
     userManagement.disable(id);
     auditEventPort.record(principal.getName(), "USER_DISABLED", "USER", id);
+    return ResponseEntity.noContent().build();
+  }
+
+  @PostMapping("/{id}/enable")
+  public ResponseEntity<Void> enable(@PathVariable UUID id, Principal principal) {
+    userManagement.enable(id);
+    auditEventPort.record(principal.getName(), "USER_ENABLED", "USER", id);
     return ResponseEntity.noContent().build();
   }
 

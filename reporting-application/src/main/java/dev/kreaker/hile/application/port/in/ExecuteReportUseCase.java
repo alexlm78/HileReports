@@ -10,6 +10,8 @@ public interface ExecuteReportUseCase {
 
   ExecutionResultView execute(ExecuteReportCommand command, String requestedBy);
 
+  ExecutionView getExecution(UUID executionId);
+
   PageResult<ExecutionView> listByReport(UUID reportId, String requestedBy, int page, int size);
 
   PageResult<ExecutionView> listMine(String requestedBy, int page, int size);

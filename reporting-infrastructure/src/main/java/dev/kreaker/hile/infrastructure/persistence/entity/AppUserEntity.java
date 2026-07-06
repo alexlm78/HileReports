@@ -99,8 +99,18 @@ public class AppUserEntity {
     this.updatedAt = OffsetDateTime.now();
   }
 
+  public void enable() {
+    this.enabled = true;
+    this.updatedAt = OffsetDateTime.now();
+  }
+
   public void changePasswordHash(String newHash) {
     this.passwordHash = newHash;
+    this.updatedAt = OffsetDateTime.now();
+  }
+
+  public void setEmail(String email) {
+    this.email = email;
     this.updatedAt = OffsetDateTime.now();
   }
 }

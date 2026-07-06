@@ -93,6 +93,12 @@ public class SecurityConfig {
                     .requestMatchers(PUT, "/api/v1/users/me/password")
                     .authenticated()
                     // User management — PLATFORM_ADMIN only
+                    .requestMatchers(PUT, "/api/v1/users/*/password")
+                    .hasRole("PLATFORM_ADMIN")
+                    .requestMatchers(PUT, "/api/v1/users/*")
+                    .hasRole("PLATFORM_ADMIN")
+                    .requestMatchers(POST, "/api/v1/users/*/enable")
+                    .hasRole("PLATFORM_ADMIN")
                     .requestMatchers("/api/v1/users/**")
                     .hasRole("PLATFORM_ADMIN")
                     // Audit log — PLATFORM_ADMIN only

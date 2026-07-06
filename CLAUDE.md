@@ -116,10 +116,13 @@ Java: `google-java-format`, 2-space indent. `Spotless` enforces all files (Java,
 | `POST` | `/api/v1/users` | `PLATFORM_ADMIN` |
 | `GET` | `/api/v1/users?page=0&size=20` | `PLATFORM_ADMIN` |
 | `GET` | `/api/v1/users/{id}` | `PLATFORM_ADMIN` |
+| `PUT` | `/api/v1/users/{id}` | `PLATFORM_ADMIN` |
 | `DELETE` | `/api/v1/users/{id}` | `PLATFORM_ADMIN` (soft-disable) |
+| `POST` | `/api/v1/users/{id}/enable` | `PLATFORM_ADMIN` |
 | `PUT` | `/api/v1/users/{id}/password` | `PLATFORM_ADMIN` |
 | `GET` | `/api/v1/users/me` | authenticated |
 | `PUT` | `/api/v1/users/me/password` | authenticated |
+| `GET` | `/api/v1/executions/{id}` | authenticated |
 | `GET` | `/api/v1/audit-events?actor=&action=&page=0&limit=100` | `PLATFORM_ADMIN` |
 
 ## Security Notes

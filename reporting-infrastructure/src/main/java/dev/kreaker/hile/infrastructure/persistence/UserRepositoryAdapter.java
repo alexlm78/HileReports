@@ -104,6 +104,17 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
   }
 
   @Override
+  public void enableUser(UUID id) {
+    userJpaRepository
+        .findById(id)
+        .ifPresent(
+            u -> {
+              u.enable();
+              userJpaRepository.save(u);
+            });
+  }
+
+  @Override
   public void changeUserPassword(UUID id, String passwordHash) {
     userJpaRepository
         .findById(id)
@@ -112,6 +123,21 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
               u.changePasswordHash(passwordHash);
               userJpaRepository.save(u);
             });
+  }
+
+  @Override
+  public AppUser updateUser(UUID id, String email, String roleName) {
+    AppUserEntity user =
+        userJpaRepository
+            .findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("User not found: " + id));
+    if (email != null) user.setEmail(email);
+    if (roleName != null) {
+      AppRoleEntity role = requireRole(roleName);
+      user.getRoles().clear();
+      user.getRoles().add(role);
+    }
+    return toDomain(userJpaRepository.save(user));
   }
 
   private AppRoleEntity requireRole(String roleName) {

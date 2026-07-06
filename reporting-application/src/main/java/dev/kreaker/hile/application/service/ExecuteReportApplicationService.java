@@ -130,6 +130,15 @@ public class ExecuteReportApplicationService implements ExecuteReportUseCase {
   }
 
   @Override
+  public ExecutionView getExecution(UUID executionId) {
+    ReportExecution execution =
+        executionRepository
+            .findById(executionId)
+            .orElseThrow(() -> new IllegalArgumentException("Execution not found: " + executionId));
+    return toView(execution);
+  }
+
+  @Override
   public PageResult<ExecutionView> listByReport(
       UUID reportId, String requestedBy, int page, int size) {
     reportRepository

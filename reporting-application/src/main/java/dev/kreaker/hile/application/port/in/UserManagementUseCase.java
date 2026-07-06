@@ -21,6 +21,10 @@ public interface UserManagementUseCase {
 
   void disable(UUID id);
 
+  void enable(UUID id);
+
+  UserView update(UUID id, String email, String role);
+
   void changePassword(ChangePasswordCommand command);
 
   void changeOwnPassword(String username, String newPassword);
