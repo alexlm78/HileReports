@@ -47,12 +47,7 @@ management:
       exposure:
         include: health,info,metrics,prometheus
 
-logging:
-  level:
-    root: ${APP_LOG_LEVEL_ROOT:INFO}
-    dev.kreaker.hile: ${APP_LOG_LEVEL_HILE:INFO}
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{correlationId:-}] [%X{username:-}] %logger{36} - %msg%n"
+# Niveles y patron reales viven en logback-spring.xml (APP_LOG_LEVEL_HILE, APP_LOG_PATH, APP_LOG_CONSOLE_INTERACTIVE)
 
 hile:
   reports:

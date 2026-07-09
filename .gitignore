@@ -431,3 +431,10 @@ gradle-app.setting
 ### Gradle Patch ###
 # Java heap dump
 *.hprof
+
+# App logs
+/logs/
+reporting-bootstrap/logs/
+
+# tokensave MCP local code-graph cache
+.tokensave/
