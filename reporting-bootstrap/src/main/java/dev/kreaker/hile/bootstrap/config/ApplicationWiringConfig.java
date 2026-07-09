@@ -32,6 +32,7 @@ import dev.kreaker.hile.application.service.ExportJobApplicationService;
 import dev.kreaker.hile.application.service.ReportDefinitionApplicationService;
 import dev.kreaker.hile.application.service.TagApplicationService;
 import dev.kreaker.hile.application.service.UserManagementApplicationService;
+import dev.kreaker.hile.infrastructure.sql.SimpleReadOnlyQueryValidator;
 import dev.kreaker.hile.security.AdAuthenticationProviderStub;
 import dev.kreaker.hile.security.LocalAuthenticationProviderAdapter;
 import java.util.List;
@@ -47,6 +48,11 @@ public class ApplicationWiringConfig {
   @Bean
   PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
+  }
+
+  @Bean
+  QueryValidatorPort queryValidatorPort() {
+    return new SimpleReadOnlyQueryValidator();
   }
 
   @Bean
