@@ -6,6 +6,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "audit_event")
@@ -27,6 +29,7 @@ public class AuditEventEntity {
   @Column(name = "entity_id", columnDefinition = "uuid")
   private UUID entityId;
 
+  @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "payload_json", columnDefinition = "jsonb")
   private String payloadJson;
 
