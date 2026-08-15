@@ -1,9 +1,9 @@
 name: hile-reports
 
 services:
-  operational-db:
-    image: postgres:16-alpine
-    container_name: hile-operational-db
+  hile-reports-database:
+    image: postgres:17-alpine
+    container_name: hile-reports-db
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${APP_DB_NAME:-hile_reports}
@@ -12,7 +12,7 @@ services:
     ports:
       - "${APP_DB_PORT:-5432}:5432"
     volumes:
-      - operational-db-data:/var/lib/postgresql/data
+      - hile-reports-data:/var/lib/postgresql/data
     healthcheck:
       test:
         [
@@ -25,4 +25,4 @@ services:
       start_period: 10s
 
 volumes:
-  operational-db-data:
+  hile-reports-data:

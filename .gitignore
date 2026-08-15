@@ -438,3 +438,9 @@ reporting-bootstrap/logs/
 
 # tokensave MCP local code-graph cache
 .tokensave/
+
+# Graphify output
+graphify-out/
+
+.claude/settings.json
+
