@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -72,8 +73,13 @@ public class ReportController {
       @RequestParam(required = false) String name,
       @RequestParam(required = false) String status,
       @RequestParam(required = false) UUID categoryId) {
+    // Blank query params (e.g. "?status=") arrive as "", not null; the repository's
+    // "IS NULL" filter checks would otherwise treat "" as an active filter and match nothing.
+    String normalizedName = StringUtils.hasText(name) ? name : null;
+    String normalizedStatus = StringUtils.hasText(status) ? status : null;
     return ResponseEntity.ok(
-        PageResponse.from(reportUseCase.findAllPaged(page, size, name, status, categoryId)));
+        PageResponse.from(
+            reportUseCase.findAllPaged(page, size, normalizedName, normalizedStatus, categoryId)));
   }
 
   @GetMapping("/{id}")

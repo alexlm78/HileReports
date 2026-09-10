@@ -15,7 +15,9 @@ public interface ReportDefinitionJpaRepository extends JpaRepository<ReportDefin
 
   @Query(
       "SELECT r FROM ReportDefinitionEntity r WHERE "
-          + "(:name IS NULL OR LOWER(r.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND "
+          // CAST(:name AS string) forces the bind param to text; without it, Postgres can't
+          // infer a type for a null param inside CONCAT/|| and defaults to bytea, breaking LOWER().
+          + "(:name IS NULL OR LOWER(r.name) LIKE LOWER(CONCAT('%', CAST(:name AS string), '%'))) AND "
           + "(:status IS NULL OR r.status = :status) AND "
           + "(:categoryId IS NULL OR r.categoryId = :categoryId) "
           + "ORDER BY r.createdAt DESC")
