@@ -241,7 +241,7 @@ export function ReportPage() {
                 <tr className="border-b border-gray-200 bg-gray-50">
                   {result.columns.map(col => (
                     <th
-                      key={col.name}
+                      key={col.sourceName}
                       className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide"
                     >
                       {col.label}

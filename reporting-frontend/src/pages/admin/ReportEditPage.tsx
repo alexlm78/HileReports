@@ -201,9 +201,9 @@ export function ReportEditPage() {
       setDiscoverResult(result);
       if (columns.length === 0) {
         const mapped: ReportColumnView[] = result.map((col, i) => ({
-          sourceName: col.name,
-          dataType: col.type,
-          label: col.label ?? col.name,
+          sourceName: col.sourceName,
+          dataType: col.dataType,
+          label: col.label ?? col.sourceName,
           displayType: null,
           displayFormat: null,
           ordinal: i,
@@ -453,8 +453,8 @@ export function ReportEditPage() {
                   <thead>
                     <tr className="border-b border-gray-200 bg-gray-50">
                       {previewResult.columns.map(col => (
-                        <th key={col.name} className="px-4 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                          {col.label ?? col.name}
+                        <th key={col.sourceName} className="px-4 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                          {col.label ?? col.sourceName}
                         </th>
                       ))}
                     </tr>

@@ -44,9 +44,9 @@ export interface ReportParameter {
 }
 
 export interface ColumnMetadata {
-  name: string;
+  sourceName: string;
   label: string;
-  type: string;
+  dataType: string;
 }
 
 export interface ExecutionResultView {
