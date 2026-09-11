@@ -141,6 +141,8 @@ export function ReportPage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setExportJobId(null);
+    setExportError(null);
     void runReport(0);
   }
 
