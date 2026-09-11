@@ -28,6 +28,7 @@ export interface ReportDefinitionView {
   status: 'DRAFT' | 'PUBLISHED';
   dataSourceId: string;
   categoryId: string | null;
+  sqlText: string | null;
   createdBy: string;
   createdAt: string;
 }

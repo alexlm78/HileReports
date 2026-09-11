@@ -116,7 +116,7 @@ export function ReportEditPage() {
         categoryId: report.categoryId ?? '',
         dataSourceId: report.dataSourceId,
         ownerTeam: '',
-        sqlText: '',
+        sqlText: report.sqlText ?? '',
       });
     }
   }, [report]);
