@@ -10,6 +10,6 @@ public record CreateUserRequest(
     String email,
     @NotBlank
         @Pattern(
-            regexp = "platform_admin|report_designer|report_viewer",
-            message = "must be platform_admin, report_designer, or report_viewer")
+            regexp = "PLATFORM_ADMIN|REPORT_DESIGNER|REPORT_VIEWER",
+            message = "must be PLATFORM_ADMIN, REPORT_DESIGNER, or REPORT_VIEWER")
         String role) {}
