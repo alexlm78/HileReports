@@ -75,6 +75,14 @@ public class SecurityConfig {
                     // Execution history — authenticated
                     .requestMatchers(GET, "/api/v1/reports/*/executions", "/api/v1/executions")
                     .authenticated()
+                    // Parameters/columns/tags reads — any authenticated user needs these to
+                    // render the execute form (must be listed before the design catch-all below)
+                    .requestMatchers(
+                        GET,
+                        "/api/v1/reports/*/parameters",
+                        "/api/v1/reports/*/columns",
+                        "/api/v1/reports/*/tags")
+                    .authenticated()
                     // All other report operations (design) — PLATFORM_ADMIN or REPORT_DESIGNER
                     .requestMatchers("/api/v1/reports/**")
                     .hasAnyRole("PLATFORM_ADMIN", "REPORT_DESIGNER")
