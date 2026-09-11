@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api, ApiException } from '../api/client';
@@ -57,6 +57,19 @@ export function ReportPage() {
     enabled: id != null,
   });
 
+  useEffect(() => {
+    if (!params) return;
+    setParamValues(prev => {
+      const next = { ...prev };
+      for (const p of params) {
+        if (next[p.name] === undefined && p.defaultValue != null) {
+          next[p.name] = p.defaultValue;
+        }
+      }
+      return next;
+    });
+  }, [params]);
+
   const { data: historyData } = useQuery({
     queryKey: ['report-history', id, historyPage],
     queryFn: () =>
@@ -82,7 +95,7 @@ export function ReportPage() {
     setExecuting(true);
     try {
       const res = await api.post<ExecutionResultView>(`/api/v1/reports/${id}/execute`, {
-        parameterValues: paramValues,
+        parameters: paramValues,
         page: targetPage,
         pageSize: 50,
       });

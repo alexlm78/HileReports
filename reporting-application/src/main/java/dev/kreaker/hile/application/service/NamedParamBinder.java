@@ -19,7 +19,9 @@ final class NamedParamBinder {
     for (ReportParameter p : defs) {
       if (p.required()) {
         String val = values.get(p.name());
-        if (val == null || val.isBlank()) {
+        boolean blank = val == null || val.isBlank();
+        boolean hasDefault = p.defaultValue() != null && !p.defaultValue().isBlank();
+        if (blank && !hasDefault) {
           throw new IllegalArgumentException("Required parameter missing: " + p.name());
         }
       }
@@ -42,6 +44,9 @@ final class NamedParamBinder {
   }
 
   static Object convertValue(ReportParameter def, String raw) {
+    if (raw == null) {
+      raw = def != null ? def.defaultValue() : null;
+    }
     if (raw == null) return null;
     if (def == null) return raw;
     return switch (def.parameterType().toUpperCase()) {
