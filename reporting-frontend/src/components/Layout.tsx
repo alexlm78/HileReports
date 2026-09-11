@@ -2,8 +2,9 @@ import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 
 export function Layout() {
-  const { username, logout } = useAuth();
+  const { username, roles, logout } = useAuth();
   const navigate = useNavigate();
+  const canManageReports = roles.includes('PLATFORM_ADMIN') || roles.includes('REPORT_DESIGNER');
 
   function handleLogout() {
     logout();
@@ -17,6 +18,11 @@ export function Layout() {
           HileReports
         </Link>
         <div className="flex items-center gap-4">
+          {canManageReports && (
+            <Link to="/admin/reports" className="text-sm text-indigo-600 hover:underline">
+              Manage reports
+            </Link>
+          )}
           <span className="text-sm text-gray-600">{username}</span>
           <button
             onClick={handleLogout}

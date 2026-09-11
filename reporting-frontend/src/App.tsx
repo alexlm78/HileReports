@@ -14,10 +14,20 @@ import { AuditPage } from './pages/admin/AuditPage';
 import { TagsPage } from './pages/admin/TagsPage';
 import { UsersPage } from './pages/admin/UsersPage';
 
-function AdminRoute({ children }: { children: React.ReactNode }) {
+// Reports workspace: PLATFORM_ADMIN and REPORT_DESIGNER both build/manage reports there.
+function StaffRoute({ children }: { children: React.ReactNode }) {
   const { token, roles } = useAuth();
   if (!token) return <Navigate to="/login" replace />;
-  if (!roles.includes('PLATFORM_ADMIN')) return <Navigate to="/catalog" replace />;
+  if (!roles.includes('PLATFORM_ADMIN') && !roles.includes('REPORT_DESIGNER')) {
+    return <Navigate to="/catalog" replace />;
+  }
+  return <>{children}</>;
+}
+
+// Datasources, users, categories, tags, audit — PLATFORM_ADMIN only (matches backend SecurityConfig).
+function AdminOnlyRoute({ children }: { children: React.ReactNode }) {
+  const { roles } = useAuth();
+  if (!roles.includes('PLATFORM_ADMIN')) return <Navigate to="/admin/reports" replace />;
   return <>{children}</>;
 }
 
@@ -41,19 +51,54 @@ export default function App() {
           <Route
             path="/admin"
             element={
-              <AdminRoute>
+              <StaffRoute>
                 <AdminLayout />
-              </AdminRoute>
+              </StaffRoute>
             }
           >
             <Route index element={<Navigate to="/admin/reports" replace />} />
             <Route path="reports" element={<ReportsAdminPage />} />
             <Route path="reports/:id" element={<ReportEditPage />} />
-            <Route path="datasources" element={<DatasourcesPage />} />
-            <Route path="users" element={<UsersPage />} />
-            <Route path="categories" element={<CategoriesPage />} />
-            <Route path="tags" element={<TagsPage />} />
-            <Route path="audit" element={<AuditPage />} />
+            <Route
+              path="datasources"
+              element={
+                <AdminOnlyRoute>
+                  <DatasourcesPage />
+                </AdminOnlyRoute>
+              }
+            />
+            <Route
+              path="users"
+              element={
+                <AdminOnlyRoute>
+                  <UsersPage />
+                </AdminOnlyRoute>
+              }
+            />
+            <Route
+              path="categories"
+              element={
+                <AdminOnlyRoute>
+                  <CategoriesPage />
+                </AdminOnlyRoute>
+              }
+            />
+            <Route
+              path="tags"
+              element={
+                <AdminOnlyRoute>
+                  <TagsPage />
+                </AdminOnlyRoute>
+              }
+            />
+            <Route
+              path="audit"
+              element={
+                <AdminOnlyRoute>
+                  <AuditPage />
+                </AdminOnlyRoute>
+              }
+            />
           </Route>
           <Route path="*" element={<Navigate to="/catalog" replace />} />
         </Routes>
