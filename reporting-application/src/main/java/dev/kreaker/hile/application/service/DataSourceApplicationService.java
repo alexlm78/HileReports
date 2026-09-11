@@ -147,7 +147,8 @@ public class DataSourceApplicationService implements DataSourceUseCase {
     if (connector == null) {
       throw new IllegalStateException("No connector available for type: " + ds.dbType());
     }
-    return connector.discoverColumns(jdbcUrl, ds.username(), rawPassword, sqlText);
+    return connector.discoverColumns(
+        jdbcUrl, ds.username(), rawPassword, withoutNamedParams(sqlText));
   }
 
   @Override
@@ -162,11 +163,21 @@ public class DataSourceApplicationService implements DataSourceUseCase {
     if (connector == null) {
       throw new IllegalStateException("No connector available for type: " + ds.dbType());
     }
+    String resolvedSql = withoutNamedParams(sqlText);
     List<ColumnMetadata> columns =
-        connector.discoverColumns(jdbcUrl, ds.username(), rawPassword, sqlText);
+        connector.discoverColumns(jdbcUrl, ds.username(), rawPassword, resolvedSql);
     List<List<Object>> rows =
-        connector.executePreview(jdbcUrl, ds.username(), rawPassword, sqlText, maxRows);
+        connector.executePreview(jdbcUrl, ds.username(), rawPassword, resolvedSql, maxRows);
     return new PreviewResult(columns, rows);
+  }
+
+  /**
+   * Design-time discover/preview run before parameter values are known. Named placeholders
+   * (":name") aren't valid JDBC syntax on their own, so swap them for literal NULL — enough to
+   * resolve result-set metadata and a best-effort data sample.
+   */
+  private static String withoutNamedParams(String sqlText) {
+    return NamedParamBinder.PATTERN.matcher(sqlText).replaceAll("NULL");
   }
 
   @Override
