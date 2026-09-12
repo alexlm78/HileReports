@@ -439,10 +439,15 @@ reporting-bootstrap/logs/
 # tokensave MCP local code-graph cache
 .tokensave/
 
-# Graphify output
+# Graphify related
 graphify-out/
+.graphifyignore
 
 .claude/settings.json
 .claude/.headroom*
 
 .serena/
+
+# others
+docx/
+doxs/
