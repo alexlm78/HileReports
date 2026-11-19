@@ -4,28 +4,29 @@ import dev.kreaker.hile.application.dto.ChangePasswordCommand;
 import dev.kreaker.hile.application.dto.CreateUserCommand;
 import dev.kreaker.hile.application.dto.PageResult;
 import dev.kreaker.hile.application.dto.UserView;
+
 import java.util.List;
 import java.util.UUID;
 
 public interface UserManagementUseCase {
 
-  UserView create(CreateUserCommand command);
+   UserView create(CreateUserCommand command);
 
-  List<UserView> findAll();
+   List<UserView> findAll();
 
-  PageResult<UserView> findAllPaged(int page, int size);
+   PageResult<UserView> findAllPaged(int page, int size);
 
-  UserView findById(UUID id);
+   UserView findById(UUID id);
 
-  UserView findByUsername(String username);
+   UserView findByUsername(String username);
 
-  void disable(UUID id);
+   void disable(UUID id);
 
-  void enable(UUID id);
+   void enable(UUID id);
 
-  UserView update(UUID id, String email, String role);
+   UserView update(UUID id, String email, String role);
 
-  void changePassword(ChangePasswordCommand command);
+   void changePassword(ChangePasswordCommand command);
 
-  void changeOwnPassword(String username, String newPassword);
+   void changeOwnPassword(String username, String newPassword);
 }

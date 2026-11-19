@@ -10,38 +10,39 @@ import dev.kreaker.hile.application.dto.ReportParameterView;
 import dev.kreaker.hile.application.dto.UpdateReportCommand;
 import dev.kreaker.hile.domain.report.ReportColumn;
 import dev.kreaker.hile.domain.report.ReportParameter;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface CreateReportDefinitionUseCase {
 
-  ReportDefinitionView createDraft(CreateReportDefinitionCommand command);
+   ReportDefinitionView createDraft(CreateReportDefinitionCommand command);
 
-  ReportDefinitionView updateDraft(UpdateReportCommand command);
+   ReportDefinitionView updateDraft(UpdateReportCommand command);
 
-  Optional<ReportDefinitionView> findById(UUID id);
+   Optional<ReportDefinitionView> findById(UUID id);
 
-  List<ReportDefinitionView> findAll();
+   List<ReportDefinitionView> findAll();
 
-  PreviewResult runPreview(UUID reportId);
+   PreviewResult runPreview(UUID reportId);
 
-  ReportDefinitionView publish(UUID reportId);
+   ReportDefinitionView publish(UUID reportId);
 
-  ReportDefinitionView unpublish(UUID reportId);
+   ReportDefinitionView unpublish(UUID reportId);
 
-  List<ReportColumnView> upsertColumns(UUID reportId, List<ReportColumn> columns);
+   List<ReportColumnView> upsertColumns(UUID reportId, List<ReportColumn> columns);
 
-  List<ReportColumnView> getColumns(UUID reportId);
+   List<ReportColumnView> getColumns(UUID reportId);
 
-  List<ReportParameterView> upsertParameters(UUID reportId, List<ReportParameter> parameters);
+   List<ReportParameterView> upsertParameters(UUID reportId, List<ReportParameter> parameters);
 
-  List<ReportParameterView> getParameters(UUID reportId);
+   List<ReportParameterView> getParameters(UUID reportId);
 
-  List<CatalogReportView> getCatalog(String nameFilter);
+   List<CatalogReportView> getCatalog(String nameFilter);
 
-  PageResult<ReportDefinitionView> findAllPaged(
-      int page, int size, String name, String status, UUID categoryId);
+   PageResult<ReportDefinitionView> findAllPaged(int page, int size, String name, String status,
+         UUID categoryId);
 
-  void deleteDraft(UUID id);
+   void deleteDraft(UUID id);
 }

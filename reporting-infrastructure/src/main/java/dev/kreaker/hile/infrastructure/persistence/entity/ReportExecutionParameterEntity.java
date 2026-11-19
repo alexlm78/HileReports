@@ -5,6 +5,7 @@ import jakarta.persistence.Embeddable;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
@@ -13,61 +14,64 @@ import java.util.UUID;
 @Table(name = "report_execution_parameter")
 public class ReportExecutionParameterEntity {
 
-  @EmbeddedId private Id id;
+   @EmbeddedId
+   private Id id;
 
-  @Column(name = "parameter_value_masked", columnDefinition = "text")
-  private String parameterValueMasked;
+   @Column(name = "parameter_value_masked", columnDefinition = "text")
+   private String parameterValueMasked;
 
-  protected ReportExecutionParameterEntity() {}
+   protected ReportExecutionParameterEntity() {}
 
-  public ReportExecutionParameterEntity(Id id, String parameterValueMasked) {
-    this.id = id;
-    this.parameterValueMasked = parameterValueMasked;
-  }
+   public ReportExecutionParameterEntity(Id id, String parameterValueMasked) {
+      this.id = id;
+      this.parameterValueMasked = parameterValueMasked;
+   }
 
-  public Id getId() {
-    return id;
-  }
+   public Id getId() {
+      return id;
+   }
 
-  public String getParameterValueMasked() {
-    return parameterValueMasked;
-  }
+   public String getParameterValueMasked() {
+      return parameterValueMasked;
+   }
 
-  @Embeddable
-  public static class Id implements Serializable {
+   @Embeddable
+   public static class Id implements Serializable {
 
-    @Column(name = "execution_id", columnDefinition = "uuid")
-    private UUID executionId;
+      @Column(name = "execution_id", columnDefinition = "uuid")
+      private UUID executionId;
 
-    @Column(name = "parameter_name")
-    private String parameterName;
+      @Column(name = "parameter_name")
+      private String parameterName;
 
-    protected Id() {}
+      protected Id() {}
 
-    public Id(UUID executionId, String parameterName) {
-      this.executionId = executionId;
-      this.parameterName = parameterName;
-    }
+      public Id(UUID executionId, String parameterName) {
+         this.executionId = executionId;
+         this.parameterName = parameterName;
+      }
 
-    public UUID getExecutionId() {
-      return executionId;
-    }
+      public UUID getExecutionId() {
+         return executionId;
+      }
 
-    public String getParameterName() {
-      return parameterName;
-    }
+      public String getParameterName() {
+         return parameterName;
+      }
 
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (!(o instanceof Id other)) return false;
-      return Objects.equals(executionId, other.executionId)
-          && Objects.equals(parameterName, other.parameterName);
-    }
+      @Override
+      public boolean equals(Object o) {
+         if (this == o)
+            return true;
+         if (!(o instanceof Id other))
+            return false;
+         return Objects.equals(executionId, other.executionId)
+               && Objects.equals(parameterName, other.parameterName);
+      }
 
-    @Override
-    public int hashCode() {
-      return Objects.hash(executionId, parameterName);
-    }
-  }
+      @Override
+      public int hashCode() {
+         return Objects.hash(executionId, parameterName);
+      }
+   }
 }

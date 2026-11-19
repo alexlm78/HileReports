@@ -1,9 +1,7 @@
 package dev.kreaker.hile.infrastructure.persistence.jpa;
 
 import dev.kreaker.hile.infrastructure.persistence.entity.ReportExportEntity;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.UUID;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,29 +10,29 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.UUID;
+
 public interface ReportExportJpaRepository extends JpaRepository<ReportExportEntity, UUID> {
 
-  List<ReportExportEntity> findByExpiresAtBefore(OffsetDateTime cutoff);
+   List<ReportExportEntity> findByExpiresAtBefore(OffsetDateTime cutoff);
 
-  @Query(
-      "SELECT e FROM ReportExportEntity e WHERE e.executionId IN "
-          + "(SELECT ex.id FROM ReportExecutionEntity ex WHERE ex.requestedBy = :requestedBy) "
-          + "ORDER BY e.id DESC")
-  Page<ReportExportEntity> findByRequestedBy(
-      @Param("requestedBy") String requestedBy, Pageable pageable);
+   @Query("SELECT e FROM ReportExportEntity e WHERE e.executionId IN "
+         + "(SELECT ex.id FROM ReportExecutionEntity ex WHERE ex.requestedBy = :requestedBy) "
+         + "ORDER BY e.id DESC")
+   Page<ReportExportEntity> findByRequestedBy(@Param("requestedBy") String requestedBy,
+         Pageable pageable);
 
-  @Modifying
-  @Transactional
-  @Query(
-      "UPDATE ReportExportEntity e SET e.status = :status, e.storagePath = :storagePath"
-          + " WHERE e.id = :id")
-  void updateStatusAndPath(
-      @Param("id") UUID id,
-      @Param("status") String status,
-      @Param("storagePath") String storagePath);
+   @Modifying
+   @Transactional
+   @Query("UPDATE ReportExportEntity e SET e.status = :status, e.storagePath = :storagePath"
+         + " WHERE e.id = :id")
+   void updateStatusAndPath(@Param("id") UUID id, @Param("status") String status,
+         @Param("storagePath") String storagePath);
 
-  @Modifying
-  @Transactional
-  @Query("UPDATE ReportExportEntity e SET e.status = :status WHERE e.id = :id")
-  void updateStatus(@Param("id") UUID id, @Param("status") String status);
+   @Modifying
+   @Transactional
+   @Query("UPDATE ReportExportEntity e SET e.status = :status WHERE e.id = :id")
+   void updateStatus(@Param("id") UUID id, @Param("status") String status);
 }

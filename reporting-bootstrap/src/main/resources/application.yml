@@ -22,6 +22,7 @@ spring:
     schemas:
       - ${APP_DB_SCHEMA:hile_reports}
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: validate
     properties:

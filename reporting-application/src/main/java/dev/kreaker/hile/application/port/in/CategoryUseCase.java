@@ -3,20 +3,21 @@ package dev.kreaker.hile.application.port.in;
 import dev.kreaker.hile.application.dto.CategoryView;
 import dev.kreaker.hile.application.dto.CreateCategoryCommand;
 import dev.kreaker.hile.application.dto.PageResult;
+
 import java.util.List;
 import java.util.UUID;
 
 public interface CategoryUseCase {
 
-  CategoryView create(CreateCategoryCommand command);
+   CategoryView create(CreateCategoryCommand command);
 
-  List<CategoryView> findAll();
+   List<CategoryView> findAll();
 
-  PageResult<CategoryView> findAllPaged(int page, int size);
+   PageResult<CategoryView> findAllPaged(int page, int size);
 
-  CategoryView findById(UUID id);
+   CategoryView findById(UUID id);
 
-  CategoryView update(UUID id, String name, String description);
+   CategoryView update(UUID id, String name, String description);
 
-  void delete(UUID id);
+   void delete(UUID id);
 }

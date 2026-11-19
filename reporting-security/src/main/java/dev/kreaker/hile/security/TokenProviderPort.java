@@ -4,13 +4,13 @@ import java.util.Set;
 
 public interface TokenProviderPort {
 
-  String generateToken(String username, Set<String> roles);
+   String generateToken(String username, Set<String> roles);
 
-  long expirationMs();
+   long expirationMs();
 
-  boolean isValid(String token);
+   boolean isValid(String token);
 
-  String extractUsername(String token);
+   String extractUsername(String token);
 
-  Set<String> extractRoles(String token);
+   Set<String> extractRoles(String token);
 }

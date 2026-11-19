@@ -2,9 +2,6 @@ package dev.kreaker.hile.bootstrap.api.auth;
 
 import java.util.Set;
 
-public record LoginResponse(
-    String username,
-    Set<String> roles,
-    String token,
-    long expiresInMs,
-    String authenticationMode) {}
+public record LoginResponse(String username, Set<String> roles, String token, long expiresInMs,
+      String authenticationMode) {
+}

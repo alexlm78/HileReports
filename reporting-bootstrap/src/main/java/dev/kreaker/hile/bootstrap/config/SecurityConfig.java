@@ -1,13 +1,7 @@
 package dev.kreaker.hile.bootstrap.config;
 
-import static org.springframework.http.HttpMethod.DELETE;
-import static org.springframework.http.HttpMethod.GET;
-import static org.springframework.http.HttpMethod.POST;
-import static org.springframework.http.HttpMethod.PUT;
-import static org.springframework.http.HttpStatus.UNAUTHORIZED;
-import static org.springframework.security.config.Customizer.withDefaults;
-
 import dev.kreaker.hile.bootstrap.security.JwtAuthenticationFilter;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -18,106 +12,84 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import static org.springframework.http.HttpMethod.DELETE;
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpMethod.PUT;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+import static org.springframework.security.config.Customizer.withDefaults;
+
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
 
-  private final JwtAuthenticationFilter jwtAuthenticationFilter;
+   private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-  public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
-    this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-  }
+   public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+      this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+   }
 
-  @Bean
-  SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http.cors(withDefaults())
-        .csrf(AbstractHttpConfigurer::disable)
-        .httpBasic(AbstractHttpConfigurer::disable)
-        .formLogin(AbstractHttpConfigurer::disable)
-        .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .exceptionHandling(
-            eh -> eh.authenticationEntryPoint(new HttpStatusEntryPoint(UNAUTHORIZED)))
-        .authorizeHttpRequests(
-            authorize ->
-                authorize
-                    // Public
-                    .requestMatchers(
-                        "/api/v1/auth/login",
-                        "/actuator/health",
-                        "/actuator/info",
-                        "/actuator/prometheus",
-                        "/swagger-ui/**",
-                        "/swagger-ui.html",
+   @Bean
+   SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+      http.cors(withDefaults()).csrf(AbstractHttpConfigurer::disable).httpBasic(
+            AbstractHttpConfigurer::disable).formLogin(AbstractHttpConfigurer::disable)
+            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .exceptionHandling(eh -> eh.authenticationEntryPoint(
+                  new HttpStatusEntryPoint(UNAUTHORIZED)))
+            .authorizeHttpRequests(authorize -> authorize
+                  // Public
+                  .requestMatchers("/api/v1/auth/login", "/actuator/health", "/actuator/info",
+                        "/actuator/prometheus", "/swagger-ui/**", "/swagger-ui.html",
                         "/v3/api-docs/**")
-                    .permitAll()
-                    // Datasource management — PLATFORM_ADMIN only
-                    .requestMatchers("/api/v1/datasources/**")
-                    .hasRole("PLATFORM_ADMIN")
-                    // Category management — PLATFORM_ADMIN only for mutations
-                    .requestMatchers(POST, "/api/v1/categories")
-                    .hasRole("PLATFORM_ADMIN")
-                    .requestMatchers(DELETE, "/api/v1/categories/**")
-                    .hasRole("PLATFORM_ADMIN")
-                    .requestMatchers(PUT, "/api/v1/categories/**")
-                    .hasRole("PLATFORM_ADMIN")
-                    .requestMatchers("/api/v1/categories/**")
-                    .authenticated()
-                    // Report creation — PLATFORM_ADMIN or REPORT_DESIGNER
-                    .requestMatchers(POST, "/api/v1/reports")
-                    .hasAnyRole("PLATFORM_ADMIN", "REPORT_DESIGNER")
-                    // Report list and single read — authenticated
-                    .requestMatchers(GET, "/api/v1/reports", "/api/v1/reports/*")
-                    .authenticated()
-                    // Report execution and export — REPORT_EXECUTE permission
-                    // (PLATFORM_ADMIN, REPORT_DESIGNER, REPORT_VIEWER)
-                    .requestMatchers(POST, "/api/v1/reports/*/execute", "/api/v1/reports/*/export")
-                    .hasAnyRole("PLATFORM_ADMIN", "REPORT_DESIGNER", "REPORT_VIEWER")
-                    // Execution history — authenticated
-                    .requestMatchers(GET, "/api/v1/reports/*/executions", "/api/v1/executions")
-                    .authenticated()
-                    // Parameters/columns/tags reads — any authenticated user needs these to
-                    // render the execute form (must be listed before the design catch-all below)
-                    .requestMatchers(
-                        GET,
-                        "/api/v1/reports/*/parameters",
-                        "/api/v1/reports/*/columns",
+                  .permitAll()
+                  // Datasource management — PLATFORM_ADMIN only
+                  .requestMatchers("/api/v1/datasources/**").hasRole("PLATFORM_ADMIN")
+                  // Category management — PLATFORM_ADMIN only for mutations
+                  .requestMatchers(POST, "/api/v1/categories").hasRole("PLATFORM_ADMIN")
+                  .requestMatchers(DELETE, "/api/v1/categories/**").hasRole("PLATFORM_ADMIN")
+                  .requestMatchers(PUT, "/api/v1/categories/**").hasRole("PLATFORM_ADMIN")
+                  .requestMatchers("/api/v1/categories/**").authenticated()
+                  // Report creation — PLATFORM_ADMIN or REPORT_DESIGNER
+                  .requestMatchers(POST, "/api/v1/reports")
+                  .hasAnyRole("PLATFORM_ADMIN", "REPORT_DESIGNER")
+                  // Report list and single read — authenticated
+                  .requestMatchers(GET, "/api/v1/reports", "/api/v1/reports/*").authenticated()
+                  // Report execution and export — REPORT_EXECUTE permission
+                  // (PLATFORM_ADMIN, REPORT_DESIGNER, REPORT_VIEWER)
+                  .requestMatchers(POST, "/api/v1/reports/*/execute", "/api/v1/reports/*/export")
+                  .hasAnyRole("PLATFORM_ADMIN", "REPORT_DESIGNER", "REPORT_VIEWER")
+                  // Execution history — authenticated
+                  .requestMatchers(GET, "/api/v1/reports/*/executions", "/api/v1/executions")
+                  .authenticated()
+                  // Parameters/columns/tags reads — any authenticated user needs these to
+                  // render the execute form (must be listed before the design catch-all below)
+                  .requestMatchers(GET, "/api/v1/reports/*/parameters", "/api/v1/reports/*/columns",
                         "/api/v1/reports/*/tags")
-                    .authenticated()
-                    // All other report operations (design) — PLATFORM_ADMIN or REPORT_DESIGNER
-                    .requestMatchers("/api/v1/reports/**")
-                    .hasAnyRole("PLATFORM_ADMIN", "REPORT_DESIGNER")
-                    // Catalog, exports, and executions — REPORT_EXECUTE permission
-                    .requestMatchers(
-                        "/api/v1/catalog/**", "/api/v1/exports/**", "/api/v1/executions/**")
-                    .hasAnyRole("PLATFORM_ADMIN", "REPORT_DESIGNER", "REPORT_VIEWER")
-                    // Tag management — mutations are PLATFORM_ADMIN; reads authenticated
-                    .requestMatchers(POST, "/api/v1/tags")
-                    .hasRole("PLATFORM_ADMIN")
-                    .requestMatchers(DELETE, "/api/v1/tags/**")
-                    .hasRole("PLATFORM_ADMIN")
-                    .requestMatchers(GET, "/api/v1/tags")
-                    .authenticated()
-                    // User self-profile — any authenticated user
-                    .requestMatchers(GET, "/api/v1/users/me")
-                    .authenticated()
-                    .requestMatchers(PUT, "/api/v1/users/me/password")
-                    .authenticated()
-                    // User management — PLATFORM_ADMIN only
-                    .requestMatchers(PUT, "/api/v1/users/*/password")
-                    .hasRole("PLATFORM_ADMIN")
-                    .requestMatchers(PUT, "/api/v1/users/*")
-                    .hasRole("PLATFORM_ADMIN")
-                    .requestMatchers(POST, "/api/v1/users/*/enable")
-                    .hasRole("PLATFORM_ADMIN")
-                    .requestMatchers("/api/v1/users/**")
-                    .hasRole("PLATFORM_ADMIN")
-                    // Audit log — PLATFORM_ADMIN only
-                    .requestMatchers("/api/v1/audit-events/**")
-                    .hasRole("PLATFORM_ADMIN")
-                    .anyRequest()
-                    .authenticated())
-        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                  .authenticated()
+                  // All other report operations (design) — PLATFORM_ADMIN or REPORT_DESIGNER
+                  .requestMatchers("/api/v1/reports/**")
+                  .hasAnyRole("PLATFORM_ADMIN", "REPORT_DESIGNER")
+                  // Catalog, exports, and executions — REPORT_EXECUTE permission
+                  .requestMatchers("/api/v1/catalog/**", "/api/v1/exports/**",
+                        "/api/v1/executions/**")
+                  .hasAnyRole("PLATFORM_ADMIN", "REPORT_DESIGNER", "REPORT_VIEWER")
+                  // Tag management — mutations are PLATFORM_ADMIN; reads authenticated
+                  .requestMatchers(POST, "/api/v1/tags").hasRole("PLATFORM_ADMIN")
+                  .requestMatchers(DELETE, "/api/v1/tags/**").hasRole("PLATFORM_ADMIN")
+                  .requestMatchers(GET, "/api/v1/tags").authenticated()
+                  // User self-profile — any authenticated user
+                  .requestMatchers(GET, "/api/v1/users/me").authenticated()
+                  .requestMatchers(PUT, "/api/v1/users/me/password").authenticated()
+                  // User management — PLATFORM_ADMIN only
+                  .requestMatchers(PUT, "/api/v1/users/*/password").hasRole("PLATFORM_ADMIN")
+                  .requestMatchers(PUT, "/api/v1/users/*").hasRole("PLATFORM_ADMIN")
+                  .requestMatchers(POST, "/api/v1/users/*/enable").hasRole("PLATFORM_ADMIN")
+                  .requestMatchers("/api/v1/users/**").hasRole("PLATFORM_ADMIN")
+                  // Audit log — PLATFORM_ADMIN only
+                  .requestMatchers("/api/v1/audit-events/**").hasRole("PLATFORM_ADMIN").anyRequest()
+                  .authenticated())
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-    return http.build();
-  }
+      return http.build();
+   }
 }

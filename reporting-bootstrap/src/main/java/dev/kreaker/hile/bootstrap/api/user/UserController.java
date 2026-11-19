@@ -7,9 +7,7 @@ import dev.kreaker.hile.application.port.in.UserManagementUseCase;
 import dev.kreaker.hile.application.port.out.AuditEventPort;
 import dev.kreaker.hile.bootstrap.api.PageResponse;
 import jakarta.validation.Valid;
-import java.net.URI;
-import java.security.Principal;
-import java.util.UUID;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,78 +19,80 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.net.URI;
+import java.security.Principal;
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/v1/users")
 public class UserController {
 
-  private final UserManagementUseCase userManagement;
-  private final AuditEventPort auditEventPort;
+   private final UserManagementUseCase userManagement;
+   private final AuditEventPort auditEventPort;
 
-  public UserController(UserManagementUseCase userManagement, AuditEventPort auditEventPort) {
-    this.userManagement = userManagement;
-    this.auditEventPort = auditEventPort;
-  }
+   public UserController(UserManagementUseCase userManagement, AuditEventPort auditEventPort) {
+      this.userManagement = userManagement;
+      this.auditEventPort = auditEventPort;
+   }
 
-  @PostMapping
-  public ResponseEntity<UserView> create(
-      @Valid @RequestBody CreateUserRequest request, Principal principal) {
-    UserView view =
-        userManagement.create(
-            new CreateUserCommand(
-                request.username(), request.password(), request.email(), request.role()));
-    auditEventPort.record(principal.getName(), "USER_CREATED", "USER", view.id());
-    return ResponseEntity.created(URI.create("/api/v1/users/" + view.id())).body(view);
-  }
+   @PostMapping
+   public ResponseEntity<UserView> create(@Valid @RequestBody CreateUserRequest request,
+         Principal principal) {
+      UserView view = userManagement.create(new CreateUserCommand(request.username(),
+            request.password(), request.email(), request.role()));
+      auditEventPort.record(principal.getName(), "USER_CREATED", "USER", view.id());
+      return ResponseEntity.created(URI.create("/api/v1/users/" + view.id())).body(view);
+   }
 
-  @GetMapping
-  public ResponseEntity<PageResponse<UserView>> findAll(
-      @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
-    return ResponseEntity.ok(PageResponse.from(userManagement.findAllPaged(page, size)));
-  }
+   @GetMapping
+   public ResponseEntity<PageResponse<UserView>> findAll(@RequestParam(defaultValue = "0") int page,
+         @RequestParam(defaultValue = "20") int size) {
+      return ResponseEntity.ok(PageResponse.from(userManagement.findAllPaged(page, size)));
+   }
 
-  @GetMapping("/{id}")
-  public ResponseEntity<UserView> findById(@PathVariable UUID id) {
-    return ResponseEntity.ok(userManagement.findById(id));
-  }
+   @GetMapping("/{id}")
+   public ResponseEntity<UserView> findById(@PathVariable UUID id) {
+      return ResponseEntity.ok(userManagement.findById(id));
+   }
 
-  @PutMapping("/{id}")
-  public ResponseEntity<UserView> update(
-      @PathVariable UUID id, @RequestBody UpdateUserRequest request, Principal principal) {
-    UserView view = userManagement.update(id, request.email(), request.role());
-    auditEventPort.record(principal.getName(), "USER_UPDATED", "USER", id);
-    return ResponseEntity.ok(view);
-  }
+   @PutMapping("/{id}")
+   public ResponseEntity<UserView> update(@PathVariable UUID id,
+         @RequestBody UpdateUserRequest request, Principal principal) {
+      UserView view = userManagement.update(id, request.email(), request.role());
+      auditEventPort.record(principal.getName(), "USER_UPDATED", "USER", id);
+      return ResponseEntity.ok(view);
+   }
 
-  @DeleteMapping("/{id}")
-  public ResponseEntity<Void> disable(@PathVariable UUID id, Principal principal) {
-    userManagement.disable(id);
-    auditEventPort.record(principal.getName(), "USER_DISABLED", "USER", id);
-    return ResponseEntity.noContent().build();
-  }
+   @DeleteMapping("/{id}")
+   public ResponseEntity<Void> disable(@PathVariable UUID id, Principal principal) {
+      userManagement.disable(id);
+      auditEventPort.record(principal.getName(), "USER_DISABLED", "USER", id);
+      return ResponseEntity.noContent().build();
+   }
 
-  @PostMapping("/{id}/enable")
-  public ResponseEntity<Void> enable(@PathVariable UUID id, Principal principal) {
-    userManagement.enable(id);
-    auditEventPort.record(principal.getName(), "USER_ENABLED", "USER", id);
-    return ResponseEntity.noContent().build();
-  }
+   @PostMapping("/{id}/enable")
+   public ResponseEntity<Void> enable(@PathVariable UUID id, Principal principal) {
+      userManagement.enable(id);
+      auditEventPort.record(principal.getName(), "USER_ENABLED", "USER", id);
+      return ResponseEntity.noContent().build();
+   }
 
-  @PutMapping("/{id}/password")
-  public ResponseEntity<Void> changePassword(
-      @PathVariable UUID id, @Valid @RequestBody ChangePasswordRequest request) {
-    userManagement.changePassword(new ChangePasswordCommand(id, request.newPassword()));
-    return ResponseEntity.noContent().build();
-  }
+   @PutMapping("/{id}/password")
+   public ResponseEntity<Void> changePassword(@PathVariable UUID id,
+         @Valid @RequestBody ChangePasswordRequest request) {
+      userManagement.changePassword(new ChangePasswordCommand(id, request.newPassword()));
+      return ResponseEntity.noContent().build();
+   }
 
-  @GetMapping("/me")
-  public ResponseEntity<UserView> me(Principal principal) {
-    return ResponseEntity.ok(userManagement.findByUsername(principal.getName()));
-  }
+   @GetMapping("/me")
+   public ResponseEntity<UserView> me(Principal principal) {
+      return ResponseEntity.ok(userManagement.findByUsername(principal.getName()));
+   }
 
-  @PutMapping("/me/password")
-  public ResponseEntity<Void> changeOwnPassword(
-      @Valid @RequestBody ChangePasswordRequest request, Principal principal) {
-    userManagement.changeOwnPassword(principal.getName(), request.newPassword());
-    return ResponseEntity.noContent().build();
-  }
+   @PutMapping("/me/password")
+   public ResponseEntity<Void> changeOwnPassword(@Valid @RequestBody ChangePasswordRequest request,
+         Principal principal) {
+      userManagement.changeOwnPassword(principal.getName(), request.newPassword());
+      return ResponseEntity.noContent().build();
+   }
 }

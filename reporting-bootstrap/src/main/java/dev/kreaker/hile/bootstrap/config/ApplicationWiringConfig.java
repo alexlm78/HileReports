@@ -35,130 +35,105 @@ import dev.kreaker.hile.application.service.UserManagementApplicationService;
 import dev.kreaker.hile.infrastructure.sql.SimpleReadOnlyQueryValidator;
 import dev.kreaker.hile.security.AdAuthenticationProviderStub;
 import dev.kreaker.hile.security.LocalAuthenticationProviderAdapter;
-import java.util.List;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.List;
+
 @Configuration
 public class ApplicationWiringConfig {
 
-  @Bean
-  PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
-  }
+   @Bean
+   PasswordEncoder passwordEncoder() {
+      return new BCryptPasswordEncoder();
+   }
 
-  @Bean
-  QueryValidatorPort queryValidatorPort() {
-    return new SimpleReadOnlyQueryValidator();
-  }
+   @Bean
+   QueryValidatorPort queryValidatorPort() {
+      return new SimpleReadOnlyQueryValidator();
+   }
 
-  @Bean
-  PasswordHasherPort passwordHasherPort(PasswordEncoder passwordEncoder) {
-    return passwordEncoder::encode;
-  }
+   @Bean
+   PasswordHasherPort passwordHasherPort(PasswordEncoder passwordEncoder) {
+      return passwordEncoder::encode;
+   }
 
-  @Bean
-  UserManagementUseCase userManagementUseCase(
-      UserRepositoryPort userRepositoryPort, PasswordHasherPort passwordHasherPort) {
-    return new UserManagementApplicationService(userRepositoryPort, passwordHasherPort);
-  }
+   @Bean
+   UserManagementUseCase userManagementUseCase(UserRepositoryPort userRepositoryPort,
+         PasswordHasherPort passwordHasherPort) {
+      return new UserManagementApplicationService(userRepositoryPort, passwordHasherPort);
+   }
 
-  @Bean
-  AuthenticationProviderPort authenticationProviderPort(
-      @Value("${hile.reports.security.mode:local}") String securityMode,
-      UserRepositoryPort userRepositoryPort) {
-    if ("ad".equalsIgnoreCase(securityMode)) {
-      return new AdAuthenticationProviderStub();
-    }
-    return new LocalAuthenticationProviderAdapter(userRepositoryPort);
-  }
+   @Bean
+   AuthenticationProviderPort authenticationProviderPort(
+         @Value("${hile.reports.security.mode:local}") String securityMode,
+         UserRepositoryPort userRepositoryPort) {
+      if ("ad".equalsIgnoreCase(securityMode)) {
+         return new AdAuthenticationProviderStub();
+      }
+      return new LocalAuthenticationProviderAdapter(userRepositoryPort);
+   }
 
-  @Bean
-  AuthenticateUserUseCase authenticateUserUseCase(
-      AuthenticationProviderPort authenticationProviderPort) {
-    return new AuthenticationApplicationService(authenticationProviderPort);
-  }
+   @Bean
+   AuthenticateUserUseCase authenticateUserUseCase(
+         AuthenticationProviderPort authenticationProviderPort) {
+      return new AuthenticationApplicationService(authenticationProviderPort);
+   }
 
-  @Bean
-  DataSourceUseCase dataSourceUseCase(
-      DataSourceRepositoryPort dataSourceRepositoryPort,
-      PasswordEncryptionPort passwordEncryptionPort,
-      List<DbConnectorPort> connectors,
-      DataSourceAccessPort dataSourceAccessPort,
-      UserRepositoryPort userRepositoryPort) {
-    return new DataSourceApplicationService(
-        dataSourceRepositoryPort,
-        passwordEncryptionPort,
-        connectors,
-        dataSourceAccessPort,
-        userRepositoryPort);
-  }
+   @Bean
+   DataSourceUseCase dataSourceUseCase(DataSourceRepositoryPort dataSourceRepositoryPort,
+         PasswordEncryptionPort passwordEncryptionPort, List<DbConnectorPort> connectors,
+         DataSourceAccessPort dataSourceAccessPort, UserRepositoryPort userRepositoryPort) {
+      return new DataSourceApplicationService(dataSourceRepositoryPort, passwordEncryptionPort,
+            connectors, dataSourceAccessPort, userRepositoryPort);
+   }
 
-  @Bean
-  CreateReportDefinitionUseCase createReportDefinitionUseCase(
-      ReportDefinitionRepository reportDefinitionRepository,
-      QueryValidatorPort queryValidatorPort,
-      DataSourceUseCase dataSourceUseCase,
-      ReportColumnRepositoryPort reportColumnRepositoryPort,
-      ReportParameterRepositoryPort reportParameterRepositoryPort,
-      @Value("${hile.reports.preview.max-rows:100}") int maxRows,
-      @Value("${hile.reports.execution.default-timeout-seconds:30}") int timeoutSeconds) {
-    return new ReportDefinitionApplicationService(
-        reportDefinitionRepository,
-        queryValidatorPort,
-        dataSourceUseCase,
-        reportColumnRepositoryPort,
-        reportParameterRepositoryPort,
-        maxRows,
-        timeoutSeconds);
-  }
+   @Bean
+   CreateReportDefinitionUseCase createReportDefinitionUseCase(
+         ReportDefinitionRepository reportDefinitionRepository,
+         QueryValidatorPort queryValidatorPort, DataSourceUseCase dataSourceUseCase,
+         ReportColumnRepositoryPort reportColumnRepositoryPort,
+         ReportParameterRepositoryPort reportParameterRepositoryPort,
+         @Value("${hile.reports.preview.max-rows:100}") int maxRows,
+         @Value("${hile.reports.execution.default-timeout-seconds:30}") int timeoutSeconds) {
+      return new ReportDefinitionApplicationService(reportDefinitionRepository, queryValidatorPort,
+            dataSourceUseCase, reportColumnRepositoryPort, reportParameterRepositoryPort, maxRows,
+            timeoutSeconds);
+   }
 
-  @Bean
-  CategoryUseCase categoryUseCase(CategoryRepositoryPort categoryRepositoryPort) {
-    return new CategoryApplicationService(categoryRepositoryPort);
-  }
+   @Bean
+   CategoryUseCase categoryUseCase(CategoryRepositoryPort categoryRepositoryPort) {
+      return new CategoryApplicationService(categoryRepositoryPort);
+   }
 
-  @Bean
-  ExportJobUseCase exportJobUseCase(
-      ReportDefinitionRepository reportDefinitionRepository,
-      ReportParameterRepositoryPort reportParameterRepositoryPort,
-      ReportExecutionRepository reportExecutionRepository,
-      ReportExportRepository reportExportRepository,
-      DataSourceAccessPort dataSourceAccessPort,
-      @Value("${hile.reports.export.storage-path:/tmp/hile-exports}") String storageBasePath,
-      @Value("${hile.reports.export.expiry-hours:24}") int expiryHours) {
-    return new ExportJobApplicationService(
-        reportDefinitionRepository,
-        reportParameterRepositoryPort,
-        reportExecutionRepository,
-        reportExportRepository,
-        dataSourceAccessPort,
-        storageBasePath,
-        expiryHours);
-  }
+   @Bean
+   ExportJobUseCase exportJobUseCase(ReportDefinitionRepository reportDefinitionRepository,
+         ReportParameterRepositoryPort reportParameterRepositoryPort,
+         ReportExecutionRepository reportExecutionRepository,
+         ReportExportRepository reportExportRepository, DataSourceAccessPort dataSourceAccessPort,
+         @Value("${hile.reports.export.storage-path:/tmp/hile-exports}") String storageBasePath,
+         @Value("${hile.reports.export.expiry-hours:24}") int expiryHours) {
+      return new ExportJobApplicationService(reportDefinitionRepository,
+            reportParameterRepositoryPort, reportExecutionRepository, reportExportRepository,
+            dataSourceAccessPort, storageBasePath, expiryHours);
+   }
 
-  @Bean
-  TagUseCase tagUseCase(TagRepositoryPort tagRepositoryPort) {
-    return new TagApplicationService(tagRepositoryPort);
-  }
+   @Bean
+   TagUseCase tagUseCase(TagRepositoryPort tagRepositoryPort) {
+      return new TagApplicationService(tagRepositoryPort);
+   }
 
-  @Bean
-  ExecuteReportUseCase executeReportUseCase(
-      ReportDefinitionRepository reportDefinitionRepository,
-      ReportParameterRepositoryPort reportParameterRepositoryPort,
-      DataSourceUseCase dataSourceUseCase,
-      ReportExecutionRepository reportExecutionRepository,
-      MetricsPort metricsPort,
-      DataSourceAccessPort dataSourceAccessPort) {
-    return new ExecuteReportApplicationService(
-        reportDefinitionRepository,
-        reportParameterRepositoryPort,
-        dataSourceUseCase,
-        reportExecutionRepository,
-        metricsPort,
-        dataSourceAccessPort);
-  }
+   @Bean
+   ExecuteReportUseCase executeReportUseCase(ReportDefinitionRepository reportDefinitionRepository,
+         ReportParameterRepositoryPort reportParameterRepositoryPort,
+         DataSourceUseCase dataSourceUseCase, ReportExecutionRepository reportExecutionRepository,
+         MetricsPort metricsPort, DataSourceAccessPort dataSourceAccessPort) {
+      return new ExecuteReportApplicationService(reportDefinitionRepository,
+            reportParameterRepositoryPort, dataSourceUseCase, reportExecutionRepository,
+            metricsPort, dataSourceAccessPort);
+   }
 }

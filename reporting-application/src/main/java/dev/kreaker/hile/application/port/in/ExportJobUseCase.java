@@ -4,15 +4,16 @@ import dev.kreaker.hile.application.dto.ExportJobCreationResult;
 import dev.kreaker.hile.application.dto.ExportJobView;
 import dev.kreaker.hile.application.dto.PageResult;
 import dev.kreaker.hile.application.dto.RequestExportCommand;
+
 import java.util.UUID;
 
 public interface ExportJobUseCase {
 
-  ExportJobCreationResult requestExport(RequestExportCommand command, String requestedBy);
+   ExportJobCreationResult requestExport(RequestExportCommand command, String requestedBy);
 
-  ExportJobView getExport(UUID exportId);
+   ExportJobView getExport(UUID exportId);
 
-  String getExportFilePath(UUID exportId);
+   String getExportFilePath(UUID exportId);
 
-  PageResult<ExportJobView> listExports(String requestedBy, int page, int size);
+   PageResult<ExportJobView> listExports(String requestedBy, int page, int size);
 }

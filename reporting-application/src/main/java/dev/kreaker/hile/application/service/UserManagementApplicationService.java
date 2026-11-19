@@ -8,99 +8,95 @@ import dev.kreaker.hile.application.port.in.UserManagementUseCase;
 import dev.kreaker.hile.application.port.out.PasswordHasherPort;
 import dev.kreaker.hile.application.port.out.UserRepositoryPort;
 import dev.kreaker.hile.domain.security.AppUser;
+
 import java.util.List;
 import java.util.UUID;
 
 public class UserManagementApplicationService implements UserManagementUseCase {
 
-  private final UserRepositoryPort repository;
-  private final PasswordHasherPort passwordHasher;
+   private final UserRepositoryPort repository;
+   private final PasswordHasherPort passwordHasher;
 
-  public UserManagementApplicationService(
-      UserRepositoryPort repository, PasswordHasherPort passwordHasher) {
-    this.repository = repository;
-    this.passwordHasher = passwordHasher;
-  }
+   public UserManagementApplicationService(UserRepositoryPort repository,
+         PasswordHasherPort passwordHasher) {
+      this.repository = repository;
+      this.passwordHasher = passwordHasher;
+   }
 
-  @Override
-  public UserView create(CreateUserCommand command) {
-    if (repository.existsByUsername(command.username())) {
-      throw new IllegalStateException("Username already exists: " + command.username());
-    }
-    String hash = passwordHasher.hash(command.password());
-    return toView(repository.createUser(command.username(), hash, command.email(), command.role()));
-  }
+   @Override
+   public UserView create(CreateUserCommand command) {
+      if (repository.existsByUsername(command.username())) {
+         throw new IllegalStateException("Username already exists: " + command.username());
+      }
+      String hash = passwordHasher.hash(command.password());
+      return toView(
+            repository.createUser(command.username(), hash, command.email(), command.role()));
+   }
 
-  @Override
-  public List<UserView> findAll() {
-    return repository.findAllUsers().stream().map(this::toView).toList();
-  }
+   @Override
+   public List<UserView> findAll() {
+      return repository.findAllUsers().stream().map(this::toView).toList();
+   }
 
-  @Override
-  public PageResult<UserView> findAllPaged(int page, int size) {
-    PageResult<AppUser> result = repository.findAllUsersPaged(page, size);
-    List<UserView> content = result.content().stream().map(this::toView).toList();
-    return new PageResult<>(content, page, size, result.total());
-  }
+   @Override
+   public PageResult<UserView> findAllPaged(int page, int size) {
+      PageResult<AppUser> result = repository.findAllUsersPaged(page, size);
+      List<UserView> content = result.content().stream().map(this::toView).toList();
+      return new PageResult<>(content, page, size, result.total());
+   }
 
-  @Override
-  public UserView findById(UUID id) {
-    return repository
-        .findUserById(id)
-        .map(this::toView)
-        .orElseThrow(() -> new IllegalArgumentException("User not found: " + id));
-  }
+   @Override
+   public UserView findById(UUID id) {
+      return repository.findUserById(id).map(this::toView)
+            .orElseThrow(() -> new IllegalArgumentException("User not found: " + id));
+   }
 
-  @Override
-  public UserView findByUsername(String username) {
-    return repository
-        .findUserByUsername(username)
-        .map(this::toView)
-        .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
-  }
-
-  @Override
-  public void changeOwnPassword(String username, String newPassword) {
-    AppUser user =
-        repository
-            .findUserByUsername(username)
+   @Override
+   public UserView findByUsername(String username) {
+      return repository.findUserByUsername(username).map(this::toView)
             .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
-    repository.changeUserPassword(user.id(), passwordHasher.hash(newPassword));
-  }
+   }
 
-  @Override
-  public void disable(UUID id) {
-    if (repository.findUserById(id).isEmpty()) {
-      throw new IllegalArgumentException("User not found: " + id);
-    }
-    repository.disableUser(id);
-  }
+   @Override
+   public void changeOwnPassword(String username, String newPassword) {
+      AppUser user = repository.findUserByUsername(username)
+            .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
+      repository.changeUserPassword(user.id(), passwordHasher.hash(newPassword));
+   }
 
-  @Override
-  public void enable(UUID id) {
-    if (repository.findUserById(id).isEmpty()) {
-      throw new IllegalArgumentException("User not found: " + id);
-    }
-    repository.enableUser(id);
-  }
+   @Override
+   public void disable(UUID id) {
+      if (repository.findUserById(id).isEmpty()) {
+         throw new IllegalArgumentException("User not found: " + id);
+      }
+      repository.disableUser(id);
+   }
 
-  @Override
-  public UserView update(UUID id, String email, String role) {
-    if (repository.findUserById(id).isEmpty()) {
-      throw new IllegalArgumentException("User not found: " + id);
-    }
-    return toView(repository.updateUser(id, email, role));
-  }
+   @Override
+   public void enable(UUID id) {
+      if (repository.findUserById(id).isEmpty()) {
+         throw new IllegalArgumentException("User not found: " + id);
+      }
+      repository.enableUser(id);
+   }
 
-  @Override
-  public void changePassword(ChangePasswordCommand command) {
-    if (repository.findUserById(command.userId()).isEmpty()) {
-      throw new IllegalArgumentException("User not found: " + command.userId());
-    }
-    repository.changeUserPassword(command.userId(), passwordHasher.hash(command.newPassword()));
-  }
+   @Override
+   public UserView update(UUID id, String email, String role) {
+      if (repository.findUserById(id).isEmpty()) {
+         throw new IllegalArgumentException("User not found: " + id);
+      }
+      return toView(repository.updateUser(id, email, role));
+   }
 
-  private UserView toView(AppUser u) {
-    return new UserView(u.id(), u.username(), u.email(), u.roles(), u.enabled());
-  }
+   @Override
+   public void changePassword(ChangePasswordCommand command) {
+      if (repository.findUserById(command.userId()).isEmpty()) {
+         throw new IllegalArgumentException("User not found: " + command.userId());
+      }
+      repository.changeUserPassword(command.userId(), passwordHasher.hash(command.newPassword()));
+   }
+
+   private UserView toView(AppUser u) {
+      return new UserView(u.id(), u.username(), u.email(), u.roles(), u.enabled());
+   }
 }

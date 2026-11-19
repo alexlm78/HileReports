@@ -5,5 +5,5 @@ import dev.kreaker.hile.application.dto.AuthenticationResult;
 
 public interface AuthenticateUserUseCase {
 
-  AuthenticationResult authenticate(AuthenticateUserCommand command);
+   AuthenticationResult authenticate(AuthenticateUserCommand command);
 }

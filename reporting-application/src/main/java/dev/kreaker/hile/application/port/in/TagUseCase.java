@@ -2,18 +2,19 @@ package dev.kreaker.hile.application.port.in;
 
 import dev.kreaker.hile.application.dto.CreateTagCommand;
 import dev.kreaker.hile.application.dto.TagView;
+
 import java.util.List;
 import java.util.UUID;
 
 public interface TagUseCase {
 
-  TagView create(CreateTagCommand command);
+   TagView create(CreateTagCommand command);
 
-  List<TagView> findAll();
+   List<TagView> findAll();
 
-  void delete(UUID id);
+   void delete(UUID id);
 
-  List<TagView> getReportTags(UUID reportId);
+   List<TagView> getReportTags(UUID reportId);
 
-  void setReportTags(UUID reportId, List<UUID> tagIds);
+   void setReportTags(UUID reportId, List<UUID> tagIds);
 }
