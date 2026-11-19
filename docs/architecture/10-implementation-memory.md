@@ -6,9 +6,9 @@ This document gives an AI agent or a new developer a verified snapshot of the cu
 
 ## Last Verified Snapshot
 
-- Date: `2026-07-06`
+- Date: `2026-11-18`
 - Repository status: R1–R3 backlog 100% done. Full-stack MVP operational. Frontend complete: consumption path (login/catalog/execute/export/history) + admin panel (datasources+ACL, users, categories, tags, reports builder, audit log). Only deferred: AD auth (TASK-02.3.1-b).
-- Build status: `./gradlew test` passes
+- Build status: `./gradlew test` passes on JDK 25 (Zulu) with Gradle 9.8.1 and Spring Boot 3.5.7
 - Scope of verification: source tree, Gradle modules, Spring Boot bootstrap, tests, and backlog alignment
 
 ## Executive Summary
@@ -18,7 +18,7 @@ The repository is a **complete R1–R3 MVP** — all planned backlog items done.
 What is already in place:
 
 - Multi-module `Gradle` structure aligned with the modular monolith design.
-- Shared build conventions for `Java 21`, `Spring Boot 3.3.2`, and formatting via `Spotless`.
+- Shared build conventions for `Java 25`, `Spring Boot 3.5.7`, and formatting via `Spotless`.
 - Minimal domain, application, infrastructure, connectors, security, jobs, and bootstrap modules.
 - Environment-aware Spring Boot configuration with `local`, `dev`, `qa`, and `prod` profiles.
 - Externalized operational database settings through environment variables.
@@ -224,12 +224,13 @@ Status legend:
 | Backlog Item | Status | Notes |
 | --- | --- | --- |
 | `TASK-01.1.1-a` Create root build and modules | Done | Multi-module `Gradle` structure exists |
-| `TASK-01.1.1-b` Java version and Spring Boot BOM | Done | `Java 21` and Boot BOM configured |
+| `TASK-01.1.1-b` Java version and Spring Boot BOM | Done | `Java 25` and Boot BOM configured |
+| `TASK-01.1.1-d` Java 21 → 25 migration | Done | JDK 25 LTS; Gradle 8.14.5 → 9.8.1; Spring Boot/BOM 3.3.2 → 3.5.7; dependency-management 1.1.7; springdoc 2.6.0 → 2.8.13; `@MockBean` → `@MockitoBean` in `AuthControllerTest`; Dockerfile `eclipse-temurin:25`; CI `setup-java` 25. Details and replication steps: `docs/migration/java-21-to-25.md` |
 | `TASK-01.1.1-c` Build and test plugins | Done | Shared Gradle conventions and tests configured |
 | `TASK-01.2.1-a` Base config and profiles | Done | Base config plus `local`, `dev`, `qa`, and `prod` profiles exist |
 | `TASK-01.2.1-b` Externalize sensitive variables | Done | Operational datasource settings are externalized through environment variables |
-| `TASK-01.3.1-a` CI pipeline | Done | `.github/workflows/ci.yml` — push+PR to main; Java 21 temurin; `spotlessCheck test`; test report artifact on failure |
-| `TASK-01.3.1-b` Publish executable artifact | Done | `publish` job in CI; multi-stage Dockerfile (temurin:21-jdk-alpine builder + jre-alpine runtime); pushes to ghcr.io on main push (short SHA + latest tags) |
+| `TASK-01.3.1-a` CI pipeline | Done | `.github/workflows/ci.yml` — push+PR to main; Java 25 temurin; `spotlessCheck test`; test report artifact on failure |
+| `TASK-01.3.1-b` Publish executable artifact | Done | `publish` job in CI; multi-stage Dockerfile (temurin:25-jdk-alpine builder + jre-alpine runtime); pushes to ghcr.io on main push (short SHA + latest tags) |
 | `TASK-02.1.1-a` User, role, permission entities | Done | `AppUserEntity`, `AppRoleEntity`, `AppPermissionEntity` (SQL) + V2 migration with seeded roles and permissions |
 | `TASK-02.1.1-b` Spring Security and hashing | Done | `BCrypt`, `Spring Security` stateless config, JWT filter, persistent user repository |
 | `TASK-02.1.1-c` Authentication endpoint | Done | `POST /api/v1/auth/login` returns signed JWT with roles |
@@ -362,6 +363,10 @@ All list endpoints now return `PageResponse<T>` (`content`, `page`, `size`, `tot
 ## Audit Event Logging — Done
 
 `AuditEventPort` (outbound port in `reporting-application`) with `record()` and `findEvents()`. `AuditEventRepositoryAdapter` (`@Repository` in `reporting-infrastructure`) implements both write (try/catch, swallowed on failure) and read with actor/action filters. `AuditEventEntity` maps `audit_event` table; `AuditEventJpaRepository` provides filtered Pageable queries. `AuditController` exposes `GET /api/v1/audit-events?actor=&action=&limit=100` (PLATFORM_ADMIN). Instrumented: `AuthController` (USER_LOGIN), `ReportController` (REPORT_CREATED, REPORT_PUBLISHED, REPORT_UNPUBLISHED), `ExecuteReportController` (REPORT_EXECUTED), `DataSourceController` (DATASOURCE_CREATED, DATASOURCE_DELETED), `UserController` (USER_CREATED, USER_DISABLED).
+
+## Java 25 Migration — Done
+
+Platform moved from Java 21 to Java 25 (LTS). Required companion upgrades: Gradle 9.8.1 (Gradle 8.x cannot run on JDK 25), Spring Boot 3.5.7 (Spring 6.1 in Boot 3.3 cannot read Java 25 bytecode), springdoc 2.8.13. Test code moved off deprecated-for-removal `@MockBean` to `@MockitoBean`. Files changed: `.sdkmanrc`, `gradle/wrapper/*`, `build.gradle`, `reporting-bootstrap/build.gradle`, `Dockerfile`, `.github/workflows/ci.yml`, `AuthControllerTest`. Full guide: `docs/migration/java-21-to-25.md`. Pending: verify `docker build` and the GitHub Actions run.
 
 ## Commands Used to Verify the Snapshot
 

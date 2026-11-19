@@ -21,9 +21,9 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(controllers = {AuthController.class, ArchitectureController.class})
@@ -32,9 +32,9 @@ class AuthControllerTest {
 
   @Autowired private MockMvc mockMvc;
 
-  @MockBean private AuthenticateUserUseCase authenticateUserUseCase;
-  @MockBean private TokenProviderPort jwtTokenProvider;
-  @MockBean private AuditEventPort auditEventPort;
+  @MockitoBean private AuthenticateUserUseCase authenticateUserUseCase;
+  @MockitoBean private TokenProviderPort jwtTokenProvider;
+  @MockitoBean private AuditEventPort auditEventPort;
 
   @Test
   void shouldAuthenticateWithValidCredentials() throws Exception {

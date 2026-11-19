@@ -1,6 +1,6 @@
 plugins {
-  id 'org.springframework.boot' version '3.3.2' apply false
-  id 'io.spring.dependency-management' version '1.1.6' apply false
+  id 'org.springframework.boot' version '3.5.7' apply false
+  id 'io.spring.dependency-management' version '1.1.7' apply false
   id 'com.diffplug.spotless' version '8.11.0'
 }
 apply from: "$rootDir/gradle/spotless.gradle"
@@ -19,18 +19,18 @@ subprojects {
   apply plugin: 'io.spring.dependency-management'
 
   java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
   }
 
   dependencyManagement {
     imports {
-      mavenBom "org.springframework.boot:spring-boot-dependencies:3.3.2"
+      mavenBom "org.springframework.boot:spring-boot-dependencies:3.5.7"
     }
   }
 
   tasks.withType(JavaCompile).configureEach {
-    options.release = 21
+    options.release = 25
   }
 
   tasks.withType(Test).configureEach {

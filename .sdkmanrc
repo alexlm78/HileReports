@@ -1,5 +1,5 @@
 # Enable auto-env through the sdkman_auto_env config
 # Add key=value pairs of SDKs to use below
-java=21-zulu
-gradle=8.14.5
+java=25-zulu
+gradle=9.8.1
 

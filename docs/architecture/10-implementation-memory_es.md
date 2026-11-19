@@ -6,9 +6,9 @@ Este documento le da a un agente de IA o a un nuevo desarrollador una fotografia
 
 ## Ultima Verificacion
 
-- Fecha: `2026-07-04`
+- Fecha: `2026-11-18`
 - Estado del repositorio: arbol con slice minimo de autenticacion HTTP local agregado sobre la base tecnica existente
-- Estado del build: `./gradlew test` pasa
+- Estado del build: `./gradlew test` pasa en JDK 25 (Zulu) con Gradle 9.8.1 y Spring Boot 3.5.7
 - Alcance de la verificacion: arbol fuente, modulos Gradle, bootstrap Spring Boot, pruebas y alineacion contra backlog
 
 ## Resumen Ejecutivo
@@ -18,7 +18,7 @@ El repositorio hoy es una **linea base compilable**, no un MVP funcional complet
 Ya existe:
 
 - Estructura multi-modulo `Gradle` alineada con el monolito modular.
-- Convenciones compartidas para `Java 21`, `Spring Boot 3.3.2` y formato con `Spotless`.
+- Convenciones compartidas para `Java 25`, `Spring Boot 3.5.7` y formato con `Spotless`.
 - Modulos minimos de dominio, aplicacion, infraestructura, conectores, seguridad, jobs y bootstrap.
 - Configuracion Spring Boot por ambiente con perfiles `local`, `dev`, `qa` y `prod`.
 - Variables de base operativa externalizadas mediante environment variables.
@@ -167,7 +167,8 @@ Leyenda:
 | Item del backlog | Estado | Notas |
 | --- | --- | --- |
 | `TASK-01.1.1-a` Crear build raiz y modulos | Done | La estructura multi-modulo `Gradle` existe |
-| `TASK-01.1.1-b` Version Java y BOM Spring Boot | Done | Configurados `Java 21` y BOM Boot |
+| `TASK-01.1.1-b` Version Java y BOM Spring Boot | Done | Configurados `Java 25` y BOM Boot |
+| `TASK-01.1.1-d` Migracion Java 21 → 25 | Done | JDK 25 LTS; Gradle 8.14.5 → 9.8.1; Spring Boot/BOM 3.3.2 → 3.5.7; dependency-management 1.1.7; springdoc 2.6.0 → 2.8.13; `@MockBean` → `@MockitoBean` en `AuthControllerTest`; Dockerfile `eclipse-temurin:25`; CI `setup-java` 25. Detalle y pasos de replica: `docs/migration/java-21-to-25.md` |
 | `TASK-01.1.1-c` Plugins de build y test | Done | Existen convenciones compartidas y tests |
 | `TASK-01.2.1-a` Config base y perfiles | Done | Existen config base y perfiles `local`, `dev`, `qa` y `prod` |
 | `TASK-01.2.1-b` Externalizar variables sensibles | Done | La configuracion del datasource operativo se externaliza con variables de entorno |

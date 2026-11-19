@@ -38,7 +38,7 @@ Establish the project base, internal architecture, conventions, and pipeline.
   - `app-infrastructure`
   - `app-connectors`
   - `app-jobs`
-- Configure `Spring Boot 3.x`, `Java 21`, or the approved LTS version.
+- Configure `Spring Boot 3.x`, `Java 25`, or the approved LTS version.
 - Configure `local`, `dev`, `qa`, and `prod` profiles.
 - Integrate `Flyway` for migrations.
 - Configure `SpringDoc/OpenAPI`.

@@ -128,7 +128,7 @@ dev.kreaker.hile.bootstrap
 ## Build recomendado
 
 - `Gradle` multi-modulo
-- `Java 21`
+- `Java 25`
 - `Spring Boot 3.x`
 - `JUnit 5`
 - `Flyway`

@@ -2,7 +2,7 @@
 
 ## Read This First
 
-This repository is a `Java 21` + `Spring Boot 3.3.2` modular monolith for a multi-DB reporting platform.
+This repository is a `Java 25` + `Spring Boot 3.5.7` modular monolith for a multi-DB reporting platform.
 
 Current reality:
 
