@@ -3,6 +3,9 @@ description = 'reporting-application'
 dependencies {
   api project(':reporting-domain')
 
+  // OpenAPI schema annotations only (no Spring); version matches springdoc 2.8.13
+  compileOnly 'io.swagger.core.v3:swagger-annotations-jakarta:2.2.36'
+
   testImplementation 'org.springframework.boot:spring-boot-starter-test'
   testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
