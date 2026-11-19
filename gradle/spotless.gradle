@@ -1,0 +1,101 @@
+// =============================================================================
+// gradle/spotless.gradle - formato automático (Java, Gradle, properties, YAML, TOML)
+// =============================================================================
+// USO (proyecto raíz):
+//
+//   // build.gradle
+//   plugins {
+//     id 'com.diffplug.spotless' version '8.11.0'
+//   }
+//   apply from: "$rootDir/gradle/spotless.gradle"
+//
+// REQUIERE en el repo:  config/formatter/eclipse-java-google-style.xml
+//
+// COMANDOS:  ./gradlew spotlessApply   (formatea)
+//            ./gradlew spotlessCheck   (verifica; también corre con `check`)
+//
+// Aplícalo UNA sola vez (en la raíz). Si usas subproyectos con su propio
+// spotless{}, los targets se duplicarían.
+// Las reglas deben coincidir con .editorconfig (3 espacios en Java, 2 en el resto).
+// =============================================================================
+
+def commonExcludes = [
+  '**/build/**',
+  '**/out/**',
+  '**/bin/**',
+  '**/.gradle/**',
+  '**/node_modules/**'
+]
+
+spotless {
+  lineEndings = 'UNIX'
+  encoding = 'UTF-8'
+
+  // Formatear solo lo que cambió respecto a una rama (útil en código legado):
+  // ratchetFrom 'origin/main'
+
+  // ---------------------------------------------------------------------------
+  // JAVA - Eclipse JDT con perfil propio (google-java-format no admite 3 espacios)
+  // El orden de los pasos importa: imports -> imports sin uso -> formateador.
+  // ---------------------------------------------------------------------------
+  java {
+    target '**/src/**/*.java'
+    targetExclude(*commonExcludes, '**/generated/**', '**/generated-sources/**')
+
+    // Igual que ij_java_imports_layout del .editorconfig:
+    // resto, com, org, java, javax y estáticos al final (línea en blanco entre grupos)
+    importOrder('', 'com', 'org', 'java', 'javax', '\\#')
+    removeUnusedImports()
+
+    // Sin versión explícita: la fija la versión del plugin de Spotless.
+    eclipse().configFile(rootProject.file('config/formatter/eclipse-java-google-style.xml'))
+  }
+
+  // ---------------------------------------------------------------------------
+  // GRADLE (Groovy y Kotlin DSL)
+  // ---------------------------------------------------------------------------
+  format 'gradleScripts', {
+    target '**/*.gradle', '**/*.gradle.kts'
+    targetExclude(*commonExcludes)
+    leadingTabsToSpaces(2)
+    trimTrailingWhitespace()
+    endWithNewline()
+  }
+
+  // ---------------------------------------------------------------------------
+  // PROPERTIES
+  // Ojo: en .properties el espacio final de un valor SÍ es parte del valor, y
+  // Spring Boot lee application.properties como ISO-8859-1 por defecto. Si
+  // tienes tildes/ñ, usa escapes (ñ) o confirma la codificación antes de
+  // aplicar por primera vez.
+  // ---------------------------------------------------------------------------
+  format 'propertiesFiles', {
+    target '**/*.properties'
+    targetExclude(*commonExcludes, '**/gradle/wrapper/**')
+    leadingTabsToSpaces(2)
+    trimTrailingWhitespace()
+    endWithNewline()
+  }
+
+  // ---------------------------------------------------------------------------
+  // YAML
+  // ---------------------------------------------------------------------------
+  format 'yamlFiles', {
+    target '**/*.yml', '**/*.yaml'
+    targetExclude(*commonExcludes)
+    leadingTabsToSpaces(2)
+    trimTrailingWhitespace()
+    endWithNewline()
+  }
+
+  // ---------------------------------------------------------------------------
+  // TOML
+  // ---------------------------------------------------------------------------
+  format 'tomlFiles', {
+    target '**/*.toml'
+    targetExclude(*commonExcludes)
+    leadingTabsToSpaces(2)
+    trimTrailingWhitespace()
+    endWithNewline()
+  }
+}
