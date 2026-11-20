@@ -8,3 +8,6 @@
 docs
 AGENT_HANDOFF.md
 compose.yaml
+.env
+reporting-frontend
+graphify-out
